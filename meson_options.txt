@@ -1,0 +1,5 @@
+option('PC_BUILD_SHARED', type: 'boolean', value: 'true', description:'Build shared library')
+option('PC_BUILD_STATIC', type: 'boolean', value: 'false', description: 'Build static library')
+option('PC_BUILD_TESTS', type: 'boolean', value: 'true', description: 'Build tests')
+option('PC_BUILD_OPTIMIZED', type: 'boolean', value: 'false', description: 'Build optimized')
+option('PC_BUILD_OPTIMIZED_AGGRESSIVE', type: 'boolean', value: 'false', description: 'Build with maximum optimization')
