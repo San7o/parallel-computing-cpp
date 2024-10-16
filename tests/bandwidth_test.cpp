@@ -24,42 +24,25 @@
  *
  */
 
-#include <pc/ilp.hpp>
+#include <pc/bandwidth.hpp>
 #include <valfuzz/valfuzz.hpp>
 
-/*
-BENCHMARK(array_operations_benchmark, "array_operations")
+TEST(bandwidth_matrix_multiply_test, "Matrix Multiply")
 {
-    int *a = new (std::nothrow) int[SIZE];
-    int *b = new (std::nothrow) int[SIZE];
-    int *c = new (std::nothrow) int[SIZE];
+    const int N = 2;
 
-    if (a == nullptr || b == nullptr || c == nullptr)
-    {
-        std::cerr << "Memory allocation failed!" << std::endl;
-        std::exit(EXIT_FAILURE);
+    float matrix1[4] = {1, 2, 3, 4};
+    float matrix2[4] = {5, 6, 7, 8};
+    float result[4];
+
+    float expected[4] = {19, 22, 43, 50};
+
+    pc::matrix_multiply(matrix1, matrix2, result, N);
+
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < N; j++) {
+            ASSERT(result[i * N + j] == expected[i * N + j]);
+        }
     }
 
-    // Unoptimized code
-    RUN_BENCHMARK(SIZE, [a, b, c]() -> void {
-        for (int j = 0; j < SIZE; ++j)
-            a[j] = b[j] = c[j] = j;
-
-        pc::array_operations(a, b, c);
-        return;
-    }());
-
-    // Optimized code
-    RUN_BENCHMARK(SIZE, [a, b, c]() -> void {
-        for (int j = 0; j < SIZE; ++j)
-            a[j] = b[j] = c[j] = j;
-
-        pc::array_operations_optimized(a, b, c);
-        return;
-    }());
-
-    delete[] a;
-    delete[] b;
-    delete[] c;
 }
-*/

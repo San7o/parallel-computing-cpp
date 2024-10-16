@@ -1,0 +1,4 @@
+name,time,space
+"Sum arrays benchmark",2.17222e-07,400
+"Sum arrays benchmark",2.06721e-06,4000
+"Sum arrays benchmark",1.99074e-05,40000

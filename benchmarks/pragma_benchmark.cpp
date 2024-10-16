@@ -27,26 +27,47 @@
 #include <pc/pragma.hpp>
 #include <valfuzz/valfuzz.hpp>
 
-BENCHMARK(pragma_mebchmark, "pragma_loop")
+BENCHMARK(pragma_mebchmark, "loop")
 {
+    size_t SIZE = 100000;
     float *a = new float[SIZE];
     float *b = new float[SIZE];
-	
-    RUN_BENCHMARK([a, b]() -> void {
-        for (int j = 0; j < SIZE; ++j)
+
+	auto run_original_loop = [a, b](size_t size) -> void {
+        for (size_t j = 0; j < size; ++j)
             a[j] = b[j] * 2.0f;
 
-        pc::original_loop(a, b);
+        pc::original_loop(a, b, size);
         return;
-    }());
+    };
 
-    RUN_BENCHMARK([a, b]() -> void {
-        for (int j = 0; j < SIZE; ++j)
+    RUN_BENCHMARK(100, run_original_loop(100));
+    RUN_BENCHMARK(1000, run_original_loop(1000));
+    RUN_BENCHMARK(10000, run_original_loop(10000));
+    RUN_BENCHMARK(100000, run_original_loop(100000));
+
+    delete[] a;
+    delete[] b;
+}
+
+BENCHMARK(pragma_benchmark_vectorized, "vectorized_loop")
+{
+    size_t SIZE = 100000;
+    float *a = new float[SIZE];
+    float *b = new float[SIZE];
+
+    auto run_vectorized_loop = [a, b](size_t size) -> void {
+        for (size_t j = 0; j < size; ++j)
             a[j] = b[j] * 2.0f;
 
-        pc::vectorized_loop(a, b);
+        pc::vectorized_loop(a, b, size);
         return;
-    }());
+    };
+
+    RUN_BENCHMARK(100, run_vectorized_loop(100));
+    RUN_BENCHMARK(1000, run_vectorized_loop(1000));
+    RUN_BENCHMARK(10000, run_vectorized_loop(10000));
+    RUN_BENCHMARK(100000, run_vectorized_loop(100000));
 
     delete[] a;
     delete[] b;

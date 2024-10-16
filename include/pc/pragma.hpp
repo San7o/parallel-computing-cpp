@@ -26,12 +26,12 @@
 
 #pragma once
 
-#define SIZE 50000000
+#include <cstddef>
 
 namespace pc
 {
 
-void original_loop(float *a, float *b);
-void vectorized_loop(float *a, float *b);
+void original_loop(float *a, float *b, size_t size);
+void vectorized_loop(float *a, float *b, size_t size);
 
 } // namespace pc

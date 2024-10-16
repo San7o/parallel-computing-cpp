@@ -2,7 +2,7 @@
  * MIT License
  *
  * Copyright (c) 2024 Giovanni Santini
- *
+
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -24,42 +24,17 @@
  *
  */
 
-#include <pc/ilp.hpp>
-#include <valfuzz/valfuzz.hpp>
+#pragma once
 
-/*
-BENCHMARK(array_operations_benchmark, "array_operations")
+#include <cstddef>
+
+namespace pc
 {
-    int *a = new (std::nothrow) int[SIZE];
-    int *b = new (std::nothrow) int[SIZE];
-    int *c = new (std::nothrow) int[SIZE];
 
-    if (a == nullptr || b == nullptr || c == nullptr)
-    {
-        std::cerr << "Memory allocation failed!" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
+void write_and_read(int *a, int size);
+void float_sum(float *vector1, float *vector2, float *result, int N);
+void write_serial(int *a, int size);
+void write_random(int *a, int *indexes, int size);
+void matrix_multiply(float *matrix1, float *matrix2, float *result, int N);
 
-    // Unoptimized code
-    RUN_BENCHMARK(SIZE, [a, b, c]() -> void {
-        for (int j = 0; j < SIZE; ++j)
-            a[j] = b[j] = c[j] = j;
-
-        pc::array_operations(a, b, c);
-        return;
-    }());
-
-    // Optimized code
-    RUN_BENCHMARK(SIZE, [a, b, c]() -> void {
-        for (int j = 0; j < SIZE; ++j)
-            a[j] = b[j] = c[j] = j;
-
-        pc::array_operations_optimized(a, b, c);
-        return;
-    }());
-
-    delete[] a;
-    delete[] b;
-    delete[] c;
-}
-*/
+} // namespace pc

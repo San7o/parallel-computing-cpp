@@ -27,7 +27,10 @@
 #include <pc/pc.hpp>
 #include <valfuzz/valfuzz.hpp>
 
+/*
+// Too slow
 BENCHMARK(nth_fibonacci_benchmark, "Benchmarking fibonacci function")
 {
-    RUN_BENCHMARK([]()->void{pc::nth_fibonacci(10000);return;});
+    RUN_BENCHMARK(10000, []()->void{pc::nth_fibonacci(10000);return;});
 }
+*/

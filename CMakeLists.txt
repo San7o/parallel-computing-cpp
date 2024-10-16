@@ -16,15 +16,18 @@ set(PC_SOURCES
         src/pc.cpp
         src/ilp.cpp
         src/pragma.cpp
+        src/bandwidth.cpp
 )
 set(PC_HEADERS include)
 set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic -Werror -Wconversion -Wshadow)
 set(PC_TEST_SOURCES
         tests/pc_test.cpp
+        tests/bandwidth_test.cpp
         fuzz/pc_fuzz.cpp
         benchmarks/pc_benchmark.cpp
         benchmarks/array_operations_benchmark.cpp
         benchmarks/pragma_benchmark.cpp
+        benchmarks/bandwidth_benchmark.cpp
 )
 set(PC_TEST_HEADERS)
 set(PC_LINK_LIBRARIES)
@@ -47,7 +50,7 @@ CPMAddPackage(
 CPMAddPackage(
     NAME valfuzz
     GITHUB_REPOSITORY San7o/valFuzz
-    GIT_TAG v1.0.4
+    GIT_TAG v1.1.0-alpha
     DOWNLOAD_ONLY True
 )
 if (valfuzz_ADDED)

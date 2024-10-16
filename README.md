@@ -101,3 +101,12 @@ Target-Specific Optimization Flags:
 -funroll-loops           # forces the compiler to unroll loops
 -fprefetch-loop-arrays   # Enables software prefetching of array elements
 ```
+
+## Cache analysis
+```bash
+valgrind --tool=cachegrind ./executable
+cg_annotate cachegrind.out.<pid>
+```
+
+# TODO
+- Calculate bandwidth and flops of matrix multiplication and optimizations

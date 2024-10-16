@@ -37,6 +37,7 @@ base_sources = files(
   'src/pc.cpp',
   'src/ilp.cpp',
   'src/pragma.cpp',
+  'src/bandwidth.cpp',
 )
 
 if get_option('PC_BUILD_OPTIMIZED_AGGRESSIVE')
@@ -70,10 +71,12 @@ endif
 if get_option('PC_BUILD_TESTS')
   test_sources = files(
     'tests/pc_test.cpp',
+    'tests/bandwidth_test.cpp',
     'fuzz/pc_fuzz.cpp',
     'benchmarks/pc_benchmark.cpp',
     'benchmarks/array_operations_benchmark.cpp',
     'benchmarks/pragma_benchmark.cpp',
+    'benchmarks/bandwidth_benchmark.cpp',
   )
   executable('tests',
     sources: [
