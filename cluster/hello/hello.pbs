@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Job name
+#PBS -N helloc
+# Output files
+#PBS -o ./helloc.o
+#PBS -e ./helloc.e
+# Queue name
+#PBS -q short_cpuQ
+# Set the maximum wall time
+#PBS -l walltime=0:01:00
+# Number of nodes, cpus, and amount of memory
+#PBS -l select=1:ncpus=1:mem=1mb
+
+# Modules for C
+module load gcc91
+# Define gcc and g++ to use the version 9.1.0
+g++() {
+    g++-9.1.0 "$@"
+}
+
+g++ --version
+
+gcc() {
+    gcc-9.1.0 "$@"
+}
+gcc --version
+
+# Select the working directory
+cd /home/giovanni.santini/parallel_programming/hello_world
+
+# The code should be compiled before submitting the job
+g++ -o hello hello.cpp
+
+# Run hello
+./hello

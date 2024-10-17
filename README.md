@@ -61,7 +61,7 @@ Do the same inside the `.bps` file.
 
 In `hello.pbs`:
 - set output files
-- set masimum wall time
+- set maximum wall time
 - change the working directory
 - change the code to be compiled
 Send a job to the queue:
