@@ -27,7 +27,7 @@ gcc() {
 gcc --version
 
 # Select the working directory
-cd /home/giovanni.santini/parallel_programming/hello_world
+cd /home/giovanni.santini/parallel_programming/hello
 
 # The code should be compiled before submitting the job
 g++ -o hello hello.cpp

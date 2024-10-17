@@ -74,7 +74,7 @@ qstat -u user.name
 ```
 Start an interactive session:
 ```bash
-qsub -I -p short_cpuQ
+qsub -I -q short_cpuQ
 ```
 Here we can compile and do everything
 
