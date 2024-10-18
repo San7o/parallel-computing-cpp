@@ -46,3 +46,33 @@ TEST(bandwidth_matrix_multiply_test, "Matrix Multiply")
     }
 
 }
+
+TEST(bandwidth_bubble_sort_test, "Bubble Sort")
+{
+    const int N = 5;
+
+    int array[5] = {64, 34, 25, 12, 22};
+    int out[5];
+    int expected[5] = {12, 22, 25, 34, 64};
+
+    pc::bubble_sort(array, out, N);
+
+    for (int i = 0; i < N; i++) {
+        ASSERT(out[i] == expected[i]);
+    }
+}
+
+TEST(bandwidth_merge_sort_test, "Merge Sort")
+{
+    const int N = 5;
+
+    int array[5] = {64, 34, 25, 12, 22};
+    int out[5];
+    int expected[5] = {12, 22, 25, 34, 64};
+
+    pc::merge_sort(array, out, N);
+
+    for (int i = 0; i < N; i++) {
+        ASSERT(out[i] == expected[i]);
+    }
+}

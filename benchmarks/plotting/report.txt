@@ -1,34 +1,44 @@
 name,time,space
-"loop",3.91584e-07,100
-"loop",3.72949e-06,1000
-"loop",3.71798e-05,10000
-"loop",0.000327994,100000
-"vectorized_loop",3.17034e-07,100
-"vectorized_loop",3.13795e-06,1000
-"vectorized_loop",2.98759e-05,10000
-"vectorized_loop",0.000272764,100000
-"write and read",3.79943e-07,400
-"write and read",3.60228e-06,4000
-"write and read",3.5402e-05,40000
-"write and read",0.00017429,200000
-"write and read",0.000349097,400000
-"write serial",1.88241e-07,100
-"write serial",1.61944e-06,1000
-"write serial",1.58959e-05,10000
-"write serial",7.87254e-05,50000
-"write serial",0.000156482,100000
-"write random",2.45703e-07,100
-"write random",2.30019e-06,1000
-"write random",2.21608e-05,10000
-"write random",0.000106599,50000
-"write random",0.000213061,100000
-"float sum",2.82734e-07,100
-"float sum",2.66412e-06,1000
-"float sum",2.55538e-05,10000
-"float sum",0.000123191,50000
-"float sum",0.000243864,100000
-"matrix multiplication",3.79745e-06,10
-"matrix multiplication",5.16398e-05,25
-"matrix multiplication",0.000391697,50
-"matrix multiplication",0.00129699,75
-"matrix multiplication",0.00304103,100
+"loop",4.08e-07,100
+"loop",3.902e-06,1000
+"loop",4.56032e-05,10000
+"loop",0.00037667,100000
+"vectorized_loop",4.128e-07,100
+"vectorized_loop",2.9035e-06,1000
+"vectorized_loop",2.89505e-05,10000
+"vectorized_loop",0.000302796,100000
+"write and read",4.051e-07,400
+"write and read",3.5358e-06,4000
+"write and read",3.74532e-05,40000
+"write and read",0.000178038,200000
+"write and read",0.000373664,400000
+"write serial",1.998e-07,100
+"write serial",1.9057e-06,1000
+"write serial",1.81859e-05,10000
+"write serial",8.07813e-05,50000
+"write serial",0.000158389,100000
+"write random",4.186e-07,100
+"write random",3.5348e-06,1000
+"write random",3.04881e-05,10000
+"write random",0.000110537,50000
+"write random",0.000218492,100000
+"float sum",3.616e-07,100
+"float sum",2.6732e-06,1000
+"float sum",2.61924e-05,10000
+"float sum",0.000129988,50000
+"float sum",0.000254434,100000
+"matrix multiplication",3.7352e-06,10
+"matrix multiplication",5.77436e-05,25
+"matrix multiplication",0.000395616,50
+"matrix multiplication",0.00132706,75
+"matrix multiplication",0.00322476,100
+"bubble sort",1.48719e-05,100
+"bubble sort",0.0014666,1000
+"bubble sort",0.147272,10000
+"bubble sort",6.32803,50000
+"bubble sort",26.6657,100000
+"merge sort",7.1171e-06,100
+"merge sort",0.00011089,1000
+"merge sort",0.00152677,10000
+"merge sort",0.00860185,50000
+"merge sort",0.0180749,100000

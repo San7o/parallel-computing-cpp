@@ -115,3 +115,45 @@ BENCHMARK(bandwidth_matrix_multiplication, "matrix multiplication")
     RUN_BENCHMARK(75, pc::matrix_multiply(matrix1, matrix2, result, 75));
     RUN_BENCHMARK(100, pc::matrix_multiply(matrix1, matrix2, result, 100));
 }
+
+BENCHMARK(bandwidth_bubble_sort, "bubble sort")
+{
+    int size = 100000;
+    int *arr = new int[size];
+    int *out = new int[size];
+
+    for (int i = 0; i < size; i++)
+    {
+        arr[i] = valfuzz::get_random<int>();
+    }
+
+    RUN_BENCHMARK(100, pc::bubble_sort(arr, out, 100));
+    RUN_BENCHMARK(1000, pc::bubble_sort(arr, out, 1000));
+    RUN_BENCHMARK(10000, pc::bubble_sort(arr, out, 10000));
+    RUN_BENCHMARK(50000, pc::bubble_sort(arr, out, 50000));
+    RUN_BENCHMARK(100000, pc::bubble_sort(arr, out, 100000));
+
+    delete[] arr;
+    delete[] out;
+}
+
+BENCHMARK(bandwidth_merge_sort, "merge sort")
+{
+    int size = 100000;
+    int *arr = new int[size];
+    int *out = new int[size];
+
+    for (int i = 0; i < size; i++)
+    {
+        arr[i] = valfuzz::get_random<int>();
+    }
+
+    RUN_BENCHMARK(100, pc::merge_sort(arr, out, 100));
+    RUN_BENCHMARK(1000, pc::merge_sort(arr, out, 1000));
+    RUN_BENCHMARK(10000, pc::merge_sort(arr, out, 10000));
+    RUN_BENCHMARK(50000, pc::merge_sort(arr, out, 50000));
+    RUN_BENCHMARK(100000, pc::merge_sort(arr, out, 100000));
+
+    delete[] arr;
+    delete[] out;
+}

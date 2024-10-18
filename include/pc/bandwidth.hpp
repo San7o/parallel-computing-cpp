@@ -36,5 +36,7 @@ void float_sum(float *vector1, float *vector2, float *result, int N);
 void write_serial(int *a, int size);
 void write_random(int *a, int *indexes, int size);
 void matrix_multiply(float *matrix1, float *matrix2, float *result, int N);
+void bubble_sort(int *a, int *out, int size);
+void merge_sort(int *a, int* out, int size);
 
 } // namespace pc
