@@ -4,3 +4,4 @@ jupyter >= 1.1.1
 seaborn >= 0.13.2
 pandas >= 2.2.3
 matplotlib >= 3.9.2
+Unum >= 4.2.1 

@@ -1,44 +1,42 @@
 name,time,space
-"loop",4.08e-07,100
-"loop",3.902e-06,1000
-"loop",4.56032e-05,10000
-"loop",0.00037667,100000
-"vectorized_loop",4.128e-07,100
-"vectorized_loop",2.9035e-06,1000
-"vectorized_loop",2.89505e-05,10000
-"vectorized_loop",0.000302796,100000
-"write and read",4.051e-07,400
-"write and read",3.5358e-06,4000
-"write and read",3.74532e-05,40000
-"write and read",0.000178038,200000
-"write and read",0.000373664,400000
-"write serial",1.998e-07,100
-"write serial",1.9057e-06,1000
-"write serial",1.81859e-05,10000
-"write serial",8.07813e-05,50000
-"write serial",0.000158389,100000
-"write random",4.186e-07,100
-"write random",3.5348e-06,1000
-"write random",3.04881e-05,10000
-"write random",0.000110537,50000
-"write random",0.000218492,100000
-"float sum",3.616e-07,100
-"float sum",2.6732e-06,1000
-"float sum",2.61924e-05,10000
-"float sum",0.000129988,50000
-"float sum",0.000254434,100000
-"matrix multiplication",3.7352e-06,10
-"matrix multiplication",5.77436e-05,25
-"matrix multiplication",0.000395616,50
-"matrix multiplication",0.00132706,75
-"matrix multiplication",0.00322476,100
-"bubble sort",1.48719e-05,100
-"bubble sort",0.0014666,1000
-"bubble sort",0.147272,10000
-"bubble sort",6.32803,50000
-"bubble sort",26.6657,100000
-"merge sort",7.1171e-06,100
-"merge sort",0.00011089,1000
-"merge sort",0.00152677,10000
-"merge sort",0.00860185,50000
-"merge sort",0.0180749,100000
+"loop",3.82684e-07,100
+"loop",3.72991e-06,1000
+"loop",3.32117e-05,10000
+"loop",0.000327918,100000
+"vectorized_loop",3.09872e-07,100
+"vectorized_loop",2.91159e-06,1000
+"vectorized_loop",2.75268e-05,10000
+"vectorized_loop",0.000272299,100000
+"write and read",3.84161e-07,400
+"write and read",3.52211e-06,4000
+"write and read",3.49161e-05,40000
+"write and read",0.000174878,200000
+"write and read",0.000350219,400000
+"write serial",1.85302e-07,100
+"write serial",1.60251e-06,1000
+"write serial",1.56274e-05,10000
+"write serial",7.76543e-05,50000
+"write serial",0.000156007,100000
+"write random",2.4489e-07,100
+"write random",2.34065e-06,1000
+"write random",2.17037e-05,10000
+"write random",0.000107597,50000
+"write random",0.000213486,100000
+"float sum",2.82072e-07,100
+"float sum",2.65565e-06,1000
+"float sum",2.56598e-05,10000
+"float sum",0.000124482,50000
+"float sum",0.000244564,100000
+"matrix multiplication",3.79783e-06,10
+"matrix multiplication",5.45485e-05,25
+"matrix multiplication",0.000417061,50
+"matrix multiplication",0.00130915,75
+"matrix multiplication",0.00311719,100
+"bubble sort",6.0114e-08,5
+"bubble sort",1.53207e-07,10
+"bubble sort",1.32268e-05,100
+"bubble sort",0.00147507,1000
+"merge sort",1.6464e-07,5
+"merge sort",3.93317e-07,10
+"merge sort",5.49118e-06,100
+"merge sort",9.11779e-05,1000

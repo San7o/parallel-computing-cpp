@@ -66,8 +66,6 @@ BENCHMARK(bandwidth_write_random, "write random")
         indexes[i] = valfuzz::get_random<int>() % size;
     }
 
-    std::cout << "Random indexes generated" << std::endl;
-
     RUN_BENCHMARK(100, pc::write_random(arr, indexes, 100));
     RUN_BENCHMARK(1000, pc::write_random(arr, indexes, 1000));
     RUN_BENCHMARK(10000, pc::write_random(arr, indexes, 10000));
@@ -127,11 +125,13 @@ BENCHMARK(bandwidth_bubble_sort, "bubble sort")
         arr[i] = valfuzz::get_random<int>();
     }
 
+    RUN_BENCHMARK(5, pc::bubble_sort(arr, out, 5));
+    RUN_BENCHMARK(10, pc::bubble_sort(arr, out, 10));
     RUN_BENCHMARK(100, pc::bubble_sort(arr, out, 100));
     RUN_BENCHMARK(1000, pc::bubble_sort(arr, out, 1000));
-    RUN_BENCHMARK(10000, pc::bubble_sort(arr, out, 10000));
-    RUN_BENCHMARK(50000, pc::bubble_sort(arr, out, 50000));
-    RUN_BENCHMARK(100000, pc::bubble_sort(arr, out, 100000));
+    //RUN_BENCHMARK(10000, pc::bubble_sort(arr, out, 10000));
+    //RUN_BENCHMARK(50000, pc::bubble_sort(arr, out, 50000));
+    //RUN_BENCHMARK(100000, pc::bubble_sort(arr, out, 100000));
 
     delete[] arr;
     delete[] out;
@@ -148,11 +148,13 @@ BENCHMARK(bandwidth_merge_sort, "merge sort")
         arr[i] = valfuzz::get_random<int>();
     }
 
+    RUN_BENCHMARK(5, pc::merge_sort(arr, out, 5));
+    RUN_BENCHMARK(10, pc::merge_sort(arr, out, 10));
     RUN_BENCHMARK(100, pc::merge_sort(arr, out, 100));
     RUN_BENCHMARK(1000, pc::merge_sort(arr, out, 1000));
-    RUN_BENCHMARK(10000, pc::merge_sort(arr, out, 10000));
-    RUN_BENCHMARK(50000, pc::merge_sort(arr, out, 50000));
-    RUN_BENCHMARK(100000, pc::merge_sort(arr, out, 100000));
+    //RUN_BENCHMARK(10000, pc::merge_sort(arr, out, 10000));
+    //RUN_BENCHMARK(50000, pc::merge_sort(arr, out, 50000));
+    //RUN_BENCHMARK(100000, pc::merge_sort(arr, out, 100000));
 
     delete[] arr;
     delete[] out;
