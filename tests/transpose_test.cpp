@@ -30,28 +30,28 @@
 TEST(transpose_matrix, "Matrix Transpose")
 {
     std::size_t N = 10;
-    std::size_t M = 10;
-    int** matrix = new int*[N];
-    int** out = new int*[M];
+    float **M = new float *[N];
+    float **T = new float *[N];
     for (std::size_t i = 0; i < N; i++)
     {
-        matrix[i] = new int[N];
+        M[i] = new float[N];
         for (std::size_t j = 0; j < N; j++)
         {
-            matrix[i][j] = valfuzz::get_random<int>();
+            M[i][j] = valfuzz::get_random<float>();
         }
     }
-    for (std::size_t i = 0; i < M; i++)
+    for (std::size_t i = 0; i < N; i++)
     {
-        out[i] = new int[N];
+        T[i] = new float[N];
     }
 
-    pc::matrix_transpose(matrix, out, N, M);
+    pc::matTranspose(M, T, N);
+
     for (std::size_t i = 0; i < N; i++)
     {
         for (std::size_t j = 0; j < N; j++)
         {
-            ASSERT(matrix[i][j] == out[j][i]);
+            ASSERT(M[i][j] == T[j][i]);
         }
     }
 }

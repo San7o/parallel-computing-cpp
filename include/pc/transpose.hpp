@@ -31,6 +31,6 @@
 namespace pc
 {
 
-void matrix_transpose(int **matrix, int **out, std::size_t N, std::size_t M);
+void matTranspose(float **M, float **T, std::size_t N);
 
 } // namespace pc
