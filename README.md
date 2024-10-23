@@ -110,3 +110,4 @@ cg_annotate cachegrind.out.<pid>
 
 # TODO
 - Use tennotl
+- Make bazel work via subprojects
