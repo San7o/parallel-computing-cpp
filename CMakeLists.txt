@@ -13,21 +13,14 @@ set(CMAKE_USE_PTHREADS_INIT 1)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(PC_SOURCES
-        src/pc.cpp
-        src/ilp.cpp
-        src/pragma.cpp
-        src/bandwidth.cpp
+        src/transpose.cpp
 )
 set(PC_HEADERS include)
 set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic -Werror -Wconversion -Wshadow)
 set(PC_TEST_SOURCES
-        tests/pc_test.cpp
-        tests/bandwidth_test.cpp
-        fuzz/pc_fuzz.cpp
-        benchmarks/pc_benchmark.cpp
-        benchmarks/array_operations_benchmark.cpp
-        benchmarks/pragma_benchmark.cpp
-        benchmarks/bandwidth_benchmark.cpp
+        tests/transpose_test.cpp
+        fuzz/transpose_fuzz.cpp
+        benchmarks/transpose_benchmark.cpp
 )
 set(PC_TEST_HEADERS)
 set(PC_LINK_LIBRARIES)

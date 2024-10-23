@@ -1,14 +1,10 @@
 cc_library(
     name = "pc",
     srcs = [
-        "pc.cpp",
-        "ilp.cpp",
-        "pragma.cpp",
+        "transpose.cpp",
     ],
     hdrs = [
-        "//include/pc:pc.hpp",
-        "//include/pc:ilp.hpp",
-        "//include/pc:pragma.hpp",
+        "//include/pc:transpose.hpp",
     ],  # Refer to the header in the `include/pc` directory
     includes = ["//include"],  # Add the base include directory to the include path
     copts = ["-Iinclude"],

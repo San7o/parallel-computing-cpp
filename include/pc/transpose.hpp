@@ -2,7 +2,7 @@
  * MIT License
  *
  * Copyright (c) 2024 Giovanni Santini
- *
+
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -24,13 +24,13 @@
  *
  */
 
-#include <pc/pc.hpp>
-#include <valfuzz/valfuzz.hpp>
+#pragma once
 
-/*
-// Too slow
-BENCHMARK(nth_fibonacci_benchmark, "Benchmarking fibonacci function")
+#include <cstddef>
+
+namespace pc
 {
-    RUN_BENCHMARK(10000, []()->void{pc::nth_fibonacci(10000);return;});
-}
-*/
+
+void matrix_transpose(int **matrix, int **out, std::size_t N, std::size_t M);
+
+} // namespace pc

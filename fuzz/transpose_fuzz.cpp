@@ -24,42 +24,5 @@
  *
  */
 
-#include <pc/ilp.hpp>
+#include <pc/transpose.hpp>
 #include <valfuzz/valfuzz.hpp>
-
-/*
-BENCHMARK(array_operations_benchmark, "array_operations")
-{
-    int *a = new (std::nothrow) int[SIZE];
-    int *b = new (std::nothrow) int[SIZE];
-    int *c = new (std::nothrow) int[SIZE];
-
-    if (a == nullptr || b == nullptr || c == nullptr)
-    {
-        std::cerr << "Memory allocation failed!" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    // Unoptimized code
-    RUN_BENCHMARK(SIZE, [a, b, c]() -> void {
-        for (int j = 0; j < SIZE; ++j)
-            a[j] = b[j] = c[j] = j;
-
-        pc::array_operations(a, b, c);
-        return;
-    }());
-
-    // Optimized code
-    RUN_BENCHMARK(SIZE, [a, b, c]() -> void {
-        for (int j = 0; j < SIZE; ++j)
-            a[j] = b[j] = c[j] = j;
-
-        pc::array_operations_optimized(a, b, c);
-        return;
-    }());
-
-    delete[] a;
-    delete[] b;
-    delete[] c;
-}
-*/

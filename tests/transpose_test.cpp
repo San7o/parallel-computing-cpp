@@ -2,7 +2,7 @@
  * MIT License
  *
  * Copyright (c) 2024 Giovanni Santini
-
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -24,11 +24,34 @@
  *
  */
 
-#pragma once
+#include <pc/transpose.hpp>
+#include <valfuzz/valfuzz.hpp>
 
-namespace pc
+TEST(transpose_matrix, "Matrix Transpose")
 {
+    std::size_t N = 10;
+    std::size_t M = 10;
+    int** matrix = new int*[N];
+    int** out = new int*[M];
+    for (std::size_t i = 0; i < N; i++)
+    {
+        matrix[i] = new int[N];
+        for (std::size_t j = 0; j < N; j++)
+        {
+            matrix[i][j] = valfuzz::get_random<int>();
+        }
+    }
+    for (std::size_t i = 0; i < M; i++)
+    {
+        out[i] = new int[N];
+    }
 
-unsigned long long int nth_fibonacci(unsigned int n);
-
-} // namespace pc
+    pc::matrix_transpose(matrix, out, N, M);
+    for (std::size_t i = 0; i < N; i++)
+    {
+        for (std::size_t j = 0; j < N; j++)
+        {
+            ASSERT(matrix[i][j] == out[j][i]);
+        }
+    }
+}

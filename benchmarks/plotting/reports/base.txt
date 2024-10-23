@@ -1,0 +1,10 @@
+name,time,space
+"matrix transpose base",3.11846e-08,16
+"matrix transpose base",5.71093e-08,64
+"matrix transpose base",1.50711e-07,256
+"matrix transpose base",4.94182e-07,1024
+"matrix transpose base",1.72495e-06,4096
+"matrix transpose base",1.7428e-06,4096
+"matrix transpose base",6.89347e-06,16384
+"matrix transpose base",1.06349e-05,25600
+"matrix transpose base",1.60784e-05,40000
