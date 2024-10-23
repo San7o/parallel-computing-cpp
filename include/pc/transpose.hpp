@@ -26,12 +26,12 @@
 
 #pragma once
 
-#include <cstddef>
+#include <tenno/types.hpp>
 
 namespace pc
 {
 
-void matTranspose(float **M, float **T, std::size_t N);
-bool checkSym(float **M, std::size_t N);
+void matTranspose(float **M, float **T, tenno::size N);
+bool checkSym(float **M, tenno::size N);
 
 } // namespace pc

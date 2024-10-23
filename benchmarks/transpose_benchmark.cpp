@@ -26,21 +26,22 @@
 
 #include <pc/transpose.hpp>
 #include <valfuzz/valfuzz.hpp>
+#include <tenno/ranges.hpp>
 
 BENCHMARK(transpose_benchmark, "matrix transpose base")
 {
-    std::size_t N = 100;
+    tenno::size N = 100;
     float **M = new float *[N];
     float **T = new float *[N];
-    for (std::size_t i = 0; i < N; i++)
+    for (auto i : tenno::range(N))
     {
         M[i] = new float[N];
-        for (std::size_t j = 0; j < N; j++)
+        for (auto j : tenno::range(N))
         {
             M[i][j] = valfuzz::get_random<float>();
         }
     }
-    for (std::size_t i = 0; i < N; i++)
+    for (auto i : tenno::range(N))
     {
         T[i] = new float[N];
     }
@@ -60,20 +61,20 @@ BENCHMARK(transpose_benchmark, "matrix transpose base")
 
 BENCHMARK(check_sym_benchmark, "check symmetry base")
 {
-    std::size_t N = 100;
+    tenno::size N = 100;
     float **M = new float *[N];
-    for (std::size_t i = 0; i < N; i++)
+    for (auto i : tenno::range(N))
     {
         M[i] = new float[N];
-        for (std::size_t j = 0; j < N; j++)
+        for (auto j : tenno::range(N))
         {
             M[i][j] = valfuzz::get_random<float>();
         }
     }
     // Make the matrix symmetric (worst case scenario)
-    for (std::size_t i = 0; i < N; i++)
+    for (auto i : tenno::range(N))
     {
-        for (std::size_t j = i; j < N; j++)
+        for (auto j : tenno::range(i, N))
         {
             M[i][j] = M[j][i];
         }

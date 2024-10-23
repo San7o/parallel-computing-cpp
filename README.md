@@ -7,6 +7,7 @@ This project uses the following:
 
 - [cmake](./CMakeLists.txt), [meson](./meson.build) and [bazel](https://bazel.build/) build and dependency managers.
 - [valFuzz](https://github.com/San7o/valFuzz) for testing, fuzzing and benchmarking
+- [tenno](https://github.com/San7o/tenno-tl) standard library
 - [doxygen](./doxtgen.conf) documentation
 - [clang-format](./.clang-format) settings
 - [nix](./flake.nix) developement shell
@@ -108,7 +109,3 @@ Target-Specific Optimization Flags:
 valgrind --tool=cachegrind ./executable
 cg_annotate cachegrind.out.<pid>
 ```
-
-# TODO
-- Use tennotl
-- Make bazel work via subprojects

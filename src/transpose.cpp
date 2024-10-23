@@ -1,10 +1,11 @@
 #include <pc/transpose.hpp>
+#include <tenno/ranges.hpp>
 
-void pc::matTranspose(float **M, float **T, std::size_t N)
+void pc::matTranspose(float **M, float **T, tenno::size N)
 {
-    for (std::size_t i = 0; i < N; i++)
+    for (auto i : tenno::range(N))
     {
-        for (std::size_t j = i; j < N; j++)
+        for (auto j : tenno::range(i, N))
         {
             T[i][j] = M[j][i];
             T[j][i] = M[i][j];
@@ -13,11 +14,11 @@ void pc::matTranspose(float **M, float **T, std::size_t N)
     return;
 }
 
-bool pc::checkSym(float **M, std::size_t N)
+bool pc::checkSym(float **M, tenno::size N)
 {
-    for (std::size_t i = 0; i < N; i++)
+    for (auto i : tenno::range(N))
     {
-        for (std::size_t j = 0; j < N; j++)
+        for (auto j : tenno::range(i, N))
         {
             if (M[i][j] != M[j][i])
             {

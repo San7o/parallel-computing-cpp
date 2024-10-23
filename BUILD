@@ -18,6 +18,7 @@ cc_binary(
     visibility = ["//visibility:public"],
     deps = [
         "@valfuzz//:libvalfuzz",
+        "@tenno//:libtenno",
     ],
     copts = select({
         ":optimized_mode": [
