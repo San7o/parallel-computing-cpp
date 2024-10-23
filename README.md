@@ -109,4 +109,4 @@ cg_annotate cachegrind.out.<pid>
 ```
 
 # TODO
-- Calculate bandwidth and flops of matrix multiplication and optimizations
+- Use tennotl

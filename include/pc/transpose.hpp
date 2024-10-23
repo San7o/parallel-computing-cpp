@@ -32,5 +32,6 @@ namespace pc
 {
 
 void matTranspose(float **M, float **T, std::size_t N);
+bool checkSym(float **M, std::size_t N);
 
 } // namespace pc

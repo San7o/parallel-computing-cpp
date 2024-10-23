@@ -12,3 +12,18 @@ void pc::matTranspose(float **M, float **T, std::size_t N)
     }
     return;
 }
+
+bool pc::checkSym(float **M, std::size_t N)
+{
+    for (std::size_t i = 0; i < N; i++)
+    {
+        for (std::size_t j = 0; j < N; j++)
+        {
+            if (M[i][j] != M[j][i])
+            {
+                return false;
+            }
+        }
+    }
+    return true;
+}

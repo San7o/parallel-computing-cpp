@@ -1,10 +1,17 @@
 name,time,space
-"matrix transpose base",3.11846e-08,16
-"matrix transpose base",5.71093e-08,64
-"matrix transpose base",1.50711e-07,256
-"matrix transpose base",4.94182e-07,1024
-"matrix transpose base",1.72495e-06,4096
-"matrix transpose base",1.7428e-06,4096
-"matrix transpose base",6.89347e-06,16384
-"matrix transpose base",1.06349e-05,25600
-"matrix transpose base",1.60784e-05,40000
+"matrix transpose base",2.7899e-08,16
+"matrix transpose base",5.33524e-08,64
+"matrix transpose base",1.52246e-07,256
+"matrix transpose base",4.78244e-07,1024
+"matrix transpose base",1.73828e-06,4096
+"matrix transpose base",6.51319e-06,16384
+"matrix transpose base",1.01108e-05,25600
+"matrix transpose base",1.56656e-05,40000
+"check symmetry base",2.56679e-08,16
+"check symmetry base",4.95517e-08,64
+"check symmetry base",1.43144e-07,256
+"check symmetry base",5.58319e-07,1024
+"check symmetry base",2.2458e-06,4096
+"check symmetry base",8.56161e-06,16384
+"check symmetry base",1.32574e-05,25600
+"check symmetry base",2.06464e-05,40000

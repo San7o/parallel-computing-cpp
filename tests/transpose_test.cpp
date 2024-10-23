@@ -27,7 +27,7 @@
 #include <pc/transpose.hpp>
 #include <valfuzz/valfuzz.hpp>
 
-TEST(transpose_matrix, "Matrix Transpose")
+TEST(transpose_matrix_test, "Matrix Transpose")
 {
     std::size_t N = 10;
     float **M = new float *[N];
@@ -54,4 +54,30 @@ TEST(transpose_matrix, "Matrix Transpose")
             ASSERT(M[i][j] == T[j][i]);
         }
     }
+}
+
+TEST(check_sym_test, "Check Symmetry")
+{
+    std::size_t N = 10;
+    float **M = new float *[N];
+    for (std::size_t i = 0; i < N; i++)
+    {
+        M[i] = new float[N];
+        for (std::size_t j = 0; j < N; j++)
+        {
+            M[i][j] = valfuzz::get_random<float>();
+        }
+    }
+
+    ASSERT(pc::checkSym(M, N) == false);
+
+    for (std::size_t i = 0; i < N; i++)
+    {
+        for (std::size_t j = 0; j < N; j++)
+        {
+            M[i][j] = M[j][i];
+        }
+    }
+
+    ASSERT(pc::checkSym(M, N) == true);
 }

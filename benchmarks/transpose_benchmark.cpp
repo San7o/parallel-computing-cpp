@@ -57,3 +57,36 @@ BENCHMARK(transpose_benchmark, "matrix transpose base")
     delete[] M;
     delete[] T;
 }
+
+BENCHMARK(check_sym_benchmark, "check symmetry base")
+{
+    std::size_t N = 100;
+    float **M = new float *[N];
+    for (std::size_t i = 0; i < N; i++)
+    {
+        M[i] = new float[N];
+        for (std::size_t j = 0; j < N; j++)
+        {
+            M[i][j] = valfuzz::get_random<float>();
+        }
+    }
+    // Make the matrix symmetric (worst case scenario)
+    for (std::size_t i = 0; i < N; i++)
+    {
+        for (std::size_t j = i; j < N; j++)
+        {
+            M[i][j] = M[j][i];
+        }
+    }
+
+    RUN_BENCHMARK(2 * 2 * sizeof(float), pc::checkSym(M, 2));
+    RUN_BENCHMARK(4 * 4 * sizeof(float), pc::checkSym(M, 4));
+    RUN_BENCHMARK(8 * 8 * sizeof(float), pc::checkSym(M, 8));
+    RUN_BENCHMARK(16 * 16 * sizeof(float), pc::checkSym(M, 16));
+    RUN_BENCHMARK(32 * 32 * sizeof(float), pc::checkSym(M, 32));
+    RUN_BENCHMARK(64 * 64 * sizeof(float), pc::checkSym(M, 64));
+    RUN_BENCHMARK(80 * 80 * sizeof(float), pc::checkSym(M, 80));
+    RUN_BENCHMARK(100 * 100 * sizeof(float), pc::checkSym(M, 100));
+
+    delete[] M;
+}

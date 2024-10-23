@@ -3,3 +3,4 @@ generated_docs/
 subprojects/valfuzz
 deps/
 bazel-*
+update/
