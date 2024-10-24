@@ -21,15 +21,28 @@ add_project_arguments(
 # dependencies
 
 cmake = import('cmake')
-cmake_opts = cmake.subproject_options()
-cmake_opts.add_cmake_defines({
+
+## valfuzz
+valfuzz_opts = cmake.subproject_options()
+valfuzz_opts.add_cmake_defines({
   'VALFUZZ_BUILD_SHARED': 'ON'
 })
 valfuzz_proj = cmake.subproject(
   'valfuzz',
-  options: cmake_opts
+  options: valfuzz_opts
 )
 valfuzz_dep = valfuzz_proj.dependency('valfuzz_shared')
+
+## tenno
+tenno_opts = cmake.subproject_options()
+tenno_opts.add_cmake_defines({
+  'TENNO_BUILD_SHARED': 'ON'
+})
+tenno_proj = cmake.subproject(
+  'tenno',
+  options: tenno_opts
+) 
+tenno_dep = tenno_proj.dependency('tenno_shared')
 
 # project
 
@@ -50,7 +63,8 @@ if get_option('PC_BUILD_SHARED')
       'include',
     ],
     dependencies: [
-      valfuzz_dep
+      valfuzz_dep,
+      tenno_dep,
     ],
   )
 endif
@@ -61,7 +75,8 @@ if get_option('PC_BUILD_STATIC')
       'include',
     ],
     dependencies: [
-      valfuzz_dep
+      valfuzz_dep,
+      tenno_dep,
     ],
   )
 endif
@@ -80,7 +95,8 @@ if get_option('PC_BUILD_TESTS')
       'include',
     ],
     dependencies: [
-      valfuzz_dep
+      valfuzz_dep,
+      tenno_dep,
     ],
   )
 endif

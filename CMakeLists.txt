@@ -46,20 +46,32 @@ CPMAddPackage(
     GIT_TAG v1.1.0-alpha
     DOWNLOAD_ONLY True
 )
+CPMAddPackage(
+    NAME tenno
+    GITHUB_REPOSITORY San7o/tenno-tl
+    GIT_TAG v.0.1.0
+    DOWNLOAD_ONLY True
+)
 if (valfuzz_ADDED)
     list(APPEND PC_TEST_SOURCES ${valfuzz_SOURCE_DIR}/src/valfuzz.cpp)
     list(APPEND PC_TEST_HEADERS ${valfuzz_SOURCE_DIR}/include)
 endif()
+if (tenno_ADDED)
+    list(APPEND PC_HEADERS ${tenno_SOURCE_DIR}/include)
+endif()
 
 if(PC_USE_CLANG)
+    message("Building with clang")
     set(CMAKE_CXX_COMPILER clang++)
     list(APPEND PC_COMPILE_OPTIONS -std=c++23 -fexperimental-library)
     list(APPEND PC_LINK_LIBRARIES -fexperimental-library)
 endif()
 if (PC_BUILD_OPTIMIZED)
+    message("Building with optimizations")
     list(APPEND PC_COMPILE_OPTIONS -O3)
 endif()
 if (PC_BUILD_OPTIMIZED_AGGRESSIVE)
+    message("Building with aggressive optimizations")
     list(APPEND PC_COMPILE_OPTIONS -march=native -Ofast)
 endif()
 

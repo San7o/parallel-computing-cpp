@@ -31,6 +31,7 @@
 namespace pc
 {
 
+// TODO: __restrict__
 void matTranspose(float **M, float **T, tenno::size N);
 bool checkSym(float **M, tenno::size N);
 
