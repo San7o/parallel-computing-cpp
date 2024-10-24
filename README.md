@@ -1,24 +1,33 @@
-# modern-c++template
+# pc-first-assignment
 
-This repo serves as a template for my C++ projects.
+This repository contains the code for the first assignment of
+the course.
 
-The template is composed of:
+This project uses the following:
 
-- [cmake](./CMakeLists.txt), [meson](./meson.build) and [bazel](https://bazel.build/) build files, already configured for:
-    - testing / fuzzing / benchmarking
-    - static and dynamic library build
-    - gcc or clang option with c++23
-    - [CPM](https://github.com/cpm-cmake/CPM.cmake) as cmake dependency manager
+- [cmake](./CMakeLists.txt), [meson](./meson.build) and [bazel](https://bazel.build/) build and dependency managers.
 - [valFuzz](https://github.com/San7o/valFuzz) for testing, fuzzing and benchmarking
+- [tenno](https://github.com/San7o/tenno-tl) standard library
 - [doxygen](./doxtgen.conf) documentation
 - [clang-format](./.clang-format) settings
 - [nix](./flake.nix) developement shell
 - [cppcheck](https://cppcheck.sourceforge.io/) for static analysis 
-- [LICENSE](./LICENSE), [CONTRIBUTING](./CONTRIBUTING.md) and other [git](./.gitattributes) files
-- github workflow
-- useful ready [commands](./Makefile)
 
 ## Building
+
+This project supports `bazel`, `cmake` and `meson` builds.
+
+### bazel
+To build with bazel, first clone the repository with `--recursive`:
+```bash
+git clone --recursive https://github.com/San7o/parallel-computing-cpp.git
+git checkout first_assignment
+```
+You can run the following command to build the full binary:
+```bash
+bazel build //:first_assignment
+```
+The binaries will be generated in `bazel-bin`
 
 ### cmake
 ```bash
@@ -26,24 +35,17 @@ cmake -Bbuild
 cmake --build build -j 4
 ```
 ### meson
+
 ```bash
 meson setup build
 ninja -C build
 ```
-### bazel
-```bash
-bazel build //src:pc --sandbox_debug --verbose_failures
-```
 
 ## Testing
-```
-cmake -Bbuild -DPC_BUILD_TESTS=ON
-cmake --build build -j 4
-./build/tests --help
-```
 The library uses [valFuzz](https://github.com/San7o/valFuzz) for testing
 ```c++
 ./build/tests              # run tests
+./build/tests --help       # get possible flags
 ./build/tests --fuzz       # run fuzzer
 ./build/tests --benchmark  # run benchmarks
 ```
@@ -107,6 +109,3 @@ Target-Specific Optimization Flags:
 valgrind --tool=cachegrind ./executable
 cg_annotate cachegrind.out.<pid>
 ```
-
-# TODO
-- Calculate bandwidth and flops of matrix multiplication and optimizations

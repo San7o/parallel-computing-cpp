@@ -21,23 +21,33 @@ add_project_arguments(
 # dependencies
 
 cmake = import('cmake')
-cmake_opts = cmake.subproject_options()
-cmake_opts.add_cmake_defines({
+
+## valfuzz
+valfuzz_opts = cmake.subproject_options()
+valfuzz_opts.add_cmake_defines({
   'VALFUZZ_BUILD_SHARED': 'ON'
 })
 valfuzz_proj = cmake.subproject(
   'valfuzz',
-  options: cmake_opts
+  options: valfuzz_opts
 )
 valfuzz_dep = valfuzz_proj.dependency('valfuzz_shared')
+
+## tenno
+tenno_opts = cmake.subproject_options()
+tenno_opts.add_cmake_defines({
+  'TENNO_BUILD_SHARED': 'ON'
+})
+tenno_proj = cmake.subproject(
+  'tenno',
+  options: tenno_opts
+) 
+tenno_dep = tenno_proj.dependency('tenno_shared')
 
 # project
 
 base_sources = files(
-  'src/pc.cpp',
-  'src/ilp.cpp',
-  'src/pragma.cpp',
-  'src/bandwidth.cpp',
+  'src/transpose.cpp',
 )
 
 if get_option('PC_BUILD_OPTIMIZED_AGGRESSIVE')
@@ -53,7 +63,8 @@ if get_option('PC_BUILD_SHARED')
       'include',
     ],
     dependencies: [
-      valfuzz_dep
+      valfuzz_dep,
+      tenno_dep,
     ],
   )
 endif
@@ -64,19 +75,16 @@ if get_option('PC_BUILD_STATIC')
       'include',
     ],
     dependencies: [
-      valfuzz_dep
+      valfuzz_dep,
+      tenno_dep,
     ],
   )
 endif
 if get_option('PC_BUILD_TESTS')
   test_sources = files(
-    'tests/pc_test.cpp',
-    'tests/bandwidth_test.cpp',
-    'fuzz/pc_fuzz.cpp',
-    'benchmarks/pc_benchmark.cpp',
-    'benchmarks/array_operations_benchmark.cpp',
-    'benchmarks/pragma_benchmark.cpp',
-    'benchmarks/bandwidth_benchmark.cpp',
+    'tests/transpose_test.cpp',
+    'fuzz/transpose_fuzz.cpp',
+    'benchmarks/transpose_benchmark.cpp',
   )
   executable('tests',
     sources: [
@@ -87,7 +95,8 @@ if get_option('PC_BUILD_TESTS')
       'include',
     ],
     dependencies: [
-      valfuzz_dep
+      valfuzz_dep,
+      tenno_dep,
     ],
   )
 endif

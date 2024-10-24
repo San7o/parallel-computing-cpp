@@ -1,0 +1,6 @@
+[submodule "tenno-tl"]
+	path = tenno-tl
+	url = https://github.com/San7o/tenno-tl.git
+[submodule "valFuzz"]
+	path = valFuzz
+	url = https://github.com/San7o/valFuzz.git

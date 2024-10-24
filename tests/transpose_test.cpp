@@ -24,51 +24,61 @@
  *
  */
 
-#include <pc/pragma.hpp>
+#include <pc/transpose.hpp>
 #include <valfuzz/valfuzz.hpp>
+#include <tenno/ranges.hpp>
 
-BENCHMARK(pragma_mebchmark, "loop")
+TEST(transpose_matrix_test, "Matrix Transpose")
 {
-    size_t SIZE = 100000;
-    float *a = new float[SIZE];
-    float *b = new float[SIZE];
+    tenno::size N = 10;
+    float **M = new float *[N];
+    float **T = new float *[N];
+    for (auto i : tenno::range(N))
+    {
+        M[i] = new float[N];
+        for (auto j : tenno::range(N))
+        {
+            M[i][j] = valfuzz::get_random<float>();
+        }
+    }
+    for (auto i : tenno::range(N))
+    {
+        T[i] = new float[N];
+    }
 
-	auto run_original_loop = [a, b](size_t size) -> void {
-        for (size_t j = 0; j < size; ++j)
-            a[j] = b[j] * 2.0f;
+    pc::matTranspose(M, T, N);
 
-        pc::original_loop(a, b, size);
-        return;
-    };
-
-    RUN_BENCHMARK(100, run_original_loop(100));
-    RUN_BENCHMARK(1000, run_original_loop(1000));
-    RUN_BENCHMARK(10000, run_original_loop(10000));
-    RUN_BENCHMARK(100000, run_original_loop(100000));
-
-    delete[] a;
-    delete[] b;
+    for (auto i : tenno::range(N))
+    {
+        for (auto j : tenno::range(N))
+        {
+            ASSERT(M[i][j] == T[j][i]);
+        }
+    }
 }
 
-BENCHMARK(pragma_benchmark_vectorized, "vectorized_loop")
+TEST(check_sym_test, "Check Symmetry")
 {
-    size_t SIZE = 100000;
-    float *a = new float[SIZE];
-    float *b = new float[SIZE];
+    tenno::size N = 10;
+    float **M = new float *[N];
+    for (auto i : tenno::range(N))
+    {
+        M[i] = new float[N];
+        for (auto j : tenno::range(N))
+        {
+            M[i][j] = valfuzz::get_random<float>();
+        }
+    }
 
-    auto run_vectorized_loop = [a, b](size_t size) -> void {
-        for (size_t j = 0; j < size; ++j)
-            a[j] = b[j] * 2.0f;
+    ASSERT(pc::checkSym(M, N) == false);
 
-        pc::vectorized_loop(a, b, size);
-        return;
-    };
+    for (auto i : tenno::range(N))
+    {
+        for (auto j : tenno::range(N))
+        {
+            M[i][j] = M[j][i];
+        }
+    }
 
-    RUN_BENCHMARK(100, run_vectorized_loop(100));
-    RUN_BENCHMARK(1000, run_vectorized_loop(1000));
-    RUN_BENCHMARK(10000, run_vectorized_loop(10000));
-    RUN_BENCHMARK(100000, run_vectorized_loop(100000));
-
-    delete[] a;
-    delete[] b;
+    ASSERT(pc::checkSym(M, N) == true);
 }
