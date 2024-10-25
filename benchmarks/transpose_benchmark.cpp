@@ -25,14 +25,14 @@
  */
 
 #include <pc/transpose.hpp>
-#include <valfuzz/valfuzz.hpp>
 #include <tenno/ranges.hpp>
+#include <valfuzz/valfuzz.hpp>
 
-BENCHMARK(transpose_benchmark, "matrix transpose base")
+typedef float **matrix;
+
+float **init_matrix(tenno::size N)
 {
-    tenno::size N = 100;
     float **M = new float *[N];
-    float **T = new float *[N];
     for (auto i : tenno::range(N))
     {
         M[i] = new float[N];
@@ -41,36 +41,35 @@ BENCHMARK(transpose_benchmark, "matrix transpose base")
             M[i][j] = valfuzz::get_random<float>();
         }
     }
+    return M;
+}
+
+void delete_matrix(matrix M, tenno::size N)
+{
     for (auto i : tenno::range(N))
     {
-        T[i] = new float[N];
+        delete[] M[i];
     }
-
-    RUN_BENCHMARK(2 * 2 * sizeof(float), pc::matTranspose(M, T, 2));
-    RUN_BENCHMARK(4 * 4 * sizeof(float), pc::matTranspose(M, T, 4));
-    RUN_BENCHMARK(8 * 8 * sizeof(float), pc::matTranspose(M, T, 8));
-    RUN_BENCHMARK(16 * 16 * sizeof(float), pc::matTranspose(M, T, 16));
-    RUN_BENCHMARK(32 * 32 * sizeof(float), pc::matTranspose(M, T, 32));
-    RUN_BENCHMARK(64 * 64 * sizeof(float), pc::matTranspose(M, T, 64));
-    RUN_BENCHMARK(80 * 80 * sizeof(float), pc::matTranspose(M, T, 80));
-    RUN_BENCHMARK(100 * 100 * sizeof(float), pc::matTranspose(M, T, 100));
-
     delete[] M;
-    delete[] T;
+}
+
+BENCHMARK(transpose_benchmark, "matrix transpose base")
+{
+    tenno::size N = 32;
+    matrix M = init_matrix(N);
+    matrix T = init_matrix(N);
+
+    RUN_BENCHMARK(N * N * sizeof(float), pc::matTranspose(M, T, N));
+
+    delete_matrix(M, N);
+    delete_matrix(T, N);
 }
 
 BENCHMARK(check_sym_benchmark, "check symmetry base")
 {
-    tenno::size N = 100;
-    float **M = new float *[N];
-    for (auto i : tenno::range(N))
-    {
-        M[i] = new float[N];
-        for (auto j : tenno::range(N))
-        {
-            M[i][j] = valfuzz::get_random<float>();
-        }
-    }
+    tenno::size N = 32;
+    matrix M = init_matrix(N);
+
     // Make the matrix symmetric (worst case scenario)
     for (auto i : tenno::range(N))
     {
@@ -80,14 +79,7 @@ BENCHMARK(check_sym_benchmark, "check symmetry base")
         }
     }
 
-    RUN_BENCHMARK(2 * 2 * sizeof(float), pc::checkSym(M, 2));
-    RUN_BENCHMARK(4 * 4 * sizeof(float), pc::checkSym(M, 4));
-    RUN_BENCHMARK(8 * 8 * sizeof(float), pc::checkSym(M, 8));
-    RUN_BENCHMARK(16 * 16 * sizeof(float), pc::checkSym(M, 16));
-    RUN_BENCHMARK(32 * 32 * sizeof(float), pc::checkSym(M, 32));
-    RUN_BENCHMARK(64 * 64 * sizeof(float), pc::checkSym(M, 64));
-    RUN_BENCHMARK(80 * 80 * sizeof(float), pc::checkSym(M, 80));
-    RUN_BENCHMARK(100 * 100 * sizeof(float), pc::checkSym(M, 100));
+    RUN_BENCHMARK(N * N * sizeof(float), pc::checkSym(M, N));
 
-    delete[] M;
+    delete_matrix(M, N);
 }

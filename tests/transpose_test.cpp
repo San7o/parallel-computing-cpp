@@ -25,8 +25,8 @@
  */
 
 #include <pc/transpose.hpp>
-#include <valfuzz/valfuzz.hpp>
 #include <tenno/ranges.hpp>
+#include <valfuzz/valfuzz.hpp>
 
 TEST(transpose_matrix_test, "Matrix Transpose")
 {
