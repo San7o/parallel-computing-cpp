@@ -28,24 +28,24 @@ OUTPUT_DIR=benchmarks/plotting/reports
 
 if [ -d $BUILD_DIR ]; then
     if [ -f "$BUILD_DIR/tests" ]; then
-        echo "Running regular benchmarks"
-        ./build/tests \
+        echo "Running regular benchmarks..."
+        ./$BUILD_DIR/tests \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
                 --report $OUTPUT_DIR/base.txt
     fi
     if [ -f "$BUILD_DIR/tests_opt" ]; then
-        echo "Running optimized benchmarks"
-        ./build/tests_opt \
+        echo "Running optimized benchmarks..."
+        ./$BUILD_DIR/tests_opt \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
                 --report $OUTPUT_DIR/opt.txt
     fi
     if [ -f "$BUILD_DIR/tests_opt_aggressive" ]; then
-        echo "Running aggressive optimized benchmarks"
-        ./build/tests_opt_aggressive \
+        echo "Running aggressive optimized benchmarks..."
+        ./$BUILD_DIR/tests_opt_aggressive \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
