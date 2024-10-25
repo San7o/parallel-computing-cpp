@@ -25,7 +25,9 @@ cmake = import('cmake')
 ## valfuzz
 valfuzz_opts = cmake.subproject_options()
 valfuzz_opts.add_cmake_defines({
-  'VALFUZZ_BUILD_SHARED': 'ON'
+  'VALFUZZ_BUILD_SHARED': 'ON',
+  'VALFUZZ_BUILD_OPTIMIZED': get_option('PC_BUILD_OPTIMIZED'),
+  'VALFUZZ_BUILD_OPTIMIZED_AGGRESSIVE': get_option('PC_BUILD_OPTIMIZED_AGGRESSIVE'),
 })
 valfuzz_proj = cmake.subproject(
   'valfuzz',
@@ -36,7 +38,9 @@ valfuzz_dep = valfuzz_proj.dependency('valfuzz_shared')
 ## tenno
 tenno_opts = cmake.subproject_options()
 tenno_opts.add_cmake_defines({
-  'TENNO_BUILD_SHARED': 'ON'
+  'TENNO_BUILD_SHARED': 'ON',
+  'TENNO_BUILD_OPTIMIZED': get_option('PC_BUILD_OPTIMIZED'),
+  'TENNO_BUILD_OPTIMIZED_AGGRESSIVE': get_option('PC_BUILD_OPTIMIZED_AGGRESSIVE'),
 })
 tenno_proj = cmake.subproject(
   'tenno',

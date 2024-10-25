@@ -21,35 +21,36 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-#
-# ---------------------------------------------------------------------------- #
-# 
-# This script is part of the modern cpp template project. It is used to set the
-# name of the project and update all the files that contain the old name.
-#
-# ---------------------------------------------------------------------------- #
 
-if [ $# -ne 1 ]; then
-    echo "Usage: $0 <project-name>"
-    exit 1
+NUM_ITERATIONS=1000
+BUILD_DIR="build"
+OUTPUT_DIR=benchmarks/plotting/reports
+
+if [ -d $BUILD_DIR ]; then
+    if [ -f "$BUILD_DIR/tests" ]; then
+        echo "Running regular benchmarks"
+        ./build/tests \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/base.txt
+    fi
+    if [ -f "$BUILD_DIR/tests_opt" ]; then
+        echo "Running optimized benchmarks"
+        ./build/tests_opt \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt.txt
+    fi
+    if [ -f "$BUILD_DIR/tests_opt_aggressive" ]; then
+        echo "Running aggressive optimized benchmarks"
+        ./build/tests_opt_aggressive \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_aggressive.txt
+    fi
+else
+    echo "Please run the build script first"
 fi
-
-PROJECT_NAME=$1
-echo "Setting project name to $PROJECT_NAME"
-
-# ${PROJECT_NAME,,} Lowercase
-# ${PROJECT_NAME^^} Uppercase
-
-echo "Substituting names..."
-grep -r "pc" -l --exclude-dir=".git/" | tr '\n' ' ' | xargs sed -i "s/pc/${PROJECT_NAME,,}/g"
-grep -r "PC" -l --exclude-dir=".git/" | tr '\n' ' ' | xargs sed -i "s/PC/${PROJECT_NAME^^}/g"
-
-echo "Renaming files..."
-if [ -d "src/mylib" ]; then
-        mv src/mylib src/${PROJECT_NAME,,}
-fi
-find . -type f -name '*mylib*' -path "./git" -prune | while read file; do
-        mv "$file" "${file//mylib/$PROJECT_NAME}";
-done
-
-echo "Done"

@@ -50,6 +50,11 @@ The library uses [valFuzz](https://github.com/San7o/valFuzz) for testing
 ./build/tests --benchmark  # run benchmarks
 ```
 
+To run benchmarks with multiple targets, please use [run-benchmarks.sh](./run-benchmarks.sh)
+```bash
+./run-benchmarks.sh
+```
+
 ## Documentation
 
 The library uses doxygen for documentation, to build the html documentation run:
