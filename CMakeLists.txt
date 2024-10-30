@@ -26,6 +26,7 @@ set(PC_TEST_HEADERS)
 set(PC_LINK_LIBRARIES pthread)
 
 option(PC_USE_CLANG "Use clang" OFF)
+option(PC_USE_OPENMP "Compile with OpenMP" ON)
 option(PC_BUILD_TESTS "Build tests" ON)
 option(PC_BUILD_SHARED "Build shared library" OFF)
 option(PC_BUILD_STATIC "Build static library" OFF)
@@ -53,7 +54,13 @@ CPMAddPackage(
     DOWNLOAD_ONLY True
 )
 if (valfuzz_ADDED)
-    list(APPEND PC_TEST_SOURCES ${valfuzz_SOURCE_DIR}/src/valfuzz.cpp)
+    list(APPEND PC_TEST_SOURCES
+        ${valfuzz_SOURCE_DIR}/src/valfuzz.cpp
+        ${valfuzz_SOURCE_DIR}/src/benchmark.cpp
+        ${valfuzz_SOURCE_DIR}/src/fuzz.cpp
+        ${valfuzz_SOURCE_DIR}/src/test.cpp
+        ${valfuzz_SOURCE_DIR}/src/common.cpp
+    )
     list(APPEND PC_TEST_HEADERS ${valfuzz_SOURCE_DIR}/include)
 endif()
 if (tenno_ADDED)
@@ -65,6 +72,15 @@ if(PC_USE_CLANG)
     set(CMAKE_CXX_COMPILER clang++)
     list(APPEND PC_COMPILE_OPTIONS -std=c++23 -fexperimental-library)
     list(APPEND PC_LINK_LIBRARIES -fexperimental-library)
+endif()
+if (PC_USE_OPENMP)
+    find_package(OpenMP)
+    if(OpenMP_CXX_FOUND)
+        message("Compiling with OpenMP")
+        list(APPEND PC_LINK_LIBRARIES OpenMP::OpenMP_CXX)
+    else()
+        message(ERROR "OpenMP not found in your system")
+    endif()
 endif()
 if(PC_BUILD_SHARED)
     add_library(pc_shared SHARED ${PC_SOURCES})

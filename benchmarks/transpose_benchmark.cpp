@@ -83,3 +83,63 @@ BENCHMARK(check_sym_benchmark, "check symmetry base")
 
     delete_matrix(M, N);
 }
+
+// #pragma omp somedirective [clause [[,] clause ] ...] new-line
+// 
+// examples
+// pragma omp for
+// - private(list)
+// - reduction([reduction-modifier,] reduction-identifier: list)
+// - schedule(type[, chunk])
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+/*
+// Check openMP number of threads
+BENCHMARK(print_threads_benchmark, "print threads")
+{
+#ifdef _OPENMP
+  int i = omp_get_thread_num();
+#else
+  int i = -1;
+#endif
+  std::cout << "Threads: " << i << "\n";
+}
+*/
+
+// Vector sum
+void vector_sum(float *vector, std::size_t size, float *sum)
+{
+  for (std::size_t i = 0; i < size; i++)
+    {
+      *sum += vector[i];
+    }
+}
+
+void vector_sum_parallel(float *vector, std::size_t size, float *sum)
+{
+  #pragma omp for
+  for (std::size_t i = 0; i < size; i++)
+    {
+      // #pragma omp critical
+      // With critical, the performance is incredibly slower
+      // because the threads need to synchronyze
+      *sum += vector[i];
+    }
+}
+
+BENCHMARK(vecotr_sum, "vector sum")
+{
+  const std::size_t size = 100000;
+  float *vector = new float[size];
+  for (std::size_t i = 0; i < size; i++)
+    {
+      //is clear???
+      vector[i] = (float) i / 2; 
+    }
+  float sum = 0;
+  RUN_BENCHMARK(size*sizeof(float), vector_sum(vector, size, &sum));
+  RUN_BENCHMARK(size*sizeof(float), vector_sum_parallel(vector, size, &sum));
+  delete[] vector;
+}
