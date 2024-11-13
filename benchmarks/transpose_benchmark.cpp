@@ -65,6 +65,18 @@ BENCHMARK(transpose_benchmark, "matrix transpose base")
     delete_matrix(T, N);
 }
 
+BENCHMARK(transpose_half_benchmark, "matrix transpose half")
+{
+    tenno::size N = 32;
+    matrix M = init_matrix(N);
+    matrix T = init_matrix(N);
+
+    RUN_BENCHMARK(N * N * sizeof(float), pc::matTransposeHalf(M, T, N));
+
+    delete_matrix(M, N);
+    delete_matrix(T, N);
+}
+
 BENCHMARK(check_sym_benchmark, "check symmetry base")
 {
     tenno::size N = 32;

@@ -28,11 +28,22 @@
 
 #include <tenno/types.hpp>
 
+/*
+ * Ideas:
+ * - look at some implementation like
+     std c++26 transposed (standard) and It's current
+     implementation (gnu, clang, microsoft)
+*/
 namespace pc
 {
 
-// TODO: __restrict__
 void matTranspose(float **M, float **T, tenno::size N);
+void matTransposeHalf(float **M, float **T, tenno::size N);
+
+// TODO: how the compiler performs with __restrict__
+// TODO: SIMD
+// TODO: omp with blocks
+  
 bool checkSym(float **M, tenno::size N);
 
 } // namespace pc

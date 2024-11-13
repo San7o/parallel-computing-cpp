@@ -57,6 +57,34 @@ TEST(transpose_matrix_test, "Matrix Transpose")
     }
 }
 
+TEST(transpose_matrix_half_test, "Matrix Transpose Half")
+{
+    tenno::size N = 10;
+    float **M = new float *[N];
+    float **T = new float *[N];
+    for (auto i : tenno::range(N))
+    {
+        M[i] = new float[N];
+        for (auto j : tenno::range(N))
+        {
+            M[i][j] = valfuzz::get_random<float>();
+        }
+    }
+    for (auto i : tenno::range(N))
+    {
+        T[i] = new float[N];
+    }
+
+    pc::matTransposeHalf(M, T, N);
+
+    for (auto i : tenno::range(N))
+    {
+        for (auto j : tenno::range(N))
+        {
+            ASSERT(M[i][j] == T[j][i]);
+        }
+    }
+}
 TEST(check_sym_test, "Check Symmetry")
 {
     tenno::size N = 10;
