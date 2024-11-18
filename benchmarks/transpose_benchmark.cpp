@@ -109,6 +109,7 @@ BENCHMARK(print_threads_benchmark, "print threads")
 */
 
 // Vector sum
+/*
 void vector_sum(float *vector, std::size_t size, float *sum)
 {
   for (std::size_t i = 0; i < size; i++)
@@ -142,4 +143,53 @@ BENCHMARK(vecotr_sum, "vector sum")
   RUN_BENCHMARK(size*sizeof(float), vector_sum(vector, size, &sum));
   RUN_BENCHMARK(size*sizeof(float), vector_sum_parallel(vector, size, &sum));
   delete[] vector;
+}
+*/
+
+// #pragma onp for collapse(2)  // This will parallelize two nested for loops
+// note: the for loop can contain only one line
+
+void serial_matrix_multiplication(float **M1, float ** M2, float **R, tenno::size N)
+{
+  for (tenno::size i = 0; i < N; ++i)
+    for (tenno::size j = 0; j < N; ++j)
+      for (tenno::size k = 0; k < N; ++k)
+	R[i][j] = M1[i][k] * M2[k][i];
+}
+
+BENCHMARK(serial_matrix_multiplication_bench, "Serial Matrix Mul")
+{
+  tenno::size N = 10;
+  float **mat1 = init_matrix(N);
+  float **mat2 = init_matrix(N);
+  float **mat3 = init_matrix(N);
+
+  RUN_BENCHMARK(N*N*sizeof(float), serial_matrix_multiplication(mat1, mat2, mat3, N));
+
+  delete_matrix(mat1, N);
+  delete_matrix(mat2, N);
+  delete_matrix(mat3, N);
+}
+
+void parallel_matrix_multiplication(float **M1, float ** M2, float **R, tenno::size N)
+{
+  #pragma omp for collapse(2)
+  for (tenno::size i = 0; i < N; ++i)
+    for (tenno::size j = 0; j < N; ++j)
+      for (tenno::size k = 0; k < N; ++k)
+	R[i][j] = M1[i][k] * M2[k][i];
+}
+
+BENCHMARK(parallel_matrix_multiplication_bench, "Parallel Matrix Mul")
+{
+  tenno::size N = 10;
+  float **mat1 = init_matrix(N);
+  float **mat2 = init_matrix(N);
+  float **mat3 = init_matrix(N);
+
+  RUN_BENCHMARK(N*N*sizeof(float), parallel_matrix_multiplication(mat1, mat2, mat3, N));
+
+  delete_matrix(mat1, N);
+  delete_matrix(mat2, N);
+  delete_matrix(mat3, N);
 }

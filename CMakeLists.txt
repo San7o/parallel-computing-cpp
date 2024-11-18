@@ -54,14 +54,10 @@ CPMAddPackage(
     DOWNLOAD_ONLY True
 )
 if (valfuzz_ADDED)
-    list(APPEND PC_TEST_SOURCES
-        ${valfuzz_SOURCE_DIR}/src/valfuzz.cpp
-        ${valfuzz_SOURCE_DIR}/src/benchmark.cpp
-        ${valfuzz_SOURCE_DIR}/src/fuzz.cpp
-        ${valfuzz_SOURCE_DIR}/src/test.cpp
-        ${valfuzz_SOURCE_DIR}/src/common.cpp
-    )
+    message("Using valufzz")
     list(APPEND PC_TEST_HEADERS ${valfuzz_SOURCE_DIR}/include)
+    add_subdirectory(${valfuzz_SOURCE_DIR})
+    list(APPEND PC_LINK_LIBRARIES valfuzz_shared)
 endif()
 if (tenno_ADDED)
     list(APPEND PC_HEADERS ${tenno_SOURCE_DIR}/include)
