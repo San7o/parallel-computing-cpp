@@ -16,7 +16,11 @@ set(PC_SOURCES
         src/transpose.cpp
 )
 set(PC_HEADERS include)
-set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic -Werror -Wconversion -Wshadow)
+set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic
+		       -Werror -Wconversion -Wshadow
+		       -ftemplate-depth=4096
+		       -fconstexpr-depth=4096
+)
 set(PC_TEST_SOURCES
         tests/transpose_test.cpp
         fuzz/transpose_fuzz.cpp
@@ -53,11 +57,24 @@ CPMAddPackage(
     DOWNLOAD_ONLY True
 )
 if (valfuzz_ADDED)
-    list(APPEND PC_TEST_SOURCES ${valfuzz_SOURCE_DIR}/src/valfuzz.cpp)
+   message("Using valfuzz")
     list(APPEND PC_TEST_HEADERS ${valfuzz_SOURCE_DIR}/include)
+    add_subdirectory(${valfuzz_SOURCE_DIR})
+    list(APPEND PC_LINK_LIBRARIES valfuzz_shared)
 endif()
 if (tenno_ADDED)
+   message("Using tenno")
     list(APPEND PC_HEADERS ${tenno_SOURCE_DIR}/include)
+endif()
+
+# OpenMP
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    message("Compiling with OpenMP")
+    list(APPEND PC_LINK_OPTIONS OpenMP::OpenMP_CXX)
+    list(APPEND PC_COMPILE_OPTIONS -D openMP)
+else()
+    message(ERROR "OpenMP not found in your system")
 endif()
 
 if(PC_USE_CLANG)

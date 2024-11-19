@@ -28,3 +28,80 @@
 /// 
 /// \mainpage pc documentation
 ///
+/// \section input Generating the input matrixes
+
+Ensuring Fairness
+
+/* Why do we want reproducible results? */
+
+In order to achieve reproducible results
+we need to ensure fair conditions for each benchmark.
+While in algorithms' theory It is possible to matematically
+evaluate the time complexity of an algorithm assuming /* qui una cite a qualcosa che ho letto a vigolo */
+a certain model, during benchmarks we may report different
+results depending on the initial state of the machine or
+the current processing load in a multi-user operative system.
+For example other users may be running different processes,
+therefore taking up resources. Some of these problems are
+inheritly found in preemptive systems, however there are various
+strategies an user can apply to reduce the variance
+of the results.
+
+/* LLVM COnsigli, google benchmark consiglietti */ 
+
+\section input Generating the input
+
+Another source of unfairness is the choice of the input as
+some algorithms may favour a certain input over another.
+For example, checkSymm
+may take a long time if every value of the matrix needs to
+be checked, however It may take less time if the input
+is arranged differently as the algorithm may quickly discover
+that two values are different because they differ earlier in
+the input. To prevent this, the algorithms will be provided with use the worst
+case scenario for their specific case, which for checkSymm is
+a symmetric matrix.
+
+The distribution of the input values is
+another factor that may resolve in unfairness between
+the benchmarks. Without making any assumptions on the specific
+use cases of the algorithms we will discuss later, every
+value should have equal probability to occur in the input.
+An uniform real number distribution was used to generate
+the input data (#formula). A standard implementation is
+provided by std::uniform_real_distribution from the C++
+Standard Library, however benchmarks show that
+the random number generation is slow and often takes more
+time than the algorithms themselves for large input.
+
+/* show data */
+
+In order to save time, energy (and probably money)
+ a faster method for generating pseudo random
+numbers was necessary.
+
+/* look at research, different methods */
+
+The novel implementation of the algorithm /*name*/
+leverages on compile time pseudo number generation
+using constexpr functions and a seed provided a
+ to the compiler. This saves
+compilation time as the object file (.o) will need to
+be compiled only once and reused when compiling
+other targets of the same project. Additionaly it
+greatly improves runtime performance as all the calculations
+have already been made at compile time. Indeed generating the
+entire input at compile time is an efficient way of
+initializing the input, however for large input size
+this may exceed the stack's own size causing a segmentation
+fault. The final implementation used in the benchmarks
+will use dynamically allocated arrays that will be
+filled in chunks by compile-time generated random
+values. This algorithm is part of "libtenno":
+an implementation of a superset
+of the C++23 (and the yet unofficial c++26) standard library.
+Other features of "libtenno" have been greately used to aid
+the developement of the benchmarks such as ranges and
+arrays.
+
+/* show distribution plot */

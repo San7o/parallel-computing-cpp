@@ -114,3 +114,24 @@ Target-Specific Optimization Flags:
 valgrind --tool=cachegrind ./executable
 cg_annotate cachegrind.out.<pid>
 ```
+
+## Perf
+List events:
+```
+perf list
+```
+
+Create a report:
+```bash
+perf record [-e <event>,...] <command>
+```
+
+Read the report:
+```bash
+perf report
+```
+
+Get more statistics:
+```bash
+perf stat <command>
+```

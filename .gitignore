@@ -3,3 +3,4 @@ generated_docs/
 deps/
 bazel-*
 update/
+perf.data

@@ -26,72 +26,108 @@
 
 #include <pc/transpose.hpp>
 #include <tenno/ranges.hpp>
+#include <tenno/random.hpp>
 #include <valfuzz/valfuzz.hpp>
 
-typedef float **matrix;
+#define PC_MATRIX_MAX_SIZE 2<<12
+#define PC_RANDOM_MATRIX_SIZE 256
 
-float **init_matrix(tenno::size N)
+typedef float** matrix;
+
+/* Using a global matrix so that it will be
+ * initialized only once */
+matrix matrix_in;
+matrix matrix_out;
+
+constexpr tenno::array<float, PC_RANDOM_MATRIX_SIZE> random_arr1()
 {
-    float **M = new float *[N];
-    for (auto i : tenno::range(N))
-    {
-        M[i] = new float[N];
-        for (auto j : tenno::range(N))
-        {
-            M[i][j] = valfuzz::get_random<float>();
-        }
-    }
-    return M;
+    constexpr unsigned int seed1 = 1337;
+    constexpr float min = 0.0f;
+    constexpr float max = 0.5f;
+    return tenno::random_array<PC_RANDOM_MATRIX_SIZE>(seed1, min, max);
 }
 
-void delete_matrix(matrix M, tenno::size N)
+constexpr tenno::array<float, PC_RANDOM_MATRIX_SIZE> random_arr2()
 {
-    for (auto i : tenno::range(N))
+    constexpr unsigned int seed2 = 892424;
+    constexpr float min = 0.0f;
+    constexpr float max = 0.5f;
+    return tenno::random_array<PC_RANDOM_MATRIX_SIZE>(seed2, min, max);
+}
+
+matrix matrix_alloc(tenno::size N)
+{
+  matrix M = new float*[N];
+  for (const auto i : tenno::range(N))
     {
-        delete[] M[i];
+      M[i] = new float[N];
     }
-    delete[] M;
+  return M;
+}
+
+void matrix_init(matrix M, tenno::size N)
+{
+  constexpr auto arr1 = random_arr1();
+  constexpr auto arr2 = random_arr2();
+
+  for (const auto i : tenno::range(N))
+    for (const auto j : tenno::range(N))
+      {
+	/* Using random, very slow */
+	// M[i][j] = valfuzz::get_random<float>();
+
+	/* Using constexpr random, very fast */
+	M[i][j] = arr1[i % PC_RANDOM_MATRIX_SIZE] + arr2[j % PC_RANDOM_MATRIX_SIZE];
+      }
+}
+
+void matrix_free(matrix M, tenno::size N)
+{
+  for (const auto i : tenno::range(N))
+    delete[] M[i];
+  delete[]  M;
+}
+
+/* Execute this before any benchmark */
+BEFORE()
+{
+  matrix_in = matrix_alloc(PC_MATRIX_MAX_SIZE);
+  matrix_init(matrix_in, PC_MATRIX_MAX_SIZE);
+  matrix_out = matrix_alloc(PC_MATRIX_MAX_SIZE);
+}
+
+AFTER()
+{
+  matrix_free(matrix_in, PC_MATRIX_MAX_SIZE);
+  matrix_free(matrix_out, PC_MATRIX_MAX_SIZE);
 }
 
 BENCHMARK(transpose_benchmark, "matrix transpose base")
 {
-    tenno::size N = 32;
-    matrix M = init_matrix(N);
-    matrix T = init_matrix(N);
-
-    RUN_BENCHMARK(N * N * sizeof(float), pc::matTranspose(M, T, N));
-
-    delete_matrix(M, N);
-    delete_matrix(T, N);
+    tenno::size N = 1024;
+    RUN_BENCHMARK(N * N * sizeof(float),
+		  pc::matTranspose(matrix_in, matrix_out, N));
 }
 
 BENCHMARK(transpose_half_benchmark, "matrix transpose half")
 {
-    tenno::size N = 32;
-    matrix M = init_matrix(N);
-    matrix T = init_matrix(N);
-
-    RUN_BENCHMARK(N * N * sizeof(float), pc::matTransposeHalf(M, T, N));
-
-    delete_matrix(M, N);
-    delete_matrix(T, N);
+    tenno::size N = 1024;
+    RUN_BENCHMARK(N * N * sizeof(float),
+		  pc::matTransposeHalf(matrix_in, matrix_out, N));
 }
 
 BENCHMARK(check_sym_benchmark, "check symmetry base")
 {
-    tenno::size N = 32;
-    matrix M = init_matrix(N);
-
+    tenno::size N = 1024;
     // Make the matrix symmetric (worst case scenario)
     for (auto i : tenno::range(N))
     {
         for (auto j : tenno::range(i, N))
         {
-            M[i][j] = M[j][i];
+            matrix_in[i][j] = matrix_out[j][i];
         }
     }
 
-    RUN_BENCHMARK(N * N * sizeof(float), pc::checkSym(M, N));
-
-    delete_matrix(M, N);
+    RUN_BENCHMARK(N * N * sizeof(float),
+		  pc::checkSym(matrix_in, N));
 }
