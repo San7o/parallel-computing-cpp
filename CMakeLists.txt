@@ -47,13 +47,13 @@ CPMAddPackage(
 CPMAddPackage(
     NAME valfuzz
     GITHUB_REPOSITORY San7o/valFuzz
-    GIT_TAG v1.1.0-alpha
+    GIT_TAG v1.1.0
     DOWNLOAD_ONLY True
 )
 CPMAddPackage(
     NAME tenno
     GITHUB_REPOSITORY San7o/tenno-tl
-    GIT_TAG v.0.1.0
+    GIT_TAG v0.1.1
     DOWNLOAD_ONLY True
 )
 if (valfuzz_ADDED)
