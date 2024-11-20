@@ -60,7 +60,7 @@ use is advised.
 
 ### On NixOS
 
-On NixOS, you can enter the compiler and the developement
+On NixOS, you can enter the developement
 environment using [flake.nix](./flake.nix):
 
 ```bash
@@ -120,7 +120,7 @@ bazel build //:first_assignment
 
 The binaries will be generated in `bazel-bin`
 
-### meson
+### Using meson
 
 To build with meson, run the following:
 
@@ -142,7 +142,7 @@ the help message with `--help`:
 ./build/tests --help
 ./build/tests --benchmark          \
               --num-iterations 100 \
-			  --report report.txt
+              --report report.txt
 ```
 
 If you built optimized targets (on cmake using `PC_BUILD_OPTIMIZED`
@@ -173,7 +173,7 @@ qsub ./cluster/first-assignment/fist-assignment.pbs
 ```
 
 the script will generate reports in `benchamrks/plotting/reports/`
-contains collected data in csv format.
+containing collected data in csv format.
 
 ## Additional Information
 
