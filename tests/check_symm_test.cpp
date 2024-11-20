@@ -24,15 +24,14 @@
  *
  */
 
-#include <pc/transpose.hpp>
+#include <pc/check_symm.hpp>
 #include <tenno/ranges.hpp>
 #include <valfuzz/valfuzz.hpp>
 
-TEST(transpose_matrix_test, "Matrix Transpose")
+TEST(check_sym_test, "Check Symmetry")
 {
     tenno::size N = 10;
     float **M = new float *[N];
-    float **T = new float *[N];
     for (auto i : tenno::range(N))
     {
         M[i] = new float[N];
@@ -41,47 +40,16 @@ TEST(transpose_matrix_test, "Matrix Transpose")
             M[i][j] = valfuzz::get_random<float>();
         }
     }
-    for (auto i : tenno::range(N))
-    {
-        T[i] = new float[N];
-    }
 
-    pc::matTranspose(M, T, N);
+    ASSERT(pc::checkSym(M, N) == false);
 
     for (auto i : tenno::range(N))
     {
         for (auto j : tenno::range(N))
         {
-            ASSERT(M[i][j] == T[j][i]);
+            M[i][j] = M[j][i];
         }
     }
-}
 
-TEST(transpose_matrix_half_test, "Matrix Transpose Half")
-{
-    tenno::size N = 10;
-    float **M = new float *[N];
-    float **T = new float *[N];
-    for (auto i : tenno::range(N))
-    {
-        M[i] = new float[N];
-        for (auto j : tenno::range(N))
-        {
-            M[i][j] = valfuzz::get_random<float>();
-        }
-    }
-    for (auto i : tenno::range(N))
-    {
-        T[i] = new float[N];
-    }
-
-    pc::matTransposeHalf(M, T, N);
-
-    for (auto i : tenno::range(N))
-    {
-        for (auto j : tenno::range(N))
-        {
-            ASSERT(M[i][j] == T[j][i]);
-        }
-    }
+    ASSERT(pc::checkSym(M, N) == true);
 }

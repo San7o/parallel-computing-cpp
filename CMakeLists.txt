@@ -14,6 +14,7 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 
 set(PC_SOURCES
         src/transpose.cpp
+        src/check_symm.cpp
 )
 set(PC_HEADERS include)
 set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic
@@ -23,8 +24,9 @@ set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic
 )
 set(PC_TEST_SOURCES
         tests/transpose_test.cpp
+        tests/check_symm_test.cpp
         fuzz/transpose_fuzz.cpp
-        benchmarks/transpose_benchmark.cpp
+        benchmarks/benchmarks.cpp
 )
 set(PC_TEST_HEADERS)
 set(PC_LINK_LIBRARIES pthread)
@@ -71,8 +73,9 @@ endif()
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
     message("Compiling with OpenMP")
-    list(APPEND PC_LINK_OPTIONS OpenMP::OpenMP_CXX)
-    list(APPEND PC_COMPILE_OPTIONS -D openMP)
+    list(APPEND PC_LINK_LIBRARIES OpenMP::OpenMP_CXX)
+    list(APPEND PC_COMPILE_OPTIONS -D openMP
+                                      -fopenmp -fopenmp-simd)
 else()
     message(ERROR "OpenMP not found in your system")
 endif()
@@ -115,9 +118,9 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
     endif()
     if (PC_BUILD_OPTIMIZED_AGGRESSIVE)
         message("Building aggressive optimized target")
-        add_executable(tests_ops_aggressive ${PC_SOURCES} ${PC_TEST_SOURCES})
-        target_include_directories(tests_ops_aggressive PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
-        target_compile_options(tests_ops_aggressive PRIVATE ${PC_COMPILE_OPTIONS} -O3 -march=native -Ofast)
-        target_link_libraries(tests_ops_aggressive PRIVATE ${PC_LINK_LIBRARIES})
+        add_executable(tests_opt_aggressive ${PC_SOURCES} ${PC_TEST_SOURCES})
+        target_include_directories(tests_opt_aggressive PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
+        target_compile_options(tests_opt_aggressive PRIVATE ${PC_COMPILE_OPTIONS} -O3 -march=native -Ofast)
+        target_link_libraries(tests_opt_aggressive PRIVATE ${PC_LINK_LIBRARIES})
     endif()
 endif()

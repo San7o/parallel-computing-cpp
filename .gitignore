@@ -4,3 +4,4 @@ deps/
 bazel-*
 update/
 perf.data
+info.txt

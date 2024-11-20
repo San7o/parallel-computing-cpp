@@ -82,7 +82,7 @@ numbers was necessary.
 
 /* look at research, different methods */
 
-The novel implementation of the algorithm /*name*/
+The novel implementation of the algorithm /*name*/    /* magari chiamarla novel e' un po' troppo senza aver discusso gli altri */
 leverages on compile time pseudo number generation
 using constexpr functions and a seed provided a
  to the compiler. This saves
