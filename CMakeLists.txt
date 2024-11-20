@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.15.4)
 project(
     pc 
-    VERSION 1.0
     LANGUAGES CXX
 )
 
@@ -49,7 +48,7 @@ CPMAddPackage(
 CPMAddPackage(
     NAME valfuzz
     GITHUB_REPOSITORY San7o/valFuzz
-    GIT_TAG v1.1.0
+    GIT_TAG v1.1.1
     DOWNLOAD_ONLY True
 )
 CPMAddPackage(

@@ -1,6 +1,7 @@
 # pc-first-assignment
 
 > name: Giovanni Santini
+
 > mat_id: 235441
 
 ## Index
@@ -24,16 +25,14 @@ all the necessary files to run the benchmarks on the cluster.
 
 There is a high level view of the structure of this repo:
 
-```
-root/
-- include: project's headers
-- src: algorithms implementation
-- benchmarks: all benchmarks
-  - plotting: python code to generate plots
-- tests: testing the algorithms
-- fuzz: fuzzing the algorithms
-- latex: report source code
-```
+- `include/`: project's headers
+- `src/`: algorithms implementation
+- `benchmarks/`: all benchmarks
+  - `plotting/`: python code to generate plots
+- `cluster/`: pbs files to run on the cluster
+- `tests/`: testing the algorithms
+- `fuzz/`: fuzzing the algorithms
+- `latex/`: report source code
 
 ## Dependencies
 
