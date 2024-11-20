@@ -25,7 +25,7 @@
           name = "gcc8-dev-shell";
           hardeningDisable = ["all"];
           packages = with pkgsFor.${system}; [
-            gcc8                   # compiler
+            gcc8                    # compiler
             cmake                   # build system
             meson                   # build system
             ninja                   # build system
