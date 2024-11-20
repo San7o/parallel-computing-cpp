@@ -245,7 +245,7 @@ bool pc::checkSymOmp2Collapse(float **M, tenno::size N)
     bool thread_symm = false;
     #pragma omp for collapse(2)
     for (size_t i = 0; i < N; ++i)
-      for (size_t j = i; j < N; ++j)
+      for (size_t j = 0; j < N; ++j)
 	if (M[i][j] != M[j][i])
 	  thread_symm = false;
 
@@ -266,7 +266,7 @@ bool pc::checkSymOmp4Collapse(float **M, tenno::size N)
     bool thread_symm = false;
     #pragma omp for collapse(2)
     for (size_t i = 0; i < N; ++i)
-      for (size_t j = i; j < N; ++j)
+      for (size_t j = 0; j < N; ++j)
 	if (M[i][j] != M[j][i])
 	  thread_symm = false;
 
@@ -287,7 +287,7 @@ bool pc::checkSymOmp8Collapse(float **M, tenno::size N)
     bool thread_symm = false;
     #pragma omp for collapse(2)
     for (size_t i = 0; i < N; ++i)
-      for (size_t j = i; j < N; ++j)
+      for (size_t j = 0; j < N; ++j)
 	if (M[i][j] != M[j][i])
 	  thread_symm = false;
 
@@ -308,7 +308,7 @@ bool pc::checkSymOmp16Collapse(float **M, tenno::size N)
     bool thread_symm = false;
     #pragma omp for collapse(2)
     for (size_t i = 0; i < N; ++i)
-      for (size_t j = i; j < N; ++j)
+      for (size_t j = 0; j < N; ++j)
 	if (M[i][j] != M[j][i])
 	  thread_symm = false;
 
@@ -329,7 +329,7 @@ bool pc::checkSymOmp32Collapse(float **M, tenno::size N)
     bool thread_symm = false;
     #pragma omp for collapse(2)
     for (size_t i = 0; i < N; ++i)
-      for (size_t j = i; j < N; ++j)
+      for (size_t j = 0; j < N; ++j)
 	if (M[i][j] != M[j][i])
 	  thread_symm = false;
 
@@ -350,7 +350,7 @@ bool pc::checkSymOmp64Collapse(float **M, tenno::size N)
     bool thread_symm = false;
     #pragma omp for collapse(2)
     for (size_t i = 0; i < N; ++i)
-      for (size_t j = i; j < N; ++j)
+      for (size_t j = 0; j < N; ++j)
 	if (M[i][j] != M[j][i])
 	  thread_symm = false;
 

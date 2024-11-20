@@ -15,9 +15,17 @@ This project uses the following:
 
 ## Building
 
-This project supports `bazel`, `cmake` and `meson` builds.
+This project supports `cmake`, `bazel` and `meson` builds.
+
+### cmake
+
+```bash
+cmake -Bbuild
+cmake --build build -j 4
+```
 
 ### bazel
+
 To build with bazel, first clone the repository with `--recursive`:
 ```bash
 git clone --recursive https://github.com/San7o/parallel-computing-cpp.git
@@ -29,11 +37,6 @@ bazel build //:first_assignment
 ```
 The binaries will be generated in `bazel-bin`
 
-### cmake
-```bash
-cmake -Bbuild
-cmake --build build -j 4
-```
 ### meson
 
 ```bash
@@ -42,6 +45,7 @@ ninja -C build
 ```
 
 ## Testing
+
 The library uses [valFuzz](https://github.com/San7o/valFuzz) for testing
 ```c++
 ./build/tests              # run tests
@@ -63,8 +67,6 @@ make docs
 ```
 
 # Run on cluster:
-Setup the `.bashrc` with module load + alias.
-Do the same inside the `.bps` file.
 
 In `hello.pbs`:
 - set output files
@@ -73,7 +75,7 @@ In `hello.pbs`:
 - change the code to be compiled
 Send a job to the queue:
 ```bash
-qsum myProgram.pbs
+qsub myProgram.pbs
 ```
 Check that the job is executing:
 ```bash
@@ -86,6 +88,7 @@ qsub -I -q short_cpuQ
 Here we can compile and do everything
 
 ## Flags
+
 Optimization levels:
 ```
 -O0    # No optimization
@@ -110,12 +113,21 @@ Target-Specific Optimization Flags:
 ```
 
 ## Cache analysis
+
 ```bash
 valgrind --tool=cachegrind ./executable
 cg_annotate cachegrind.out.<pid>
 ```
 
+## Load Modules
+
+```bash
+module avail  # list modules
+module load <your module>
+```
+
 ## Perf
+
 List events:
 ```
 perf list

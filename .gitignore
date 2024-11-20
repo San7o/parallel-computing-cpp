@@ -5,3 +5,5 @@ bazel-*
 update/
 perf.data
 info.txt
+*~
+*#

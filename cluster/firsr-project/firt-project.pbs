@@ -1,0 +1,112 @@
+#!/bin/bash
+
+# BEGIN first-project.pbs
+
+# =========================================== #
+#                   PBS SETUP                 #
+# =========================================== #
+
+# Job name
+#PBS -N helloc
+# Output files
+#PBS -o ./out.txt
+#PBS -e ./error.txt
+# Queue name
+#PBS -q short_cpuQ
+# Set the maximum wall time
+#PBS -l walltime=0:20:00
+# Number of nodes, cpus, and amount of memory
+#PBS -l select=1:ncpus=4:mem=1G
+
+NUM_ITERATIONS=10
+BUILD_DIR=./build
+OUTPUT_DIR=benchmarks/plotting/reports
+INFO_FILE=$OUTPUT_DIR/info.txt
+# Load the necessary modules
+module load gcc91
+module load cmake-3.15.4
+# Select the working directory
+cd /home/giovanni.santini/parallel_programming/
+
+# =========================================== #
+#               BUILD THE TARGETS             #
+#                                             #
+#  Each executable contains all the necessary #
+#     benchmarks. Three executables will be   #
+#         generated: test, test_opt and       #
+#       test_opt_aggressive based on the      #
+# optimization level enabled in the compiler. #
+# =========================================== #
+
+CC=g++-9.1.0 cmake \
+	     -B BUILD_DIR \
+             -D PC_BUILD_OPTIMIZED=ON \
+             -D PC_BUILD_OPTIMIZED_AFGGRESSIVE=ON
+
+if [ ! -d ./build ]; then
+    echo "Build directory was not created" 
+    exit 1
+fi    
+if [ ! -f ./build/tests ]; then
+    echo "Target tests not found" 
+    exit 1
+fi
+
+# =========================================== #
+#            GENERATE THE INFO FILE           #
+#                                             #
+#   This file contains information about the  #
+#   system such as atchitecture, memory and   #
+#                kernel version.              #
+# =========================================== #
+
+touch $INFO_FILE
+if [ ! -f $INFO_FILE ]; then
+    echo "Error generating the info file"
+    exit 1
+fi
+echo "===== /proc/meminfo =====" > $INFO_FILE
+cat /proc/meminfo >> $INFO_FILE
+echo "===== /proc/cpuinfo =====" >> $INFO_FILE
+cat /proc/cpuinfo >> $INFO_FILE
+echo "========= lscpu =========" >> $INFO_FILE
+lscpu >> $INFO_FILE
+echo "========= uname =========" >> $INFO_FILE
+uname -a >> $INFO_FILE 
+
+# =========================================== #
+#                 RUN THE TESTS               #
+#                                             #
+#              Patience is advised            #
+# =========================================== #
+
+if [ -d $BUILD_DIR ]; then
+    if [ -f "$BUILD_DIR/tests" ]; then
+        echo "Running regular benchmarks..."
+        ./$BUILD_DIR/tests \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/base.txt
+    fi
+    if [ -f "$BUILD_DIR/tests_opt" ]; then
+        echo "Running optimized benchmarks..."
+        ./$BUILD_DIR/tests_opt \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt.txt
+    fi
+    if [ -f "$BUILD_DIR/tests_opt_aggressive" ]; then
+        echo "Running aggressive optimized benchmarks..."
+        ./$BUILD_DIR/tests_opt_aggressive \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_aggressive.txt
+    fi
+else
+    echo "Please run the build script first"
+fi
+
+# END first-project.pbs
