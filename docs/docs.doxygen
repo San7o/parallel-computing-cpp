@@ -48,6 +48,7 @@ strategies an user can apply to reduce the variance
 of the results.
 
 /* LLVM COnsigli, google benchmark consiglietti */ 
+/* SCHED_EXT linux 6.12 */
 
 \section input Generating the input
 
