@@ -139,15 +139,15 @@ more informations about possible flags, please consult
 the help message with `--help`:
 
 ```c++
-./build/tests --help
+module load gcc91 &&
+module load cmake-3.15.4 &&
 ./build/tests --benchmark          \
               --num-iterations 100 \
               --report report.txt
 ```
 
-If you built optimized targets (on cmake using `PC_BUILD_OPTIMIZED`
-and/or `PC_BUILD_OPTIMIZED_AGGRESSIVE`) you can easily run all the
-compiled targets with the [run-benchmarks.sh](./run-benchmarks.sh)
+If you built optimized targets (on cmake using `PC_BUILD_OPTIMIZED_O{1,2,3}`)
+you can easily run all the compiled targets with the [run-benchmarks.sh](./run-benchmarks.sh)
 script:
 
 ```bash
@@ -169,7 +169,9 @@ This file builds the binaries and executes them.
 To submit the script for execution, run:
 
 ```bash
-qsub ./cluster/first-assignment/fist-assignment.pbs
+export PC_PBS_FILE=/home/giovanni.santini/cluster/parallel-computing-cpp/first-assignment/first-assignment.pbs &&
+chmod +x $PC_PBS_FILE &&
+qsub $PC_PBS_FILE
 ```
 
 the script will generate reports in `benchamrks/plotting/reports/`
