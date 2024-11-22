@@ -26,6 +26,9 @@ NUM_ITERATIONS=10
 BUILD_DIR="build"
 OUTPUT_DIR=benchmarks/plotting/reports
 
+if [ ! -d $OUTPUT_DIR ]; then
+    mkdir $OUTPUT_DIR
+fi
 if [ -d $BUILD_DIR ]; then
     if [ -f "$BUILD_DIR/tests" ]; then
         echo "Running regular benchmarks..."
