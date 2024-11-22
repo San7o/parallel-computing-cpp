@@ -35,21 +35,29 @@ if [ -d $BUILD_DIR ]; then
                 --no-multithread \
                 --report $OUTPUT_DIR/base.txt
     fi
-    if [ -f "$BUILD_DIR/tests_opt" ]; then
+    if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
         echo "Running optimized benchmarks..."
-        ./$BUILD_DIR/tests_opt \
+        ./$BUILD_DIR/tests_opt_o1 \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt.txt
+                --report $OUTPUT_DIR/opt_o1.txt
     fi
-    if [ -f "$BUILD_DIR/tests_opt_aggressive" ]; then
-        echo "Running aggressive optimized benchmarks..."
-        ./$BUILD_DIR/tests_opt_aggressive \
+    if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
+        echo "Running optimized benchmarks..."
+        ./$BUILD_DIR/tests_opt_o2 \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_aggressive.txt
+                --report $OUTPUT_DIR/opt_o2.txt
+    fi
+    if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
+        echo "Running aggressive optimized benchmarks..."
+        ./$BUILD_DIR/tests_opt_o3 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o3.txt
     fi
 else
     echo "Please run the build script first"

@@ -84,8 +84,9 @@ cd parallel-computing-cpp &&
 cmake -Bbuild &&
 cmake --build build \
       -j $(nproc) \
-	  -D PC_BUILD_OPTIMIZED=ON \
-	  -D PC_BUILD_OPTIMIZED_AGGRESSIVE=ON
+	  -D PC_BUILD_OPTIMIZED_O1=ON \
+	  -D PC_BUILD_OPTIMIZED_O2=ON \
+	  -D PC_BUILD_OPTIMIZED_O3=ON
 ```
 
 Description of the arguments:

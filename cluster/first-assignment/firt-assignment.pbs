@@ -43,8 +43,9 @@ if [ -d ./$BUILD_DIR ]; then
 fi    
 cmake \
      -B $BUILD_DIR \
-     -D PC_BUILD_OPTIMIZED=ON \
-     -D PC_BUILD_OPTIMIZED_AGGRESSIVE=ON
+     -D PC_BUILD_OPTIMIZED_01=ON \
+     -D PC_BUILD_OPTIMIZED_02=ON \
+     -D PC_BUILD_OPTIMIZED_03=ON
 
 if [ ! -d ./$BUILD_DIR ]; then
     echo "Build directory was not created" 
@@ -99,22 +100,31 @@ if [ -d $BUILD_DIR ]; then
                 --report $OUTPUT_DIR/base.txt \
 		--reporter csv
     fi
-    if [ -f "$BUILD_DIR/tests_opt" ]; then
+    if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
         echo "Running optimized benchmarks..."
         ./$BUILD_DIR/tests_opt \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt.txt \
+                --report $OUTPUT_DIR/opt_o1.txt \
 		--reporter csv
     fi
-    if [ -f "$BUILD_DIR/tests_opt_aggressive" ]; then
+    if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
         echo "Running aggressive optimized benchmarks..."
-        ./$BUILD_DIR/tests_opt_aggressive \
+        ./$BUILD_DIR/tests_opt_o2 \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_aggressive.txt \
+                --report $OUTPUT_DIR/opt_o2.txt \
+		--reporter csv
+    fi
+    if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
+        echo "Running aggressive optimized benchmarks..."
+        ./$BUILD_DIR/tests_opt_o3 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o3.txt \
 		--reporter csv
     fi
 else
