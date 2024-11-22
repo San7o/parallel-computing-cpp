@@ -20,6 +20,7 @@ set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic
 		       -Werror -Wconversion -Wshadow
 		       -ftemplate-depth=4096
 		       -fconstexpr-depth=4096
+               -fexceptions
 )
 set(PC_TEST_SOURCES
         tests/transpose_test.cpp

@@ -1,3 +1,0 @@
-name,time,space
-"matrix transpose base",4.94284e-07,4096
-"check symmetry base",2.83804e-07,4096

@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-NUM_ITERATIONS=1000
+NUM_ITERATIONS=10
 BUILD_DIR="build"
 OUTPUT_DIR=benchmarks/plotting/reports
 
@@ -33,7 +33,8 @@ if [ -d $BUILD_DIR ]; then
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/base.txt
+                --report $OUTPUT_DIR/base.txt \
+                --reporter csv
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
         echo "Running optimized benchmarks..."
@@ -41,7 +42,8 @@ if [ -d $BUILD_DIR ]; then
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_o1.txt
+                --report $OUTPUT_DIR/opt_o1.txt \
+                --reporter csv
     fi
     if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
         echo "Running optimized benchmarks..."
@@ -49,7 +51,8 @@ if [ -d $BUILD_DIR ]; then
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_o2.txt
+                --report $OUTPUT_DIR/opt_o2.txt \
+                --reporter csv
     fi
     if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
         echo "Running aggressive optimized benchmarks..."
@@ -57,7 +60,8 @@ if [ -d $BUILD_DIR ]; then
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_o3.txt
+                --report $OUTPUT_DIR/opt_o3.txt \
+                --reporter csv
     fi
 else
     echo "Please run the build script first"
