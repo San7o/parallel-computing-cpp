@@ -1,4 +1,4 @@
-make_minimum_required(VERSION 3.15.4)
+cmake_minimum_required(VERSION 3.15.4)
 project(
     pc 
     LANGUAGES CXX
