@@ -81,24 +81,23 @@ To build the full benchmark suite, run the following command:
 ```bash
 git clone https://github.com/San7o/parallel-computing-cpp.git &&
 cd parallel-computing-cpp &&
-cmake -Bbuild &&
-cmake --build build \
-      -j $(nproc) \
+cmake -Bbuild \
 	  -D PC_BUILD_OPTIMIZED_O1=ON \
 	  -D PC_BUILD_OPTIMIZED_O2=ON \
 	  -D PC_BUILD_OPTIMIZED_O3=ON
+cmake --build build \
+      -j $(nproc)
 ```
 
 Description of the arguments:
 
+- `PC_BUILD_OPTIMIZED_O{1,2,3}=ON`: build a new target with specified
+    optimization level
 - `--build build`: output in the "build" directry
 - `-j $(nproc)`: build with maximum number of threads. nproc
   is part of the gnu utils, if you don't have access to the
   program you can manually select a number or remove this
   argument completly.
-- `PC_BUILD_OPTIMIZED=ON`: build a new target with optimization
-- `PC_BUILD_OPTIMIZED_AGGRESSIVE=ON`: build a new target with
-  the maximum optimizations available in the compiler
  
 Additional information:
 

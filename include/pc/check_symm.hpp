@@ -37,6 +37,7 @@ namespace pc
 \*============================================*/
 
 bool checkSym(float **M, tenno::size N);
+bool checkSymColumns(float **M, tenno::size N);
 
 
 /*============================================*\

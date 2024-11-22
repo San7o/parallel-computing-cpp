@@ -30,6 +30,16 @@ bool pc::checkSym(float **M, tenno::size N)
   return symm;
 }
 
+bool pc::checkSymColumns(float **M, tenno::size N)
+{
+  bool symm = true;
+  for (size_t i = 0; i < N; ++i)
+    for (size_t j = i; j < N; ++j)
+      if (M[j][i] != M[i][j])
+	symm = false;
+  return symm;
+}
+
 /*============================================*\
 |              IMPLICIT PARALLELISM            |
 \*============================================*/
