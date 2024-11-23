@@ -102,6 +102,36 @@ void pc::matTransposeColumns(float **M, float **T, tenno::size N)
 }
 
 
+/* linux kernel 6.12, lib/bch.c 562 */
+/* assuming a 16x16 matrix */
+void pc::matTransposeLinux(float **M, float **T, tenno::size N)
+{
+  for (j = 8; j != 0; j >>= 1, mask ^= (mask << j)) {
+    for (k = 0; k < 16; k = (k+j+1) & ~j) {
+      t = ((M[k] >> j)^M[k+j]) & mask;
+      M[k] ^= (t << j);
+      M[k+j] ^= t;
+    }
+  }
+}
+
+/* Linux strikes again arch/x86/crypto/aria-aesni-avc2-asm_64.S */
+/*
+  
+#define transpose_4x4(x0, x1, x2, x3, t1, t2)		\
+	vpunpckhdq x1, x0, t2;				\
+	vpunpckldq x1, x0, x0;				\
+							\
+	vpunpckldq x3, x2, t1;				\
+	vpunpckhdq x3, x2, x2;				\
+							\
+	vpunpckhqdq t1, x0, x1;				\
+	vpunpcklqdq t1, x0, x0;				\
+							\
+	vpunpckhqdq x2, t2, x3;				\
+	vpunpcklqdq x2, t2, x2;
+*/
+
 /*============================================*\
 |              IMPLICIT PARALLELISM            |
 \*============================================*/

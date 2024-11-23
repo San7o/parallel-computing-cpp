@@ -30,30 +30,109 @@
 ///
 /// \section input Generating the input matrixes
 
-Ensuring Fairness
+Abstract:
+This manuscript presents a new benchmarking
+framework for c++ programs.
 
-/* Why do we want reproducible results? */
+Introduction:
 
-In order to achieve reproducible results
-we need to ensure fair conditions for each benchmark.
+Modern CPU architectures provide vectorization units an multiple cores
+to increase performance.
+
+
+This case study will discuss...
+
+Yet there is space for new implementations..., the C++26 draft
+introduces math operations and transpose.
+For example, /* name */ reworked the implementation
+of various string operation in freeBSD's libc
+exploiting simd architecutres.
+/
+Despite being greately discussed algorithms, new implementations
+are still being discussed. For example, the freeBSD's
+SIMD-enhanced libc is an evergoing work-in-progress^(https://man.freebsd.org/cgi/man.cgi?simd(7)).
+Just last year, most of the string
+functions were reimplemented /* name the guys here */ exploiting
+vector instructions on many architectures, improving the overall performance of
+the standard library^(git blame on freebsd-src/lib/libc/amd64/string shows a lot of recent activity)
+
+A popular approach is not to compute the entire transpose,
+instead the transposed values are lazily calculated during
+regular matrix access, enably cost-free transposition.
+This is implemented in many math libraries...
+
+The problem of matrix tranposition is as old as computation
+is around. It is important in cryptography.
+
+Examples TODO:
+- in the 1960s NASA relied on matrix operations including
+  transposition for trajectory computations and data
+  analysis in missions like apollo
+  - transform coordinate systems in simulations for
+    trajectory optimization and navigation
+  - switching between earth-centered and spacevraft-
+    centered reference frames
+- von neumann and numerical methods
+- weather prediction (tyring's post war work)
+- nasa's image processig and signal analysis
+  - in the 1970s during missions like voyager and landsat,
+    NASA used tranposittion to transform signals
+- **fast fourier transform (FFT)** hevily used in signal
+  processing depend on transposing matrices for performance
+- linux memory management / scheduler
+  - calculate the number of times the transpose function
+    is called, then mention the command in the references
+
+CHECKED SOURCES:
+Matrix transpose was used in NASA's Apollo 11 Guidance
+Computer (AGC) to convert vectors in platenary coordinate system to
+basic ref. system (source: digitalized Apollo 11 guidance computer by Virtual AGC and MIT Museum. Code in Apollo-11/Comanche055/PLANETERY_INTERNAL_ORIENTATION.agc line 34; Apollo-11/Luminary099/ATTITUDE_MANEUVER_ROUTINE.agc line 441)
+Matrix transpose is used during backpropagation in neural networks to calculate the gradient
+
+Matrix transposition is used by Fourier Transform in the West
+(FFTW)^(The design and implementation of FFTW3 by Matteo
+Frigo and Steven G. Johnson mentions the word "transpose" 21 times),
+a popular library to calculate Fast Furier
+Transofrms, and in signal processing^("Transposing a matrix on a vector computer by Murray Dow"
+- has references to Fourier Transforms ans signal processing
+  transposes)
+
+/* simplementations */
+
+Mention the execution model (fork and join)
+over a simd shared memory? multi-user machine
+
+# Minimizing noise
+
 While in algorithms' theory It is possible to matematically
 evaluate the time complexity of an algorithm assuming /* qui una cite a qualcosa che ho letto a vigolo */
-a certain model, during benchmarks we may report different
-results depending on the initial state of the machine or
-the current processing load in a multi-user operative system.
-For example other users may be running different processes,
-therefore taking up resources. Some of these problems are
-inheritly found in preemptive systems, however there are various
-strategies an user can apply to reduce the variance
-of the results.
-
-/* LLVM COnsigli, google benchmark consiglietti */ 
-/* SCHED_EXT linux 6.12 */
+a model, during execution we may report different
+performances on the same machine depending on a multitude of factors including the starting state of the machine and
+dynamic process scheduling in multi-process system.
+For example other users may be running and terminating different processes on the same system,
+therefore competing for resources.
+We will refer to this performance-tampering factors as "noise".
+The Completely Fair Scheduler (CFS) and Earliest Virtual Deadline Frist (EEVDF) scheduler implemented in the Linux kernel /* link! */
+provide fairness on multiple processes assuming all have the same priority, still the number of running processes
+will tamper the performance making the results difficult to reproduce.
+Mesurement bias, that is an innocuous aspect in the experiment that may change the evaluation, is shown to be significant and common place.^(Producing Wrong Data Without Doing Anything Obviously Wring!) However there are various
+strategies that can be applied to reduce noise, infact the set of tools
+at our disposal is continuous evolution. In november 2024, Linux 6.12 merged  /* link!*/
+"sched_ext" to the main branch which enables the implementation of customizable
+and application-specific schedulers via Extended Berkeley Packet Filer (eBPF) for
+greater control over the system's performance.
+This latest addition can be paired with
+other techniques provided by the Linux kernel which include: disabling access space
+randomization, frequency scaling and turbo boost,
+reserving different cpus for the program being benchmarked
+and the benchmarking program (such as perf), enabling tmpfs
+to avoid writing to the real storage system, et al.^(https://llvm.org/docs/Benchmarking.html)
 
 \section input Generating the input
 
-Another source of unfairness is the choice of the input as
-some algorithms may favour a certain input over another.
+REWORK FROM HERE
+Another source of noise is the choice of the input as
+some algorithms or architectures may favour a certain input over another.  /* source?? */
 For example, checkSymm
 may take a long time if every value of the matrix needs to
 be checked, however It may take less time if the input
@@ -71,7 +150,7 @@ value should have equal probability to occur in the input.
 An uniform real number distribution was used to generate
 the input data (#formula). A standard implementation is
 provided by std::uniform_real_distribution from the C++
-Standard Library, however benchmarks show that
+Standard Library^link, however benchmarks show that
 the random number generation is slow and often takes more
 time than the algorithms themselves for large input.
 
@@ -85,17 +164,16 @@ numbers was necessary.
 
 The novel implementation of the algorithm /*name*/    /* magari chiamarla novel e' un po' troppo senza aver discusso gli altri */
 leverages on compile time pseudo number generation
-using constexpr functions and a seed provided a
+using recursive constexpr functions and a seed provided a
  to the compiler. This saves
-compilation time as the object file (.o) will need to
+compilation time as the object file (.o) needs to
 be compiled only once and reused when compiling
 other targets of the same project. Additionaly it
 greatly improves runtime performance as all the calculations
 have already been made at compile time. Indeed generating the
-entire input at compile time is an efficient way of
-initializing the input, however for large input size
-this may exceed the stack's own size causing a segmentation
-fault. The final implementation used in the benchmarks
+entire input has Its benefits, however for large input size
+this may exceed the max recursion threshold of the machine.
+The final implementation used in the benchmarks
 will use dynamically allocated arrays that will be
 filled in chunks by compile-time generated random
 values. This algorithm is part of "libtenno":
@@ -106,3 +184,7 @@ the developement of the benchmarks such as ranges and
 arrays.
 
 /* show distribution plot */
+
+/* shot roofline model */
+
+/* show gustfan's law?? */
