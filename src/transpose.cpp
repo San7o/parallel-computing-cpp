@@ -102,19 +102,6 @@ void pc::matTransposeColumns(float **M, float **T, tenno::size N)
 }
 
 
-/* linux kernel 6.12, lib/bch.c 562 */
-/* assuming a 16x16 matrix */
-void pc::matTransposeLinux(float **M, float **T, tenno::size N)
-{
-  for (j = 8; j != 0; j >>= 1, mask ^= (mask << j)) {
-    for (k = 0; k < 16; k = (k+j+1) & ~j) {
-      t = ((M[k] >> j)^M[k+j]) & mask;
-      M[k] ^= (t << j);
-      M[k+j] ^= t;
-    }
-  }
-}
-
 /* Linux strikes again arch/x86/crypto/aria-aesni-avc2-asm_64.S */
 /*
   

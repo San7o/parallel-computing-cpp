@@ -188,3 +188,10 @@ arrays.
 /* shot roofline model */
 
 /* show gustfan's law?? */
+
+# Future work
+
+There is a mroe efficient assembly implementation
+exploting vectorization in x86 via vunpcklps and
+vpunpckldq used in the linux kernel, but the author
+did not manage to setup a test environment.

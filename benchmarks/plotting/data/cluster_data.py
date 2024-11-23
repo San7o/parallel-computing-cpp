@@ -13,3 +13,7 @@ class cluster_data:
 
     peak_theoretical_bandwidth = \
         memory_clock_rate * bus_width * transfer_rate / 10e9  # GB/s
+
+    core_count = 4
+    clock_speed = 3.2 # GHz
+    flops_per_cycle = 8  # 8 for AVX
