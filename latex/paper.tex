@@ -12,13 +12,13 @@
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
-\title{Fast matrix transpose on Parallel Architectures\\
+\title{Matrix Transposition and Symmetry: a case study on Superscalar Architectures\\
 %{\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
 %should not be used}
 %\thanks{Identify applicable funding agency here. If none, delete this.}
 }
 
-\author{\IEEEauthorblockN{1\textsuperscript{st} Giovanni Santini}
+\author{\IEEEauthorblockN{Giovanni Santini}
 \IEEEauthorblockA{\textit{Dept.\ of Information Engineering and Computer Science} \\
 \textit{University of Trento}\\
 Trento, Italy \\
@@ -29,22 +29,26 @@ MAT. 235441}
 \maketitle
 
 \begin{abstract}
-This document is a model and instructions for \LaTeX.
-This and the IEEEtran.cls file define the components of your paper [title, text, heads, etc.]. *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, 
+TODO *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, 
 or Math in Paper Title or Abstract.
 \end{abstract}
 
 \begin{IEEEkeywords}
-component, formatting, style, styling, insert
+parallel computing, matrix transpose, symmetrix matrix. benchmarking
 \end{IEEEkeywords}
 
 \section{Introduction}
 
-Introduction of the problem and importance. \\
-- Describe the background and importance of the problem \\
-- Outline the main objectives of your project \\
+Contemporary CPU architectures leverage superscalar designs to enhance performance, incorporating multiple cores and advanced Single Instruction Multiple Data (SIMD) extensions, such as Intel's Streaming SIMD Extensions (SSE) and Advanced Vector Extensions (AVX). Although SSE is not a new technology, being first introduced in the Pentium III in 1999 and subsequently expanded in later years \cite{b1}, modern algorithms leveraging SIMD instructions continue to be a topic of active research in recent literature.
+For example, the FreeBSD's SIMD-enhanced libc is actively reworking the standard library's code. \cite{b2}.
+In 2023, most of the string functions were reimplemented by Robert Clausecker et al on many architectures \cite{b3}, exploiting vector instructions and improving the overall performance of the standard library \cite{b4}.
+Similarly, efficient multi-threaded algorithms are becoming more critical as the demand of computation increases worldwide due to AI training \cite{b5} \cite{b6}.
+This case study examines the implementations and performance of two algorithms—out-of-place square matrix transposition (matTranspose) and square matrix symmetry checking (checkSymm)—that leverage superscalar architectures. Both algorithms are used pervasively in performance critical applications. For example, matrix transposition was used in NASA's Apollo 11 Guidance Computer (AGC) to convert vectors in platenary coordinate system to base reference system \cite{b7}. Additionally, matrix transposition is used by Fourier Transform in the West (FFTW) \cite{b8}, a popular library to calculate Fast Furier Transofrms, and in signal processing \cite{b9}. Furthermore, the current C++26 draft proposes basic linear algebra algorithms in the "linalg" header, including matrix transposition \cite{b10}.
 
-\blindtext\blindtext
+In section 2, we discuss the state of the art of the two algorithms.
+In section 3, we elaborate on the algorithms analyzed, discuss performance evaluation and we present a new benchmarking framework.
+In section 4, we analyze experimental data and graphs.
+
 
 \section{State of the Art}
 
@@ -52,7 +56,69 @@ Introduction of the problem and importance. \\
 - Discuss existing solutions and their limitations \\
 - Identift the gap your project aims to fill \\
 
-\blindtext\blindtext
+
+\textit{We define the transpose of a matrix $A$, and we denote it by $A^t$, as the matrix obtained from $A$ by interchanging rows and columns. Specifically, if $A$ is an $m$-by-$n$ matrix, then $A^t$ is the $n$-by-$m$ matrix whose entries are given by the equation (1)}. \cite{b11}
+
+
+\begin{equation}
+	(A^t)_{k,j} = A_{j,k}
+\end{equation}
+
+Computing the transpose of a matrix is a well discussed problem.
+
+Older fortran implementations were difficult due to fortran.
+
+# a lot of In place and rectangular
+
+Analysis of In-Situ Transposition
+"Algorithms for in-place matrix transposition make use of the cyclic structure of
+the transposition mapping. A clear introduction to the process was given in
+1958 by Windley [6]. In 1968 Boothroyd presented ACM Algorithm 302 [1]. Then
+in 1970 Laflin and Brefner presented ACM Algorithm 380 which they showed to
+be significantly faster than Algorithm 302 [4]"
+
+	[1] Transpose vector stored array.
+	BOOTHROYD,Z. Algorithm 302: Transpose vector stored array. Go~r~m.A~M I0, ~ (1967),
+	292-293
+	
+	anche 380 important, revised by 513
+
+Naive algorithm does not exploit locality of reference. Recursive solutions were proposed.
+
+## out-of-core - where I/O needs to be minimized
+
+ The oldest context in which the spatial locality of transposition seems to have been studied is for out-of-core operation (by Alltop, 1975), where the matrix is too large to fit into main memory ("core"). 
+ Reviews of out-of-core algorithms, especially as applied to parallel computing, can be found in e.g. Suh & Prasanna (2002) and Krishnamoorth et al. (2004). 
+ 
+ An Efficient Algorithm for
+ Out-of-Core Matrix Transposition
+ Jinwoo Suh, Member, IEEE, and Viktor K. Prasanna, Fellow, IEEE
+ 
+ 	"These efforts have focused on reducing the number
+ 	of I/O operations. However, in state-of-the-art architectures, memory-memory data transfer time and index computation time are also
+ 	significant components of the overall time. In this paper, we propose an algorithm that considers the index computation time and the
+ 	I/O time and reduces the overall execution time."
+ 	
+FFTW - MPI shit
+/* Recursive "radix-r" distributed transpose, which breaks a transpose
+over p processes into p/r transposes over r processes plus r
+transposes over p/r processes.  If performed recursively, this
+produces a total of O(p log p) messages vs. O(p^2) messages for a
+direct approach.
+*/
+
+## GPUs
+
+In-Place Transposition of Rectangular Matrices on Accelerators
+
+An Efficient Matrix Transpose in CUDA C/C++
+Feb 18, 2013
+By Mark Harris 
+
+
+
+\textit{A square matrix $A$ is called symmetric if it equals its transpose} \cite{b100}.
+
 
 \section{Contribution and Methodology}
 
@@ -111,13 +177,22 @@ For papers published in translation journals, please give the English
 citation first, followed by the original foreign-language citation \cite{b6}.
 
 \begin{thebibliography}{00}
-\bibitem{b1} G. Eason, B. Noble, and I. N. Sneddon, ``On certain integrals of Lipschitz-Hankel type involving products of Bessel functions,'' Phil. Trans. Roy. Soc. London, vol. A247, pp. 529--551, April 1955.
-\bibitem{b2} J. Clerk Maxwell, A Treatise on Electricity and Magnetism, 3rd ed., vol. 2. Oxford: Clarendon, 1892, pp.68--73.
-\bibitem{b3} I. S. Jacobs and C. P. Bean, ``Fine particles, thin films and exchange anisotropy,'' in Magnetism, vol. III, G. T. Rado and H. Suhl, Eds. New York: Academic, 1963, pp. 271--350.
-\bibitem{b4} K. Elissa, ``Title of paper if known,'' unpublished.
-\bibitem{b5} R. Nicole, ``Title of paper with only first word capitalized,'' J. Name Stand. Abbrev., in press.
-\bibitem{b6} Y. Yorozu, M. Hirano, K. Oka, and Y. Tagawa, ``Electron spectroscopy studies on magneto-optical media and plastic substrate interface,'' IEEE Transl. J. Magn. Japan, vol. 2, pp. 740--741, August 1987 [Digests 9th Annual Conf. Magnetics Japan, p. 301, 1982].
-\bibitem{b7} M. Young, The Technical Writer's Handbook. Mill Valley, CA: University Science, 1989.
+\bibitem{b1} Intel® 64 and IA-32 Architectures Software Developer’s Manual Combined Volumes: 1, 2A, 2B, 2C, 2D, 3A, 3B, 3C, 3D, and 4. Volume 1, Section 2.2.7 "SIMD Instructions"
+\bibitem{b2} SIMD man page "https://man.freebsd.org/cgi/man.cgi?simd(7)"
+\bibitem{b3} Git blame on freeBSD's source code, in "lib/libc/amd64/string", shows recent activity
+\bibitem{b4} https://freebsdfoundation.org/blog/a-sneak-peek-simd-enhanced-string-functions-for-amd64/
+\bibitem{b5} Amodei, D. Hernandez, D. AI and Compute, https://openai.com/blog/ai-and-compute
+\bibitem{b6} Andrew J. Lohn, Micah Musse. AI and Compute How Much Longer Can Computing Power Drive Artificial Intelligence Progress? CSET Issue Brief
+\bibitem{b7} Digitalized Apollo 11 guidance computer by Virtual AGC and MIT Museum. Code in "Apollo-11/Comanche055/PLANETERY\_INTERNAL\_ORIENTATION.agc" line 34; "Apollo-11/Luminary099/ATTITUDE\_MANEUVER\_ROUTINE.agc" line 441
+\bibitem{b8} Matteo Frigo and Steven G. Johnson. "The design and implementation of FFTW3". The word "transpose" is mentioned 21 times
+\bibitem{b9} M. Henriksson and O. Gustafsson, "Streaming Matrix Transposition on FPGAs Using Distributed Memories," 2023 IEEE Nordic Circuits and Systems Conference (NorCAS), Aalborg, Denmark, 2023, pp. 1-6, doi: 10.1109/NorCAS58970.2023.10305472.
+\bibitem{b10} "https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p1673r12.html" Accessed in november 2024
+\bibitem{b11} Sheldon Axler. Linear Algebra Done Right ourth edition
+16 November 2024. Section 3C Matrices, definition 3.54
+\bibitem{b12} Sheldon Axler. Linear Algebra Done Right ourth edition
+16 November 2024. Section 9A Bilinear Forms and Quadratic Forms, definition 9.11
+
+
 \end{thebibliography}
 \vspace{12pt}
 
