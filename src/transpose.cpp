@@ -13,15 +13,6 @@
  */ 
 
 /*
-void transpose(float *src, float *dst, const int N, const int M) {
-    #pragma omp parallel for
-    for(int n = 0; n<N*M; n++) {
-        int i = n/N;
-        int j = n%N;
-        dst[n] = src[M*j + i];
-    }
-}
-
 // With blocks
 inline void transpose_block_SSE4x4(float *A, float *B, const int n, const int m, const int lda, const int ldb ,const int block_size) {
     #pragma omp parallel for
@@ -47,16 +38,6 @@ inline void transpose_block_SSE4x4(float *A, float *B, const int n, const int m,
 |                   BASELINE                   |
 \*============================================*/
 
-/*
- * matTranspose
- *
- * For each element of the matrix with column i and row j,
- * the algorithm copies the value in the output matrix
- * in column j and row i.
- * Time Complexity: O(n^2)
- * Space Complexity: O(n^2)
- * Assumption: square matrix
- */
 void pc::matTranspose(float **M, float **T, tenno::size N)
 {
   for (tenno::size i = 0; i < N; ++i)
@@ -65,20 +46,6 @@ void pc::matTranspose(float **M, float **T, tenno::size N)
   return;
 }
 
-/*
- * matTransposeHalf
- *
- * An alternative algorithm to matTranspose is to iterate
- * over only the upper half of the matrix with respect
- * to the diagonal. This cuts in half the number of iterations
- * but the number of memory accesses (both read and writes)
- * do not change, as well as the time and space complexity.
- * Despite this, this algorithm improves from the previous
- * one by about 33%
- * Time Complexity: O(n^2)
- * Space Complexity: O(n^2)
- * Assumption: square matrix
- */
 void pc::matTransposeHalf(float **M, float **T, tenno::size N)
 {
   for (tenno::size i = 0; i < N; ++i)
@@ -101,6 +68,13 @@ void pc::matTransposeColumns(float **M, float **T, tenno::size N)
 
 }
 
+void pc::matTransposeCyclic(float *M, float *T, tenno::size N) {
+    for(long unsigned int n = 0; n<N*N; n++) {
+        long unsigned int i = n/N;
+        long unsigned int j = n%N;
+        T[n] = M[N*j + i];
+    }
+}
 
 /* Linux strikes again arch/x86/crypto/aria-aesni-avc2-asm_64.S */
 /*
@@ -135,7 +109,7 @@ void pc::matTransposeVectorization(float **M, float **T, tenno::size N)
 void pc::matTransposeUnrolledInner(float **M, float **T, tenno::size N)
 {
   for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; j = j + 4)
+      for (tenno::size j = 0; j < N; j += 4)
 	{
             T[i][j] = M[j][i];
             T[i][j+1] = M[j+1][i];
@@ -147,7 +121,7 @@ void pc::matTransposeUnrolledInner(float **M, float **T, tenno::size N)
 
 void pc::matTransposeUnrolledOuter(float **M, float **T, tenno::size N)
 {
-  for (tenno::size i = 0; i < N; i = i + 4)
+  for (tenno::size i = 0; i < N; i += 4)
       for (tenno::size j = 0; j < N; ++j)
 	{
             T[i][j] = M[j][i];
@@ -175,7 +149,7 @@ void pc::matTransposeHalfVectorization(float **M, float **T, tenno::size N)
 void pc::matTransposeHalfUnrolledInner(float **M, float **T, tenno::size N)
 {
   for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = i; j < N; j = j + 4)
+      for (tenno::size j = i; j < N; j += 4)
         {
             T[i][j] = M[j][i];
             T[i][j+1] = M[j+1][i];
@@ -192,7 +166,7 @@ void pc::matTransposeHalfUnrolledInner(float **M, float **T, tenno::size N)
 
 void pc::matTransposeHalfUnrolledOuter(float **M, float **T, tenno::size N)
 {
-  for (tenno::size i = 0; i < N; i = i + 4)
+  for (tenno::size i = 0; i < N; i +=4)
       for (tenno::size j = i; j < N; ++j)
         {
             T[i][j] = M[j][i];
@@ -208,6 +182,14 @@ void pc::matTransposeHalfUnrolledOuter(float **M, float **T, tenno::size N)
   return;
 }
 
+void pc::matTransposeCyclicUnrolled(float *M, float *T, tenno::size N) {
+  for(long unsigned int n = 0; n<N*N - 4; n+=4) {
+        T[n] = M[N*(n%N) + (n/N)];
+        T[n+1] = M[N*((n+1)%N) + ((n+1)/N)];
+        T[n+2] = M[N*((n+2)%N) + ((n+2)/N)];
+        T[n+3] = M[N*((n+3)%N) + ((n+3)/N)];
+    }
+}
 
 /*============================================*\
 |              EXPLICIT PARALLELISM            |

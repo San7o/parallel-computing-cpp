@@ -39,6 +39,7 @@ namespace pc
 void matTranspose(float **M, float **T, tenno::size N);
 void matTransposeHalf(float **M, float **T, tenno::size N);
 void matTransposeColumns(float **M, float **T, tenno::size N);
+void matTransposeCyclic(float *M, float *T, tenno::size N);
 
 
 /*============================================*\
@@ -59,6 +60,7 @@ void matTransposeUnrolledOuter(float **M, float **T, tenno::size N);
 void matTransposeHalfVectorization(float **M, float **T, tenno::size N);
 void matTransposeHalfUnrolledInner(float **M, float **T, tenno::size N);
 void matTransposeHalfUnrolledOuter(float **M, float **T, tenno::size N);
+void matTransposeCyclicUnrolled(float *M, float *T, tenno::size N);
 
 
 /*============================================*\

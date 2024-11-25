@@ -58,7 +58,7 @@ bool pc::checkSymVectorization(float **M, tenno::size N)
 bool pc::checkSymUnrollingOuter(float **M, tenno::size N)
 {
   bool symm = true;
-  for (size_t i = 0; i < N; i = i + 4)
+  for (size_t i = 0; i < N - 4; i += 4)
     for (size_t j = i; j < N; ++j)
       {
 	if (M[i][j] != M[j][i]) symm = false;
@@ -73,7 +73,7 @@ bool pc::checkSymUnrollingInner(float **M, tenno::size N)
 {
   bool symm = true;
   for (size_t i = 0; i < N; ++i)
-    for (size_t j = i; j < N; j = j + 4)
+    for (size_t j = i; j < N - 4; j += 4)
       {
 	if (M[i][j] != M[j][i]) symm = false;
 	if (M[i][j+1] != M[j+1][i]) symm = false;
@@ -86,7 +86,7 @@ bool pc::checkSymUnrollingInner(float **M, tenno::size N)
 bool pc::checkSymUnrollingOuterNoBranch(float **M, tenno::size N)
 {
   bool symm = true;
-  for (size_t i = 0; i < N; i = i + 4)
+  for (size_t i = 0; i < N - 4; i += 4)
     for (size_t j = i; j < N; ++j)
       {
 	symm &=
@@ -99,11 +99,12 @@ bool pc::checkSymUnrollingOuterNoBranch(float **M, tenno::size N)
       }
   return symm;
 }
+
 bool pc::checkSymUnrollingInnerNoBranch(float **M, tenno::size N)
 {
   bool symm = true;
   for (size_t i = 0; i < N; ++i)
-    for (size_t j = i; j < N; j = j + 4)
+    for (size_t j = i; j < N - 4; j += 4)
       {
 	symm &=
 	        ((

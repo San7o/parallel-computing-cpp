@@ -30,7 +30,7 @@
 #include <tenno/random.hpp>
 #include <valfuzz/valfuzz.hpp>
 
-#define PC_MATRIX_MAX_SIZE (1<<12) + 4 // 1 is required to prevent segfault
+#define PC_MATRIX_MAX_SIZE 1<<12
 #define PC_RANDOM_MATRIX_SIZE 256
 
 /*============================================*\
@@ -66,7 +66,7 @@ constexpr tenno::array<float, PC_RANDOM_MATRIX_SIZE> random_arr2()
 matrix matrix_alloc(tenno::size N)
 {
   matrix M = new float*[N];
-  for (const auto i : tenno::range(N))
+  for (unsigned int i = 0; i < N; ++i)
     {
       M[i] = new float[N];
     }
@@ -91,7 +91,7 @@ void matrix_init(matrix M, tenno::size N)
 
 void matrix_free(matrix M, tenno::size N)
 {
-  for (const auto i : tenno::range(N))
+  for (unsigned int i = 0; i < N; ++i)
     delete[] M[i];
   delete[]  M;
 }
@@ -145,6 +145,28 @@ BENCHMARK(transpose_columns_benchmark,
     }
 }
 
+BENCHMARK(transpose_cyclic_benchmark,
+	  "matTranspose cyclic")
+{
+    /* Initialize the vector */
+    float* arr_in = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float* arr_out = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+
+    constexpr auto arr1 = random_arr1();
+
+    for (size_t i = 0; i < PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE; ++i)
+      arr_in[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
+      
+    for (size_t N = 2; N <= 12; ++N)
+    {
+      RUN_BENCHMARK((1<<N),
+		    pc::matTransposeCyclic(arr_in, arr_out, (1<<N)));
+    }
+
+    delete[] arr_in;
+    delete[] arr_out;
+}
+
 BENCHMARK(transpose_vectorization_benchmark,
 	  "matTranspose vectorization")
 {
@@ -164,6 +186,29 @@ BENCHMARK(transpose_unrolling_outer_benchmark,
 		    pc::matTransposeOmp2(matrix_in, matrix_out, (1<<N)));
     }
 }
+
+BENCHMARK(transpose_cyclic_unrolled_benchmark,
+	  "matTranspose cyclic unrolled")
+{
+    /* Initialize the vector */
+    float* arr_in = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float* arr_out = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+
+    constexpr auto arr1 = random_arr1();
+
+    for (size_t i = 0; i < PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE; ++i)
+      arr_in[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
+      
+    for (size_t N = 2; N <= 12; ++N)
+    {
+      RUN_BENCHMARK((1<<N),
+		    pc::matTransposeCyclicUnrolled(arr_in, arr_out, (1<<N)));
+    }
+
+    delete[] arr_in;
+    delete[] arr_out;
+}
+
 
 BENCHMARK(transpose_omp_4_benchmark,
 	  "matTranspose omp 4")
