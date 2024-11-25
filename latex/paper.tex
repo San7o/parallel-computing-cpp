@@ -64,9 +64,24 @@ In section 4, we analyze experimental data and graphs.
 	(A^t)_{k,j} = A_{j,k}
 \end{equation}
 
-Computing the transpose of a matrix is a well discussed problem.
+Computing the transpose of a matrix is a well discussed problem. Earlier
+work focus on in-situ transporision, that is transposing a matrix without
+relying on additional space. The implementations often exploit the acyclic
+structure of the transposition mapping since values of a matrix of size $N$ can be stored
+in a single contiguous array or size $N$*$N$ and indexed with $row*#rows+ column$.
+Remarcable contributions include Boothroyd's ACM Algorithm 302
+presented in 1966\cite{b?}, the 1970 revision by Laflin and Brefner
+in ACS Algorithm 380 and a later revision with ACM Algorithm 513 /* TODO SOURCES and names */.
 
-Older fortran implementations were difficult due to fortran.
+SIMD implementations have also been studied
+
+Another class of algorithms include out-of-core matrix transposition, that
+is computing the transpose of a matrix that is too big to fit in memory.
+This problem focuses on minimizing the number of I/O operations since memory-memory data transfer
+is notably slower than math operations. Work in out-of-core transposition include /*TODO*/
+
+GPU /* TODO */
+
 
 # a lot of In place and rectangular
 

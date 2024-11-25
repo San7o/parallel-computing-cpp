@@ -27,6 +27,8 @@ inline void transpose_block_SSE4x4(float *A, float *B, const int n, const int m,
             }
         }
     }
+
+    // we may directly store the squares sequencially
 }
 */
 
