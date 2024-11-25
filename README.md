@@ -6,17 +6,18 @@
 
 ## Index
 
-- About
-- Dependencies
-- Building locally
-  - Using cmake
-  - Using bazel
-  - Using meson
-- Running locally
-- Build and run on the cluster
-- Additional Information
-  - Analyze data
+- [About](#about)
+- [Dependencies](#dependencies)
+- [Building locally](#building_locally)
+  - [Using cmake](#cmake)
+  - [Using bazel](#bazel)
+  - [Using meson](#meson)
+- [Running locally](#running_locally)
+- [Build and run on the cluster](#cluster)
+- [Additional Information](#additional_info)
+  - [Analyze data](#analyze_data)
 
+<a name="about"></a>
 ## About
 
 This repository contains the code for the first assignment of
@@ -34,6 +35,7 @@ There is a high level view of the structure of this repo:
 - `fuzz/`: fuzzing the algorithms
 - `latex/`: report source code
 
+<a name="dependencies"></a>
 ## Dependencies
 
 The code is written in C++20 and it is tested with gcc-8.5.0,
@@ -65,7 +67,7 @@ environment using [flake.nix](./flake.nix):
 ```bash
 nix develop
 ```
-
+<a name="building_locally"></a>
 ## Building locally
 
 This project primarly supports building with `cmake >= 3.15.4` and
@@ -74,6 +76,7 @@ and `meson` is also supported for faster build time and better
 developement experience. Note that the instructions to run
 the benchmarks on the cluster are specified using cmake.
 
+<a name="cmake"></a>
 ### Using cmake
 
 To build the full benchmark suite, run the following command:
@@ -84,7 +87,7 @@ cd parallel-computing-cpp &&
 cmake -Bbuild \
 	  -D PC_BUILD_OPTIMIZED_O1=ON \
 	  -D PC_BUILD_OPTIMIZED_O2=ON \
-	  -D PC_BUILD_OPTIMIZED_O3=ON
+	  -D PC_BUILD_OPTIMIZED_O3=ON &&
 cmake --build build \
       -j $(nproc)
 ```
@@ -106,6 +109,7 @@ omp support. You can build with clang by enabling
 `PC_USE_CLANG` but the project is not fully compatible
 with clang yet.
 
+<a name="bazel"></a>
 ### Using bazel
 
 If you decided to build with bazel, first clone the
@@ -119,6 +123,7 @@ bazel build //:first_assignment
 
 The binaries will be generated in `bazel-bin`
 
+<a name="meson"></a>
 ### Using meson
 
 To build with meson, run the following:
@@ -129,6 +134,7 @@ meson setup build &&
 ninja -C build
 ```
 
+<a name="running_locally"></a>
 ## Running locally
 
 The project depends on [valFuzz](https://github.com/San7o/valFuzz) which
@@ -160,6 +166,7 @@ the [get-info.sh](./get-info.sh) script:
 ./get-info.sh
 ```
 
+<a name="cluster"></a>
 ## Build and run on the cluster
 
 The complete `.pbs` file can be found in
@@ -176,8 +183,10 @@ qsub $PC_PBS_FILE
 the script will generate reports in `benchamrks/plotting/reports/`
 containing collected data in csv format.
 
+<a name="additional_info"></a>
 ## Additional Information
 
+<a name="analyze_data"></a>
 ### Analyze Data
 
 All the graphs found in the report are generated

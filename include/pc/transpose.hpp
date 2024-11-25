@@ -40,6 +40,8 @@ void matTranspose(float **M, float **T, tenno::size N);
 void matTransposeHalf(float **M, float **T, tenno::size N);
 void matTransposeColumns(float **M, float **T, tenno::size N);
 void matTransposeCyclic(float *M, float *T, tenno::size N);
+void matTransposeIntrinsic(float **mat_in, float **mat_out, size_t N);
+void matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N);
 
 
 /*============================================*\

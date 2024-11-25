@@ -33,6 +33,7 @@
 #define PC_MATRIX_MAX_SIZE 1<<12
 #define PC_RANDOM_MATRIX_SIZE 256
 
+
 /*============================================*\
 |                     SETUP                    |
 \*============================================*/
@@ -165,6 +166,38 @@ BENCHMARK(transpose_cyclic_benchmark,
 
     delete[] arr_in;
     delete[] arr_out;
+}
+
+BENCHMARK(transpose_4x4_intrinsic_cyclic_benchmark,
+	  "matTranspose intrinsic cyclic")
+{
+    /* Initialize the vector */
+    float* arr_in = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float* arr_out = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+
+    constexpr auto arr1 = random_arr1();
+
+    for (size_t i = 0; i < PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE; ++i)
+      arr_in[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
+      
+    for (size_t N = 2; N <= 12; ++N)
+    {
+      RUN_BENCHMARK((1<<N),
+		    pc::matTransposeIntrinsicCyclic(arr_in, arr_out, (1<<N)));
+    }
+
+    delete[] arr_in;
+    delete[] arr_out;
+}
+
+BENCHMARK(transpose_4x4_intrinsic_benchmark,
+	  "matTranspose intrinsic")
+{
+    for (size_t N = 2; N <= 12; ++N)
+    {
+      RUN_BENCHMARK((1<<N),
+		    pc::matTransposeIntrinsic(matrix_in, matrix_out, (1<<N)));
+    }
 }
 
 BENCHMARK(transpose_vectorization_benchmark,

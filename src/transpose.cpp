@@ -12,29 +12,10 @@
  * - explicit optimizations: OMP
  */ 
 
-/*
-// With blocks
-inline void transpose_block_SSE4x4(float *A, float *B, const int n, const int m, const int lda, const int ldb ,const int block_size) {
-    #pragma omp parallel for
-    for(int i=0; i<n; i+=block_size) {
-        for(int j=0; j<m; j+=block_size) {
-            int max_i2 = i+block_size < n ? i + block_size : n;
-            int max_j2 = j+block_size < m ? j + block_size : m;
-            for(int i2=i; i2<max_i2; i2+=4) {
-                for(int j2=j; j2<max_j2; j2+=4) {
-                    transpose4x4_SSE(&A[i2*lda +j2], &B[j2*ldb + i2], lda, ldb);
-                }
-            }
-        }
-    }
-
-    // we may directly store the squares sequencially
-}
-*/
-
 #include <pc/transpose.hpp>
 #include <tenno/ranges.hpp>
 #include <omp.h>
+#include <immintrin.h>         /* For AVX intrinsics */
 
 /*============================================*\
 |                   BASELINE                   |
@@ -78,9 +59,8 @@ void pc::matTransposeCyclic(float *M, float *T, tenno::size N) {
     }
 }
 
-/* Linux strikes again arch/x86/crypto/aria-aesni-avc2-asm_64.S */
 /*
-  
+Linux strikes again arch/x86/crypto/aria-aesni-avc2-asm_64.S
 #define transpose_4x4(x0, x1, x2, x3, t1, t2)		\
 	vpunpckhdq x1, x0, t2;				\
 	vpunpckldq x1, x0, x0;				\
@@ -93,7 +73,75 @@ void pc::matTransposeCyclic(float *M, float *T, tenno::size N) {
 							\
 	vpunpckhqdq x2, t2, x3;				\
 	vpunpcklqdq x2, t2, x2;
+
+transpose_4x4_f32_intrinsic is the intrinsic version of the above code
 */
+void transpose_4x4_f32_intrinsic(const float *src0,
+                                 const float *src1, 
+                                 const float *src2,
+                                 const float *src3,
+                                 float *dst0,
+                                 float *dst1,
+                                 float *dst2,
+                                 float *dst3) {
+
+    __m128 row0 = _mm_loadu_ps(src0); // Load Rows
+    __m128 row1 = _mm_loadu_ps(src1);
+    __m128 row2 = _mm_loadu_ps(src2);
+    __m128 row3 = _mm_loadu_ps(src3);
+
+    // Unpack and interleave rows
+    __m128 t0 = _mm_unpacklo_ps(row0, row1);
+    __m128 t1 = _mm_unpackhi_ps(row0, row1);
+    __m128 t2 = _mm_unpacklo_ps(row2, row3);
+    __m128 t3 = _mm_unpackhi_ps(row2, row3);
+
+    // Shuffle to form transposed rows
+    __m128 d0 = _mm_movelh_ps(t0, t2);
+    __m128 d1 = _mm_movehl_ps(t2, t0);
+    __m128 d2 = _mm_movelh_ps(t1, t3);
+    __m128 d3 = _mm_movehl_ps(t3, t1);
+
+    // Store transposed rows
+    _mm_storeu_ps(dst0, d0);
+    _mm_storeu_ps(dst1, d1);
+    _mm_storeu_ps(dst2, d2);
+    _mm_storeu_ps(dst3, d3);
+}
+
+void pc::matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N)
+{
+    for (size_t i = 0; i < N; i += 4) {
+        for (size_t j = 0; j < N; j += 4) {
+            transpose_4x4_f32_intrinsic(
+                            &mat_in[i * N + j], 
+                            &mat_in[(i + 1) * N + j], 
+                            &mat_in[(i + 2) * N + j], 
+                            &mat_in[(i + 3) * N + j], 
+                            &mat_out[j * N + i],
+                            &mat_out[(j + 1) * N + i],
+                            &mat_out[(j + 2) * N + i],
+                            &mat_out[(j + 3) * N + i]);
+        }
+    }
+}
+
+void pc::matTransposeIntrinsic(float **mat_in, float **mat_out, size_t N)
+{
+    for (size_t i = 0; i < N; i += 4) {
+        for (size_t j = 0; j < N; j += 4) {
+            transpose_4x4_f32_intrinsic(
+                            &mat_in[i][j], 
+                            &mat_in[i + 1][j], 
+                            &mat_in[i + 2][j], 
+                            &mat_in[i + 3][j], 
+                            &mat_out[j][i],
+                            &mat_out[j + 1][i],
+                            &mat_out[j + 2][i],
+                            &mat_out[j + 3][i]);
+        }
+    }
+}
 
 /*============================================*\
 |              IMPLICIT PARALLELISM            |

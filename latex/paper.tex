@@ -39,23 +39,19 @@ parallel computing, matrix transpose, symmetrix matrix. benchmarking
 
 \section{Introduction}
 
-Contemporary CPU architectures leverage superscalar designs to enhance performance, incorporating multiple cores and advanced Single Instruction Multiple Data (SIMD) extensions, such as Intel's Streaming SIMD Extensions (SSE) and Advanced Vector Extensions (AVX). Although SSE is not a new technology, being first introduced in the Pentium III in 1999 and subsequently expanded in later years \cite{b1}, modern algorithms leveraging SIMD instructions continue to be a topic of active research in recent literature.
+Modern CPUs use superscalar architectures to improve performance, combining multiple cores with advanced Single Instruction Multiple Data (SIMD) technologies. Examples include Intel's Streaming SIMD Extensions (SSE) and Advanced Vector Extensions (AVX). Although SSE is not a new technology, being first introduced in the Pentium III in 1999 and subsequently expanded in later years \cite{b1}, modern algorithms leveraging SIMD instructions continue to be a topic of active research in recent literature.
 For example, the FreeBSD's SIMD-enhanced libc is actively reworking the standard library's code. \cite{b2}.
 In 2023, most of the string functions were reimplemented by Robert Clausecker et al on many architectures \cite{b3}, exploiting vector instructions and improving the overall performance of the standard library \cite{b4}.
 Similarly, efficient multi-threaded algorithms are becoming more critical as the demand of computation increases worldwide due to AI training \cite{b5} \cite{b6}.
-This case study examines the implementations and performance of two algorithms—out-of-place square matrix transposition (matTranspose) and square matrix symmetry checking (checkSymm)—that leverage superscalar architectures. Both algorithms are used pervasively in performance critical applications. For example, matrix transposition was used in NASA's Apollo 11 Guidance Computer (AGC) to convert vectors in platenary coordinate system to base reference system \cite{b7}. Additionally, matrix transposition is used by Fourier Transform in the West (FFTW) \cite{b8}, a popular library to calculate Fast Furier Transofrms, and in signal processing \cite{b9}. Furthermore, the current C++26 draft proposes basic linear algebra algorithms in the "linalg" header, including matrix transposition \cite{b10}.
+This case study examines the implementations and performance of two algorithms—out-of-place square matrix transposition (matTranspose) and square matrix symmetry checking (checkSymm)—in the context of a superscalar architecture. Both algorithms have been used pervasively in performance critical applications. For example, matrix transposition was used in NASA's Apollo 11 Guidance Computer (AGC) to convert vectors in platenary coordinate system to base reference system \cite{b7}. Additionally, matrix transposition is used by Fourier Transform in the West (FFTW) \cite{b8}, a popular library to calculate Fast Furier Transofrms, and in signal processing \cite{b9}. Furthermore, the current C++26 draft proposes basic linear algebra algorithms in the "linalg" header, including matrix transposition \cite{b10}.
 
 In section 2, we discuss the state of the art of the two algorithms.
 In section 3, we elaborate on the algorithms analyzed, discuss performance evaluation and we present a new benchmarking framework.
-In section 4, we analyze experimental data and graphs.
+In section 4, we show experimental data and graphs that is analyzed
+in section 5. The conclusion is in section 6.
 
 
 \section{State of the Art}
-
-- Review current research and developments related to your project \\
-- Discuss existing solutions and their limitations \\
-- Identift the gap your project aims to fill \\
-
 
 \textit{We define the transpose of a matrix $A$, and we denote it by $A^t$, as the matrix obtained from $A$ by interchanging rows and columns. Specifically, if $A$ is an $m$-by-$n$ matrix, then $A^t$ is the $n$-by-$m$ matrix whose entries are given by the equation (1)}. \cite{b11}
 
@@ -64,76 +60,28 @@ In section 4, we analyze experimental data and graphs.
 	(A^t)_{k,j} = A_{j,k}
 \end{equation}
 
-Computing the transpose of a matrix is a well discussed problem. Earlier
-work focus on in-situ transporision, that is transposing a matrix without
-relying on additional space. The implementations often exploit the acyclic
-structure of the transposition mapping since values of a matrix of size $N$ can be stored
-in a single contiguous array or size $N$*$N$ and indexed with $row*#rows+ column$.
-Remarcable contributions include Boothroyd's ACM Algorithm 302
-presented in 1966\cite{b?}, the 1970 revision by Laflin and Brefner
-in ACS Algorithm 380 and a later revision with ACM Algorithm 513 /* TODO SOURCES and names */.
-
-SIMD implementations have also been studied
-
-Another class of algorithms include out-of-core matrix transposition, that
-is computing the transpose of a matrix that is too big to fit in memory.
-This problem focuses on minimizing the number of I/O operations since memory-memory data transfer
-is notably slower than math operations. Work in out-of-core transposition include /*TODO*/
-
-GPU /* TODO */
+Computing the transpose of a matrix is a well discussed computational problem. Early
+work focuses on in-situ transporision, that is transposing a matrix without
+relying on additional space. Implementations were often based on the cyclic
+structure of the transposition mapping: values of a matrix of size $N$ can be stored
+in a single contiguous array or size $N$*$N$ and indexed with $row*\#rows+ column$.
+Remarcable contributions include Boothroyd's ACM Algorithm 302 (1966) using cyclic mapping \cite{b13}, Laflin and Brefner ACM Algorithm 380
+adding fixed points arithmetic \cite{b14} and
+a later revision of the two by Esko G. Cate and David W. Twigg in ACM Algorithm 513 \cite{b15} .
+SIMD implementations for specific architectures are also widely adopted
+in performance critical applications like cryptographic libraries using instructions like Intel's vpunpckldq and vpunpckhdq \cite{b16} reporting improvements up to 70\% \cite{b17}.
+However, matrix operations are not efficient as vector registers access data only linearly, motivating research on new vector register file (VFS) designs such as diagonal registers \cite{b23}.
+Another area of research includes out-of-core matrix transposition, that
+is computing the transpose of a matrix that exceeds the size of the available in-core memory.
+This problem focuses on optimizing the number of I/O operations and file layout since memory-memory data transfer is notably slower than math operations. Work in out-of-core transposition include W. 0. Alltop (1975) \cite{b18}, Suh \& Prasanna (2002) \cite{b19} and Krishnamoorth et al. (2004) \cite{b20}.
+Recent work explores parallelization and the use of GPUs to offload algebra operations. Examples are I-Jui Sung et al \cite{b21} and Mark Harris \cite{b22}.
 
 
-# a lot of In place and rectangular
+\textit{A square matrix $A$ is called symmetric if it equals its transpose} \cite{b12}.
 
-Analysis of In-Situ Transposition
-"Algorithms for in-place matrix transposition make use of the cyclic structure of
-the transposition mapping. A clear introduction to the process was given in
-1958 by Windley [6]. In 1968 Boothroyd presented ACM Algorithm 302 [1]. Then
-in 1970 Laflin and Brefner presented ACM Algorithm 380 which they showed to
-be significantly faster than Algorithm 302 [4]"
-
-	[1] Transpose vector stored array.
-	BOOTHROYD,Z. Algorithm 302: Transpose vector stored array. Go~r~m.A~M I0, ~ (1967),
-	292-293
-	
-	anche 380 important, revised by 513
-
-Naive algorithm does not exploit locality of reference. Recursive solutions were proposed.
-
-## out-of-core - where I/O needs to be minimized
-
- The oldest context in which the spatial locality of transposition seems to have been studied is for out-of-core operation (by Alltop, 1975), where the matrix is too large to fit into main memory ("core"). 
- Reviews of out-of-core algorithms, especially as applied to parallel computing, can be found in e.g. Suh & Prasanna (2002) and Krishnamoorth et al. (2004). 
- 
- An Efficient Algorithm for
- Out-of-Core Matrix Transposition
- Jinwoo Suh, Member, IEEE, and Viktor K. Prasanna, Fellow, IEEE
- 
- 	"These efforts have focused on reducing the number
- 	of I/O operations. However, in state-of-the-art architectures, memory-memory data transfer time and index computation time are also
- 	significant components of the overall time. In this paper, we propose an algorithm that considers the index computation time and the
- 	I/O time and reduces the overall execution time."
- 	
-FFTW - MPI shit
-/* Recursive "radix-r" distributed transpose, which breaks a transpose
-over p processes into p/r transposes over r processes plus r
-transposes over p/r processes.  If performed recursively, this
-produces a total of O(p log p) messages vs. O(p^2) messages for a
-direct approach.
-*/
-
-## GPUs
-
-In-Place Transposition of Rectangular Matrices on Accelerators
-
-An Efficient Matrix Transpose in CUDA C/C++
-Feb 18, 2013
-By Mark Harris 
-
-
-
-\textit{A square matrix $A$ is called symmetric if it equals its transpose} \cite{b100}.
-
+While symmetric matrces are actively used in various areas of research as their
+properties allow for several optimizations in various problems, an in depth case study of symmetry
+checking on modern architectures is yet to be published.
 
 \section{Contribution and Methodology}
 
@@ -142,7 +90,24 @@ By Mark Harris
 data structures, and parallelization techniques. \\
 - Discuss the challenges faced and how they were addressed \\
 
-\blindtext\blindtext
+
+
+\iffalse
+Remember: write
+- what you did (contribution): high level overview like "hey, i want to test different vectorization ond parallelization implementations"
+- how you did it (methodology): we benchmarked algorithm A ... (all the pseudocodes). Whay we mesured
+
+\fi
+
+Quiesti qui bellissimi e stra fighi
+- uno (pseudocodice)
+- due (pseudocodice)
+- tre (pseudocodice)
+- ...
+Ho usato implicit ed esplicit parallelism con vectorization e openmp
+Voglio fare questo per comparare quest'altro cos' pel meme
+Benchmarkare è difficle perchè... quindi ho fatto ciò... (aplia qua)
+
 
 \section{Experiments and System Description}
 
@@ -154,7 +119,18 @@ methodologies used in the project. \\
 - Discussion on how experiments are designed to test the hypotheses
 or achieve the objectives \\
 
-\blindtext\blindtext
+
+All relevant cluster info, compiler, flags, c++ standard. Test flags and data. Benchmarks metrics collected
+Example:
+System Description:
+The experiments were conducted on a system equipped with an Intel Core i9-12900K CPU (16 cores, 24 threads, base clock 3.2 GHz), 32 GB of DDR5 RAM, and an NVIDIA RTX 3080 GPU (10 GB GDDR6X). The operating system was Ubuntu 22.04, and all code was compiled using GCC 12.2 with the -O3 optimization flag. Benchmarks were run in an isolated environment with minimal background processes to ensure consistency.
+
+Experimental Setup:
+The study benchmarked three sorting algorithms: QuickSort, MergeSort, and HeapSort. Input datasets ranged from 1,000 to 1,000,000 elements and included random, sorted, and reverse-sorted orders. Each experiment was repeated 10 times, with execution time and memory usage recorded. Performance metrics were averaged across runs to account for variability.
+
+Mamma mia che bel framework che ho
+
+Ho runanto tutto sul pbs con questi cores bellissimi con le ottimizzazioni diverse. Ho collezionato i dativi in un basino e l'ho grafato con quella mmerda di pitone. Ho fatto i test così perchè mi piacevano.
 
 \section{Results and Discussion}
 
@@ -162,34 +138,22 @@ or achieve the objectives \\
 - Analysis and interpretation in context \\
 - Comparison with the state-of-the-art \\
 
-\blindtext\blindtext
+cinquantamila grafici qui
+
+Mamma mia ma quanto e' veloce sto asesmbly,
+buu al compilatore che non ci azzecca per bene. 
+Anche ciclico è nammerda, invece l'unrolling
+è figo.
+In generale abbiamo capito
+cose ed il cluster è pazzesco e le differenze
+sono notevoli, evviva i soldi.
 
 
 \section{Conclusions}
 
 - Summary of the key findings and contributions
 
-
-\section*{References}
-
-Please number citations consecutively within brackets \cite{b1}. The 
-sentence punctuation follows the bracket \cite{b2}. Refer simply to the reference 
-number, as in \cite{b3}---do not use ``Ref. \cite{b3}'' or ``reference \cite{b3}'' except at 
-the beginning of a sentence: ``Reference \cite{b3} was the first $\ldots$''
-
-Number footnotes separately in superscripts. Place the actual footnote at 
-the bottom of the column in which it was cited. Do not put footnotes in the 
-abstract or reference list. Use letters for table footnotes.
-
-Unless there are six authors or more give all authors' names; do not use 
-``et al.''. Papers that have not been published, even if they have been 
-submitted for publication, should be cited as ``unpublished'' \cite{b4}. Papers 
-that have been accepted for publication should be cited as ``in press'' \cite{b5}. 
-Capitalize only the first word in a paper title, except for proper nouns and 
-element symbols.
-
-For papers published in translation journals, please give the English 
-citation first, followed by the original foreign-language citation \cite{b6}.
+Ciao ciao
 
 \begin{thebibliography}{00}
 \bibitem{b1} Intel® 64 and IA-32 Architectures Software Developer’s Manual Combined Volumes: 1, 2A, 2B, 2C, 2D, 3A, 3B, 3C, 3D, and 4. Volume 1, Section 2.2.7 "SIMD Instructions"
@@ -206,8 +170,22 @@ citation first, followed by the original foreign-language citation \cite{b6}.
 16 November 2024. Section 3C Matrices, definition 3.54
 \bibitem{b12} Sheldon Axler. Linear Algebra Done Right ourth edition
 16 November 2024. Section 9A Bilinear Forms and Quadratic Forms, definition 9.11
-
-
+\bibitem{b13} BOOTHROYD,Z. Algorithm 302: Transpose vector stored array. Go~r~m.A~M I0, ~ (1967),
+292-293
+\bibitem{b14} LAFLIN, S., AND BREFNER, M.A. Algorithm 380: In-situ transposition of a rectangular
+matrix, Comm. ACM IS, 5 (1970), 324-326
+\bibitem{b15} ESKO G. CATE and DAVID W. TWIGG ALGORITHM 513: Analysis of In-Situ Transposition (1977)
+\bibitem{b16} most of the crypto functions are written in assembly usin SIMD instructions in the
+linux kernel "linux/arch/x86/crypto" for exanple transpose\_4x4 in "serpent-avx2-asm\_64.S", "sm4-aesni-avx-asm\_64.S",
+"cast6-avx-x86\_64-asm\_64.S" and others
+\bibitem{b17} https://github.com/torvalds/linux/commit/d34a460092d857f1616e39eed7eac6f40cea2225
+\bibitem{b18} W. O. Alltop, "A Computer Algorithm for Transposing Nonsquare Matrices," in IEEE Transactions on Computers, vol. C-24, no. 10, pp. 1038-1040, Oct. 1975, doi: 10.1109/T-C.1975.224124.
+\bibitem{b19} Jinwoo Suh and V. K. Prasanna, "An efficient algorithm for out-of-core matrix transposition," in IEEE Transactions on Computers, vol. 51, no. 4, pp. 420-438, April 2002, doi: 10.1109/12.995452.
+\bibitem{b20} Kandemir, M. \& Choudhary, A. \& Ramanujam, J. \& Arunachalam, Meenakshi. (2000). A unified framework for optimizing locality, parallelism, and communication in out-of-core computations. Parallel and Distributed Systems, IEEE Transactions on. 11. 648 - 668. 10.1109/71.877759. 
+\bibitem{b21} I-Jui Sung, Juan G´omez-Luna, Josè Marìa Gonzàlez-Linares
+Nicolàs Gui, Wen-Mei W. Hwu. In-Place Transposition of Rectangular Matrices on Accelerators
+\bibitem{b22} Post: An Efficient Matrix Transpose in CUDA C/C++. Feb 18, 2013 By Mark Harris, https://developer.nvidia.com/blog/efficient-matrix-transpose-cuda-cc/
+\bibitem{b23} Hanounik, Bedros. (2000). Diagonal Registers: Novel Vector Register File Design for High Performance and Multimedia Computing. 
 \end{thebibliography}
 \vspace{12pt}
 
