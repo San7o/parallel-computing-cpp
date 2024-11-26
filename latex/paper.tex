@@ -90,7 +90,33 @@ checking on modern architectures is yet to be published.
 data structures, and parallelization techniques. \\
 - Discuss the challenges faced and how they were addressed \\
 
+In this report we benchmark different implementations of matTranspose
+and checkSymm, comparing implicit and explicit parallelism
+techniques. In particular, the benchmarks will indicate changes in cache and SIMD performance,
+speedup with multiple threads and compile flags optimizations. Data will be compared through tables
+and visually via graphs such as the roofline model. All benchmarks
+will be tested against every matrix sixe from $2^2$ to $2^{12}$
+We will now explain the methodology for matTranspose.
+The algorithms being benchmarked take a $N \times N$ square matrix and transpose it to another $N \times N$ output matrix.
+The following will be benchmarked:
+\begin{itemize}
+\item matTranspose: naive implementation of matTranspose, iterating over rows and columns and
+  swapping the items. (TODO: Code)
+\item matTranspose columns: similar to matTranspose, but iterating first by columns and then by rows.
+  The purpose of this implementation is to test different access patterns.
+  swapping the items. (TODO: Code)
+\item matTranspose half:
+\item matTranspose cyclic:   old algorithms
+\item matTranspose vectorization:
+\item matTranspose unrolling outer:
+\item matTranspose intrinsic:
+\item matTranspose cyclic unrolled:
+\item matTranspose intrinsic unrolled:
+\item matTranspose omp:  all types
+\item matTranspose ched: 3 types
+\end{itemize}
 
+We will now explain the methodology for checkSymm.
 
 \iffalse
 Remember: write

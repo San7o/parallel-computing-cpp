@@ -14,11 +14,11 @@
 # Queue name
 #PBS -q short_cpuQ
 # Set the maximum wall time
-#PBS -l walltime=0:20:00
+#PBS -l walltime=0:50:00
 # Number of nodes, cpus, and amount of memory
-#PBS -l select=1:ncpus=4:mem=1G
+#PBS -l select=1:ncpus=64:mem=4G
 
-NUM_ITERATIONS=1000
+NUM_ITERATIONS=100
 BUILD_DIR=./build
 OUTPUT_DIR=./benchmarks/plotting/reports
 # Load the necessary modules
@@ -84,6 +84,9 @@ echo "========= lscpu =========" >> $INFO_FILE
 lscpu >> $INFO_FILE
 echo "========= uname =========" >> $INFO_FILE
 uname -a >> $INFO_FILE 
+echo "========= coherency_line_size =========" >> $INFO_FILE
+cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size >> $INFO_FILE
+
 
 # =========================================== #
 #                 RUN THE TESTS               #

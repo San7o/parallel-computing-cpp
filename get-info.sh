@@ -20,4 +20,7 @@ lscpu >> $OUTPUT
 echo "==== uname =====" >> $OUTPUT
 uname -a >> $OUTPUT 
 
+echo "==== coherency_line_size =====" >> $OUTPUT
+cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size >> $OUTPUT
+
 echo "Done"
