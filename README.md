@@ -84,6 +84,7 @@ To build the full benchmark suite, run the following command:
 ```bash
 git clone https://github.com/San7o/parallel-computing-cpp.git &&
 cd parallel-computing-cpp &&
+git checkout first-assignment &&
 cmake -Bbuild \
 	  -D PC_BUILD_OPTIMIZED_O1=ON \
 	  -D PC_BUILD_OPTIMIZED_O2=ON \
@@ -175,12 +176,13 @@ This file builds the binaries and executes them.
 To submit the script for execution, run:
 
 ```bash
-export PC_PBS_FILE=/home/giovanni.santini/cluster/parallel-computing-cpp/first-assignment/first-assignment.pbs &&
+git clone https://github.com/San7o/parallel-computing-cpp.git &&
+export PC_PBS_FILE=$HOME/parallel-computing-cpp/cluster/parallel-computing-cpp/first-assignment/first-assignment.pbs &&
 chmod +x $PC_PBS_FILE &&
 qsub $PC_PBS_FILE
 ```
 
-the script will generate reports in `benchamrks/plotting/reports/`
+the script will generate reports in `$HOME/parallel-computing-cpp/benchamrks/plotting/reports/`
 containing collected data in csv format.
 
 <a name="additional_info"></a>

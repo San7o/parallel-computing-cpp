@@ -20,7 +20,7 @@ set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic
 		       -Werror -Wconversion -Wshadow
 		       -ftemplate-depth=4096
 		       -fconstexpr-depth=4096
-               -fexceptions
+                       -fexceptions
 )
 set(PC_TEST_SOURCES
         tests/transpose_test.cpp
@@ -79,6 +79,15 @@ if(OpenMP_CXX_FOUND)
                                       -fopenmp -fopenmp-simd)
 else()
     message(ERROR "OpenMP not found in your system")
+endif()
+
+find_package(MPI)
+if (MPI_CXX_FOUND)
+    message("Compiling with MPI")
+    list(APPEND PC_HEADERS ${MPI_INCLUDE_PATH})
+    list(APPEND PC_LINK_LIBRARIES ${MPI_CXX_LIBRARIES})
+else()
+    message(ERROR "MPI not found in your system")
 endif()
 
 if(PC_USE_CLANG)

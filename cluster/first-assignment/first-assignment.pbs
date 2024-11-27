@@ -25,7 +25,7 @@ OUTPUT_DIR=./benchmarks/plotting/reports
 module load gcc91
 module load cmake-3.15.4
 # Select the working directory
-cd /home/giovanni.santini/parallel-computing-cpp/
+cd $HOME/parallel-computing-cpp/
 
 # =========================================== #
 #               BUILD THE TARGETS             #
@@ -66,6 +66,10 @@ fi
 #                kernel version.              #
 # =========================================== #
 
+if [ -d $OUTOUT_DIR ]; then
+    # Remove old output
+    rm $OUTPUT_DIR/* || :
+fi
 if [ ! -d $OUTPUT_DIR ]; then
     mkdir $OUTPUT_DIR
 fi
