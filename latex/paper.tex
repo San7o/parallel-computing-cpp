@@ -4,11 +4,13 @@
 \usepackage{cite}
 \usepackage{blindtext}  % generate random text
 \usepackage{amsmath,amssymb,amsfonts}
-\usepackage{algorithmic}
+\usepackage{algorithm}
+% \usepackage{algorithmic}
 \usepackage{graphicx}
 \usepackage{textcomp}
 \usepackage{xcolor}
-\usepackage[noend]{algpseudocode}
+\usepackage{algpseudocode}
+
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
@@ -28,6 +30,7 @@ MAT. 235441}
 }
 
 \maketitle
+
 
 \begin{abstract}
 TODO *CRITICAL: Do Not Use Symbols, Special Characters, Footnotes, 
@@ -54,12 +57,16 @@ in section 5. The conclusion is in section 6.
 
 \section{State of the Art}
 
+\iffalse
+
 \textit{We define the transpose of a matrix $A$, and we denote it by $A^t$, as the matrix obtained from $A$ by interchanging rows and columns. Specifically, if $A$ is an $m$-by-$n$ matrix, then $A^t$ is the $n$-by-$m$ matrix whose entries are given by the equation (1)}. \cite{b11}
 
 
 \begin{equation}
 	(A^t)_{k,j} = A_{j,k}
 \end{equation}
+
+\fi
 
 Computing the transpose of a matrix is a well discussed computational problem. Early
 work focuses on in-situ transporision, that is transposing a matrix without
@@ -70,16 +77,16 @@ Remarcable contributions include Boothroyd's ACM Algorithm 302 (1966) using cycl
 adding fixed points arithmetic \cite{b14} and
 a later revision of the two by Esko G. Cate and David W. Twigg in ACM Algorithm 513 \cite{b15} .
 SIMD implementations for specific architectures are also widely adopted
-in performance critical applications like cryptographic libraries using instructions like Intel's vpunpckldq and vpunpckhdq \cite{b16} reporting improvements up to 70\% \cite{b17}.
+in performance critical applications like cryptographic libraries, utilizing instructions like Intel's vpunpckldq and vpunpckhdq \cite{b16} and reporting improvements up to 70\% \cite{b17}.
 However, matrix operations are not efficient as vector registers access data only linearly, motivating research on new vector register file (VFS) designs such as diagonal registers \cite{b23}.
 Another area of research includes out-of-core matrix transposition, that
 is computing the transpose of a matrix that exceeds the size of the available in-core memory.
 This problem focuses on optimizing the number of I/O operations and file layout since memory-memory data transfer is notably slower than math operations. Work in out-of-core transposition include W. 0. Alltop (1975) \cite{b18}, Suh \& Prasanna (2002) \cite{b19} and Krishnamoorth et al. (2004) \cite{b20}.
 Recent work explores parallelization and the use of GPUs to offload algebra operations. Examples are I-Jui Sung et al \cite{b21} and Mark Harris \cite{b22}.
 
-
+\iffalse
 \textit{A square matrix $A$ is called symmetric if it equals its transpose} \cite{b12}.
-
+\fi 
 While symmetric matrces are actively used in various areas of research as their
 properties allow for several optimizations in various problems, an in depth case study of symmetry
 checking on modern architectures is yet to be published.
@@ -87,159 +94,127 @@ checking on modern architectures is yet to be published.
 \section{Contribution and Methodology}
 
 \iffalse % pseudocode
-  \begin{algorithm}
-    \caption{My Algorithm}\label{euclid}
-    \begin{algoritmic}[1]
-      \procedure{MyProcedure}{}
+    \begin{algorithmic}[1]
+      \Procedure{MyProcedure}{}
       % use \state and \textit{} for variables
       % use \text for text
       % use \gets for assignments
       % use \If \EndIf \Return \Else
       \EndProcedure
-    \end{algoritmic}
-  \end{algorithm}
-\endif 
+    \end{algorithmic}
+\fi 
 
-- Elaborate on the unique contributions of your project \\
-- Describe the methodology proposed, including algorithms (pseudo-code),
-data structures, and parallelization techniques. \\
-- Discuss the challenges faced and how they were addressed \\
-
-In this report we benchmark different implementations of matTranspose
-and checkSymm, comparing implicit and explicit parallelism
-techniques. In particular, the benchmarks aim to increase cache and SIMD performance,
+In this report different implementations of matTranspose
+and checkSymm are benchmarked, comparing implicit and explicit parallelism
+techniques. In particular, the benchmarks aim to indicate cache and SIMD performance differences,
 speedup with multiple threads and the impact of compile flags optimizations. Data will be compared through tables
 and visually via graphs such as the roofline model. All benchmarks
-will be tested against every matrix sixe from $2^2$ to $2^{12}$, we will assume the size is a multiple of 4 for ease of implementation.
-We will now explain the methodology for matTranspose.
-The algorithms being benchmarked take a $N \times N$ input square matrix, an output matrix with the same shape and the size of the matrix.
-The following will be benchmarked:
+will be tested against every matrix size from $2^2$ to $2^{12}$, we will assume the size value is a multiple of 4 for ease of implementation.  \\
+The algorithms for \textit{matTranspose} will now be explained.
+Each algorithm takes a $N \times N$ input square matrix \textit{input}, a matrix of the same shape \textit{ouput}, and the size of the two matrices \textit{size}.
+The analyzed algorithms are the following:
 \begin{itemize}
-\item \textit{matTranspose}: naive implementation of matTranspose, iterating over values of the input matrix and storing them in the output matrix with rows and columns indexes swapped.
+\item \textit{matTranspose}: naive implementation of matTranspose, iterating over values of the input matrix and storing them in the output matrix with indexes of rows and columns swapped. See Algorithm~\ref{matTranspose} for the pseudocode.
 
-  \begin{algorithm}
-    \caption{matTranspose}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{matTranspose}{$Matrix input, Matrix output, int size$}
-        \For{\textit{r} \textbf{ in } \textit{0..size}}
-            \State \For{\textit{c} \textbf{ in } \textit{0..size}}
-            \State $output[c][r] = input[r][c]$
-            \EndFor
-        \EndFor
-      \EndProcedure
-    \end{algoritmic}
-  \end{algorithm}
+\begin{algorithm}
+	\caption{matTranspose}\label{matTranspose}
+	\begin{algorithmic}[1]
+		\For{\textit{r} \textbf{ in } \textit{0..size-1}}
+	    \For{\textit{c} \textbf{ in } \textit{0..size-1}}
+		\State $output[c][r] \gets input[r][c]$
+		\EndFor
+		\EndFor
+	\end{algorithmic}
+\end{algorithm}
 
     \item \textit{matTransposeColumns}: similar to \textit{matTranspose}, but iterating on the input matrix first by columns and then by rows.
   The purpose of this implementation is to test a different access pattern.
 
-  \begin{algorithm}
-    \caption{matTranspose columns}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{matTransposeColumns}{$Matrix input, Matrix output, int size$}
-        \For{\textit{r} \textbf{ in } \textit{0..size}}
-            \State \For{\textit{c} \textbf{ in } \textit{0..size}}
-            \State $output[r][c] = input[c][r]$
+\iffalse
+\begin{algorithm}
+	\caption{matTransposeColumns}\label{matTransposeColumns}
+\begin{algorithmic}[1]
+	\For{\textit{r} \textbf{ in } \textit{0..size-1}}
+	 \For{\textit{c} \textbf{ in } \textit{0..size-1}}
+            \State $output[r][c] \gets input[c][r]$
             \EndFor
         \EndFor
-      \EndProcedure
-    \end{algoritmic}
-  \end{algorithm}
+\end{algorithmic}
+\end{algorithm}
+\fi
 
-\item \item{matTransposeHalf}: similar to \textit{matTranspose}, but the algorithm
+  \item \textit{matTransposeHalf}: similar to \textit{matTranspose}, but the algorithm
   iterates only on the upper half of the input matrix. For each
-  pair $(i,j)$ of indices for rows and columns in the upper half of the input matrix $M$, the output matrix O will
-  store store $O[i][j]=M[j][i]$ and $O[j][i] = M[i][j]$.
-
-  \begin{algorithm}
-    \caption{matTranspose half}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{matTransposeHalf}{$Matrix input, Matrix output, int size$}
-        \For{\textit{r} \textbf{ in } \textit{0..size}}
-            \State \For{\textit{c} \textbf{ in } \textit{r..size}}
-            \State $output[r][c] = input[c][r]$
-            \State $output[c][r] = input[r][c]$
+  pair $(i,j)$ of indices of rows and columns in the upper half of the input matrix $M$, with output matrix $O$, $O[i][j]=M[j][i]$ and $O[j][i] = M[i][j]$.
+\iffalse
+\begin{algorithm}
+	\caption{matTransposeHalf}\label{matTransposeHalf}
+\begin{algorithmic}[1]
+	\For{\textit{r} \textbf{ in } \textit{0..size-1}}
+           \For{\textit{c} \textbf{ in } \textit{r..size-1}}
+            \State $output[r][c] \gets input[c][r]$
+            \State $output[c][r] \gets input[r][c]$
             \EndFor
         \EndFor
-      \EndProcedure
-    \end{algoritmic}
-  \end{algorithm}
+\end{algorithmic}
+\end{algorithm}
+\fi
   
-\item \item{matTransposeCyclic}: implementation of \cite{b13}, storing the matrix as a contiguous one-dimensional array of size $N*N$.
-  
+\item \textit{matTransposeCyclic}: implementation of \cite{b13}, storing the matrix as a contiguous one-dimensional array of size $N*N$. See Algorithm~\ref{matTransposeCyclic} for the pseudocode.
   \begin{algorithm}
-    \caption{matTranspose cyclic}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{matTransposeCyclic}{$Matrix input, Matrix output, int size$}
-        \For{\textit{n} \textbf{ in } \textit{0..(size*size)}}
-        \State int \textit{i} = $\frac{n}{size}$
-        \State int \textit{j} = $n \mod N$
-        $T[n] = M[size * j + i]$
+  	\caption{matTransposeCyclic}\label{matTransposeCyclic}
+  \begin{algorithmic}[1]
+
+  	  \For{\textit{n} \textbf{ in } \textit{0..size*size-1}}
+        \State $int\ \textit{i} \gets \frac{n}{size}$
+        \State $int\ \textit{j} \gets n \mod N$
+        \State $T[n] \gets M[size * j + i]$
         \EndFor
-      \EndProcedure
-    \end{algoritmic}
+          \end{algorithmic}
   \end{algorithm}
 
-\item \textit{matTransposeIntrinsic}: based on \textit{matrix\_transpose4x4} from the linux kernel \cite{b16}, revised to work for out-of-place float matrices on x86 architectures and implemented using intrinsics. \textit{transpose\_4x4\_f32\_intrinsic} transposes a 4 by 4 matrix using vector registers of 128 bits by doing the following steps: load 4 rows of 4 floats from the the input matrix, combine pairs of rows in an alternating pattern (interleaving), shuffle to get the transpose and store them in the output matrix. \textit{matTransposeIntrinsic} iterates over 4x4 blockw in the input matrix and saves the computed transposed block in the output matrix with rows and columns swapped.
-
+\item \textit{matTransposeIntrinsic}: based on \textit{matrix\_transpose4x4} from the linux kernel \cite{b16}, revised to work for out-of-place float matrices on x86 architectures and implemented using intrinsics. \textit{transpose\_4x4\_f32\_intrinsic} transposes a 4 by 4 matrix using vector registers of 128 bits by doing the following steps: load 4 rows of 4 floats from the the input matrix, combine pairs of rows in an alternating pattern (interleaving), shuffle to get the transpose and store them in the output matrix. \textit{matTransposeIntrinsic} iterates over 4x4 blocks in the input matrix, calling \textit{transpose\_4x4\_f32\_intrinsic} and saving the computed transposed block in the output matrix with rows and columns swapped. See Algorithm~\ref{matTransposeIntrinsic} for the pseudocode.
   \begin{algorithm}
-    \caption{matTranspose intrinsic}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{transpose\_4x4\_f32\_intrinsic}{float* src0, float* src1, float* src2, float* src3, float* dst0, float* dst1, float *dst2, float* dst3}
-    \textbf{comment} Load rows  
-    \_\_m128 row0 = \_mm\_loadu\_ps(src0);
-    \_\_m128 row1 = \_mm\_loadu\_ps(src1);
-    \_\_m128 row2 = \_mm\_loadu\_ps(src2);
-    \_\_m128 row3 = \_mm\_loadu\_ps(src3);
+	\caption{matTransposeIntrinsic}\label{matTransposeIntrinsic}
+	    \begin{algorithmic}[1]
+	\iffalse
 
-    \textbf{comment} unpack and interleave rows
-    \_\_m128 t0 = \_mm\_unpacklo\_ps(row0, row1);
-    \_\_m128 t1 = \_mm\_unpackhi\_ps(row0, row1);
-    \_\_m128 t2 = \_mm\_unpacklo\_ps(row2, row3);
-    \_\_m128 t3 = \_mm\_unpackhi\_ps(row2, row3);
-
-    \textbf{comment} Shuffle to form transposed rows
-    \_\_m128 d0 = \_mm\_movelh\_ps(t0, t2);
-    \_\_m128 d1 = \_mm\_movehl\_ps(t2, t0);
-    \_\_m128 d2 = \_mm\_movelh\_ps(t1, t3);
-    \_\_m128 d3 = \_mm\_movehl\_ps(t3, t1);
-
-    \textbf{comment} Store transposed rows
-    \_mm\_storeu\_ps(dst0, d0);
-    \_mm\_storeu\_ps(dst1, d1);
-    \_mm\_storeu\_ps(dst2, d2);
-    \_mm\_storeu\_ps(dst3, d3);
-
+      \Procedure{transpose\_4x4\_f32\_intrinsic}{Matrix4x4 in, Matrix4x4 out}
+    \State \textbf{comment} Load rows  
+    \State \textbf{comment} unpack and interleave rows
+    \State \textbf{comment} Shuffle to form transposed rows
+    \State \textbf{comment} Store transposed rows
       \EndProcedure
-      \procedure{matTransposeIntrinsic}{$Matrix input, Matrix output, int size$}
-        \For{int i = 0, i < size, i += 4}
-        \For{int j = 0, j < size, j += 4}
-        \State transpose\_4x4\_f32\_intrinsic(input[i][j],
-        input[i+1][j], input[i+2][j], input[i+3][j], output[j][i], output[j+1][i], output[j+2][i], output[j+3][i])
+      
+      \fi
+
+        \For{$int\ i = 0, i < size, i += 4$}
+        \For{$int\ j = 0, j < size, j += 4$}
+        \State $transpose\_4x4\_f32\_intrinsic(input[i][j],$
+        \State $                               output[j][i])$
         \EndFor
-      \EndProcedure
-    \end{algoritmic}
-  \end{algorithm}
+        \EndFor
+
+    \end{algorithmic}
+    \end{algorithm}
 
 \item \textit{matTransposeIntrinsicCyclic}: same as \textit{matTransposeIntrinsic} but the matrix is saved as a one dimensional array similarly to \textit{matTransposeCyclic}
 %\item matTranspose vectorization:
 %\item matTranspose half vectorization:
-\item \textit{matTransposeUnrollingOuter}: similar to \textit{matTranspose} but the outer loop is manually unrolled
+\item \textit{matTransposeUnrollingOuter}: similar to \textit{matTranspose} but the outer loop is manually unrolled. See Algorithm~\ref{matTransposeUnrollingOuter} for the pseudocode.
 
   \begin{algorithm}
-    \caption{matTransposeUnrollingOuter}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{matTransposeUnrollingOuter}{$Matrix input, Matrix output, int size$}
-        \For{$int c = 0, i < size, i += 4$}
-            \State \For{\textit{r} \textbf{ in } \textit{0..size}}
-            \State $output[c][r] = input[r][c]$
-            \State $output[c+1][r] = input[r][c+1]$
-            \State $output[c+2][r] = input[r][c+2]$
-            \State $output[c+3][r] = input[r][c+3]$
+    \caption{matTransposeUnrollingOuter}\label{matTransposeUnrollingOuter}
+    \begin{algorithmic}[1]
+        \For{$int\ c = 0, i < size, i += 4$}
+            \For{\textit{r} \textbf{ in } \textit{0..size-1}}
+            \State $output[c][r] \gets input[r][c]$
+            \State $output[c+1][r] \gets input[r][c+1]$
+            \State $output[c+2][r] \gets input[r][c+2]$
+            \State $output[c+3][r] \gets input[r][c+3]$
             \EndFor
         \EndFor
-      \EndProcedure
-    \end{algoritmic}
+    \end{algorithmic}
   \end{algorithm}
 
 \item \textit{matTransposeUnrollingInner}: same as \textit{matTransposeUnrollingOuter} but the inner for loop is manually unrolled
@@ -249,46 +224,46 @@ The following will be benchmarked:
 \item \textit{matTransposeHalfUnrollingInner}: same as \textit{matTransposeHalf} but the inner for loop is manually unrolled
 
 \item \textit{matTransposeCyclicUnrolled}: same as \textit{matTransposeCyclic} but the for loop in manually unrolled
-
+\iffalse
   \begin{algorithm}
-    \caption{matTranspose cyclic unrolled}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{matTransposeCyclicUnrolled}{$Matrix input, Matrix output, int size$}
-        \For{\textit{n} \textbf{ in } \textit{0..(size*size)}}
-        $T[n] = M[size * ((n+1) \mod size ) + (\frac{n}{size})]$
-        $T[n+1] = M[size * ((n+1+1) \mod size ) + (\frac{n+1}{size})]$
-        $T[n+2] = M[size * ((n+2+1) \mod size ) + (\frac{n+2}{size})]$
-        $T[n+3] = M[size * ((n+3+1) \mod size ) + (\frac{n+3}{size})]$
+    \caption{matTranspose cyclic unrolled}\label{matTransposeCyclicUnrolled}
+    \begin{algorithmic}[1]
+      \Procedure{matTransposeCyclicUnrolled}{$Matrix input, Matrix output, int size$}
+        \For{\textit{n} \textbf{ in } \textit{0..size*size-1}}
+        \State $T[n] \gets M[size * ((n+1) \mod size ) + (\frac{n}{size})]$
+        \State $T[n+1] \gets M[size * ((n+1+1) \mod size ) + (\frac{n+1}{size})]$
+        \State $T[n+2] \gets M[size * ((n+2+1) \mod size ) + (\frac{n+2}{size})]$
+        \State $T[n+3] \gets M[size * ((n+3+1) \mod size ) + (\frac{n+3}{size})]$
         \EndFor
       \EndProcedure
-    \end{algoritmic}
+    \end{algorithmic}
   \end{algorithm}
-  
+  \fi
 \item \textit{matTransposeOmpX}: this set of algorithms are all derived from \textit{matTranspose} with the outer for loops parallelized using omp with the number of threads \textit{X} being a power of 2 from $2^1$ to $2^6$.
 
 \item \textit{matTransposeOmpXCollapse}: similar to \textit{matTransposeOmpX} but the for loops are parellelized using \textit{collapse(2)}
   
-\item \textit{matTransposeOmp16SchedX}: similar to \textit{matTransposeOmpX} with 16 threads using different schedule algorithms, namely: static, synamic, guided.
+\item \textit{matTransposeOmp16SchedX}: similar to \textit{matTransposeOmpX} with 16 threads using different schedule algorithms, namely: static, dynamic, guided.
 \end{itemize}
 
-We will now explain the methodology for \textit{checkSymm}. The algorithms take an $N \times N$ square matrix and Its size are return true if the matrix is symmetrix, false otherwise.
-The algorithms being benchmarked are the wollowing:
-\being{itemize}
-\item \textit{checkSymm}: naive implementation of checkSymm. Iterates over the upper half of the matrix and testing if every value is equal to the symmetric value.
+The algorithms for \textit{checkSymm} will now be explained. Each algorithm take an $N \times N$ square matrix \textit{input}, a size \textit{size} and return true if the matrix is symmetrix, false otherwise.
+The analyzed algorithms are the following:
+\begin{itemize}
+\item \textit{checkSymm}: naive implementation of checkSymm. It Iterates over the upper half of the matrix and testing if every value is equal to the symmetric value. See Algorithm~\ref{checkSymm} for the pseudocode.
 
   \begin{algorithm}
-    \caption{checkSymm}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{checkSymm}{$Matrix input, int size$}
-        \State $isSymm = true$
-        \For{\textit{i} \textbf{ in } \textit{0..size}}
-            \For{\textit{j} \textbf{ in } \textit{i..size}}
-            \If $input[i][j] != input[j][i]$
-            \State $isSymm = false$
+    \caption{checkSymm}\label{checkSymm}
+    \begin{algorithmic}[1]
+        \State $\textbf{bool}\ isSymm \gets true$
+        \For{\textit{i} \textbf{ in } \textit{0..size-1}}
+            \For{\textit{j} \textbf{ in } \textit{i..size-1}}
+            	\If{$input[i][j] != input[j][i]$}
+            	\State $isSymm \gets \textbf{false}$
+            	\EndIf
+        	\EndFor
         \EndFor
-        \Return $isSymm$
-      \EndProcedure
-    \end{algoritmic}
+        \State \Return $isSymm$
+    \end{algorithmic}
   \end{algorithm}
 
 % \item \textit{checkSymColumns}:
@@ -296,34 +271,55 @@ The algorithms being benchmarked are the wollowing:
   % \item \textit{checkSymVectorization}
 \item \textit{checkSymmUnrolledOuter}: similar to \textit{checkSymm} but the outer loop is manually unrolled.
 
+\iffalse
   \begin{algorithm}
-    \caption{checkSymmUnrolledOuter}\label{matTranspose}
-    \begin{algoritmic}[1]
-      \procedure{checkSymmUnrolledOuter}{$Matrix input, int size$}
+    \caption{checkSymmUnrolledOuter}\label{checkSymmUnrolledOuter}
+    \begin{algorithmic}[1]
+      \Procedure{checkSymmUnrolledOuter}{$Matrix input, int size$}
         \State $isSymm = true$
-        \For{\textit{i} \textbf{ in } \textit{0..size}}
-            \For{\textit{j} \textbf{ in } \textit{i..size}}
+        \For{\textit{i} \textbf{ in } \textit{0..size-1}}
+            \For{\textit{j} \textbf{ in } \textit{i..size-1}}
             \If $input[i][j] != input[j][i]$
             \State $isSymm = false$
+            \EndIf
             \If $input[i+1][j] != input[j][i+1]$
             \State $isSymm = false$
+                        \EndIf
             \If $input[i+2][j] != input[j][i+2]$
             \State $isSymm = false$
+                        \EndIf
             \If $input[i+3][j] != input[j][i+3]$
             \State $isSymm = false$
+                        \EndIf
+        \EndFor
         \EndFor
         \Return $isSymm$
       \EndProcedure
-    \end{algoritmic}
+    \end{algorithmic}
   \end{algorithm}
-
+\fi
   
 \item \textit{checkSymmUnrollingInner}: similar to \textit{checkSymmUnrolledOuter} but the inner loop is manually unrolled instead of the outer loop.
-\item \textit{checkSymmUnrollingOuterNoBranch}:
-\item \textit{checkSymmUnrollingInnerNoBranch}:
-\item \textit{checkSymOmpX}:
-\item \textit{checkSymOmpXCollapse}:
-\item \textit{checkSymm16SchedX}:
+\item \textit{checkSymmUnrollingOuterNoBranch}: similar to \textit{checkSymmUnrollingOuter}, but 4 pairs of values are checked for equality with a single math formula. The formula performs a XOR on 4 pairs of values and their transpose, if any of those are different than 0 then the matrix is not symmetric. See Arlgoritm~\ref{checkSymmUnrollingOuterNoBranch} for the pseudocode.
+
+
+\begin{algorithm}
+	\caption{checkSymmUnrollingOuterNoBranch}\label{checkSymmUnrollingOuterNoBranch}
+	\begin{algorithmic}[1]
+		\State $\textbf{bool}\ isSymm \gets true$
+		\For{$int\ i = 0; i < size; i += 4$}
+		\For{$int\ j = i; j < size; j++$}
+		\State $isSymm \gets isSymm \mid (((input[i][j] \oplus input[j][i]) \mid (input[i+1][j] \oplus input[j][i+1]) \mid (input[i+2][j] \oplus input[j][i+2]) \mid (input[i+3][j] \oplus input[j][i+3])) != 0)$
+		\EndFor
+		\EndFor
+		\State \Return $isSymm$
+	\end{algorithmic}
+\end{algorithm}
+
+\item \textit{checkSymmUnrollingInnerNoBranch}: similar to \textit{checkSymmUnrollingOuterNoBranch} but the inner loop is manually unrolled.
+\item \textit{checkSymOmpX}: similar to \textit{matTransposeOmpX} but based on \textit{checkSymm}. After each parallel section, a barrier is needed to synchronize the shared boolean output variable.
+\item \textit{checkSymOmpXCollapse}: similar to \textit{checkSymmOmpX} bur the two loops are parallelized with collapse(2).
+\item \textit{checkSymm16SchedX}: similar to \textit{matTranspose16SchedX} but based on \textit{matTranspose}.
 \end{itemize}
 
 \iffalse
@@ -332,16 +328,6 @@ Remember: write
 - how you did it (methodology): we benchmarked algorithm A ... (all the pseudocodes). Whay we mesured
 
 \fi
-
-Quiesti qui bellissimi e stra fighi
-- uno (pseudocodice)
-- due (pseudocodice)
-- tre (pseudocodice)
-- ...
-Ho usato implicit ed esplicit parallelism con vectorization e openmp
-Voglio fare questo per comparare quest'altro cos' pel meme
-Benchmarkare è difficle perchè... quindi ho fatto ciò... (aplia qua)
-
 
 \section{Experiments and System Description}
 
@@ -352,6 +338,9 @@ and programming toolchains). \\
 methodologies used in the project. \\
 - Discussion on how experiments are designed to test the hypotheses
 or achieve the objectives \\
+
+The experiments were conducted on a cluster equipped with 64 x86\_64 cpus, more specifically Intel(R) Xeon(R) Gold 5220 CPU @ 2.20GHz.
+
 
 
 All relevant cluster info, compiler, flags, c++ standard. Test flags and data. Benchmarks metrics collected

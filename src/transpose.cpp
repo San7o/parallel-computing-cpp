@@ -49,10 +49,8 @@ void pc::matTransposeColumns(float **M, float **T, tenno::size N)
 }
 
 void pc::matTransposeCyclic(float *M, float *T, tenno::size N) {
-    for(long unsigned int n = 0; n<N*N; n++) {
-        long unsigned int i = n/N;
-        long unsigned int j = n%N;
-        T[n] = M[N*j + i];
+    for(long unsigned int n = 0; n<N*N; ++n) {
+        T[n] = M[N*(n%N) + n/N];
     }
 }
 
