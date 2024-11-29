@@ -331,6 +331,7 @@ Remember: write
 
 \section{Experiments and System Description}
 
+\iffalse
 - Detailed description of the computing system and platform. \\
 - Relevant specifications or configurations (e.g., libraries
 and programming toolchains). \\
@@ -338,8 +339,15 @@ and programming toolchains). \\
 methodologies used in the project. \\
 - Discussion on how experiments are designed to test the hypotheses
 or achieve the objectives \\
+\fi
 
-The experiments were conducted on a cluster equipped with 64 x86\_64 cpus, more specifically Intel(R) Xeon(R) Gold 5220 CPU @ 2.20GHz.
+The experiments were conducted on a cluster equipped with 64 Intel(R) Xeon(R) Gold 5220 CPUs at 2.20GHz, 32K of L1d cache, 32K L1i cache, 1025K L2 cache, 25344K L3 cache with cache lines of 64 bits, 1 thread per core, 4GB of DDR4 RAM running Linux 3.10.
+The algorithms were benchmarked using valFuzz \ref{b?}. The set of benchmarks were compiled with flags "-fopenmp", "-fopenmp-simd", 4 set of benchmarks are compiles with either no optimizations, -O1, -O2, -O3 -Ofast -march=native.
+To obtain results with statistical significance, each benchmark has been executed 100 times collecting the following data concerning wall-clock execution time: minimum, maximum, median, arithmetic mean, standard deviation, Q1, Q3.
+To prevent interference between the benchmarks, the cache is cleared by initializing an array twice as big as the L3 cache size.
+To ensure fair comparison, the same input matrix is provided to all algorithms.
+The input matrix is initialized with an uniform random distribution of floats ranging from -1 to 1 generated using lcg algorithm \ref{b?} with the parameters a=1664525 and c = 1013904223.
+To save time, generation of random numbers is done at compile time using tenno-tl \ref{b?} with the initial seed "1337". Additional algorithms and data structures were used from tenno-tl including ranges and arrays.
 
 
 
