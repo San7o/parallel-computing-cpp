@@ -56,7 +56,7 @@ and [tenno](https://github.com/San7o/tenno-tl.git).
   number generation to initialize the input data.
 
 Both dependencies are automatically downloaded by the build
-system of your choice, thou cmake is primarly supported and Its
+system of your choice, though cmake is primarly supported and Its
 use is advised.
 
 ### On NixOS
