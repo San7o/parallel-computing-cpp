@@ -89,13 +89,13 @@ bool pc::checkSymUnrollingOuterNoBranch(float **M, tenno::size N)
   for (size_t i = 0; i < N - 4; i += 4)
     for (size_t j = i; j < N; ++j)
       {
-	symm |=
+	symm &=
 	        ((
 		  ((uint32_t) M[i][j] ^ (uint32_t) M[j][i])
 	        | ((uint32_t) M[i+1][j] ^ (uint32_t) M[j][i+1])
                 | ((uint32_t) M[i+2][j] ^ (uint32_t) M[j][i+2])
                 | ((uint32_t) M[i+3][j] ^ (uint32_t) M[j][i+3]))
-         	!= 0); // normalize the results
+         	== 0); // normalize the results
       }
   return symm;
 }
@@ -108,10 +108,10 @@ bool pc::checkSymUnrollingInnerNoBranch(float **M, tenno::size N)
       {
 	symm &=
 	        ((
-		  ((uint32_t) M[i][j] - (uint32_t) M[j][i])
-	        | ((uint32_t) M[i][j+1] - (uint32_t) M[j+1][i])
-                | ((uint32_t) M[i][j+2] - (uint32_t) M[j+2][i])
-                | ((uint32_t) M[i][j+3] - (uint32_t) M[j+3][i]))
+		  ((uint32_t) M[i][j] ^ (uint32_t) M[j][i])
+	        | ((uint32_t) M[i][j+1] ^ (uint32_t) M[j+1][i])
+                | ((uint32_t) M[i][j+2] ^ (uint32_t) M[j+2][i])
+                | ((uint32_t) M[i][j+3] ^ (uint32_t) M[j+3][i]))
          	== 0); // normalize the results
       }
   return symm;

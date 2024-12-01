@@ -144,7 +144,7 @@ void pc::matTransposeIntrinsic(float **mat_in, float **mat_out, size_t N)
 
 void pc::matTransposeVectorization(float **M, float **T, tenno::size N)
 {
-  #pragma omp simd
+  #pragma omp for simd
   for (tenno::size i = 0; i < N; ++i)
       for (tenno::size j = 0; j < N; ++j)
             T[i][j] = M[j][i];
