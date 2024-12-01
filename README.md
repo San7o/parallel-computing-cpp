@@ -8,12 +8,12 @@
 
 - [About](#about)
 - [Dependencies](#dependencies)
-- [Building locally](#building_locally)
+- [Build and run on the cluster](#cluster)
+- [Building manually](#building_manually)
   - [Using cmake](#cmake)
   - [Using bazel](#bazel)
   - [Using meson](#meson)
-- [Running locally](#running_locally)
-- [Build and run on the cluster](#cluster)
+- [Running manually](#running_manually)
 - [Additional Information](#additional_info)
   - [Analyze data](#analyze_data)
 
@@ -67,8 +67,29 @@ environment using [flake.nix](./flake.nix):
 ```bash
 nix develop
 ```
-<a name="building_locally"></a>
-## Building locally
+
+<a name="cluster"></a>
+## Build and run on the cluster
+
+The complete `.pbs` file can be found in
+[cluster/first-assignment/first-assignment.pbs](./cluster/first-assignment/first-assignment.pbs).
+This file builds the binaries and executes them.
+To submit the script for execution, run the following on the cluster:
+
+```bash
+git clone https://github.com/San7o/parallel-computing-cpp.git &&
+git checkout first-assignment &&
+export PC_PBS_FILE=$HOME/parallel-computing-cpp/cluster/parallel-computing-cpp/first-assignment/first-assignment.pbs &&
+chmod +x $PC_PBS_FILE &&
+qsub $PC_PBS_FILE
+```
+
+the script will generate reports in `$HOME/parallel-computing-cpp/benchamrks/plotting/reports/`
+containing collected data in csv format.
+
+
+<a name="building_manually"></a>
+## Building manually
 
 This project primarly supports building with `cmake >= 3.15.4` and
 Its use is advised. Additionally, building with `bazel`
@@ -78,6 +99,12 @@ the benchmarks on the cluster are specified using cmake.
 
 <a name="cmake"></a>
 ### Using cmake
+
+If you are on the cluster, please load the necessary modules first:
+```bash
+module load gcc91 &&
+module load cmake-3.15.4
+```
 
 To build the full benchmark suite, run the following command:
 
@@ -135,8 +162,8 @@ meson setup build &&
 ninja -C build
 ```
 
-<a name="running_locally"></a>
-## Running locally
+<a name="running_manually"></a>
+## Running manually
 
 The project depends on [valFuzz](https://github.com/San7o/valFuzz) which
 provides testing, fuzzing and benchmarking functionalities.
@@ -166,24 +193,6 @@ the [get-info.sh](./get-info.sh) script:
 ```bash
 ./get-info.sh
 ```
-
-<a name="cluster"></a>
-## Build and run on the cluster
-
-The complete `.pbs` file can be found in
-[cluster/first-assignment/first-assignment.pbs](./cluster/first-assignment/first-assignment.pbs).
-This file builds the binaries and executes them.
-To submit the script for execution, run:
-
-```bash
-git clone https://github.com/San7o/parallel-computing-cpp.git &&
-export PC_PBS_FILE=$HOME/parallel-computing-cpp/cluster/parallel-computing-cpp/first-assignment/first-assignment.pbs &&
-chmod +x $PC_PBS_FILE &&
-qsub $PC_PBS_FILE
-```
-
-the script will generate reports in `$HOME/parallel-computing-cpp/benchamrks/plotting/reports/`
-containing collected data in csv format.
 
 <a name="additional_info"></a>
 ## Additional Information
