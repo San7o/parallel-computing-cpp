@@ -172,8 +172,6 @@ more informations about possible flags, please consult
 the help message with `--help`:
 
 ```c++
-module load gcc91 &&
-module load cmake-3.15.4 &&
 ./build/tests --benchmark          \
               --num-iterations 100 \
               --report report.txt
