@@ -17,7 +17,7 @@
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
-\title{Matrix Transposition and Symmetry: a case study on Superscalar Architectures\\
+\title{Matrix Transposition and Symmetry in Superscalar Architectures: A Case Study\\
 %{\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
 %should not be used}
 %\thanks{Identify applicable funding agency here. If none, delete this.}
@@ -55,7 +55,7 @@ In section 2, we discuss the state of the art of the two algorithms.
 In section 3, we elaborate on the algorithms analyzed.
 In section 4, we explain the benchmarking procedures and system information.
 In section 5, we present the results. The conclusion is in section 6. Section 7 contains
-the project's github link
+the project's github link.
 
 
 \section{State of the Art}
@@ -73,10 +73,7 @@ the project's github link
 
 Computing the transpose of a matrix is a well discussed computational problem. Early
 work focuses on in-situ transporision, that is transposing a matrix without
-relying on additional space. Implementations were often based on the cyclic
-structure of the transposition mapping: values of a matrix of size $N$ can be stored
-in a single contiguous array or size $N$*$N$ and indexed with $row*\#rows+ column$.
-Remarcable contributions include Boothroyd's ACM Algorithm 302 (1966) using cyclic mapping \cite{b13}, Laflin and Brefner ACM Algorithm 380
+relying on additional space. Remarcable contributions include Boothroyd's ACM Algorithm 302 (1966) using cyclic mapping \cite{b13}, Laflin and Brefner ACM Algorithm 380
 adding fixed points arithmetic \cite{b14} and
 a later revision of the two by Esko G. Cate and David W. Twigg in ACM Algorithm 513 \cite{b15} .
 SIMD implementations for specific architectures are also widely adopted
@@ -90,7 +87,7 @@ Recent work explores parallelization and the use of GPUs to offload algebra oper
 \iffalse
 \textit{A square matrix $A$ is called symmetric if it equals its transpose} \cite{b12}.
 \fi 
-While symmetric matrces are actively used in various areas of research as their
+In constrast, while symmetric matrces are actively used in various areas of research as their
 properties allow for several optimizations in various problems, an in depth case study of symmetry
 checking on modern architectures is yet to be published.
 
@@ -107,16 +104,16 @@ checking on modern architectures is yet to be published.
     \end{algorithmic}
 \fi 
 
-In this report different implementations of \textit{matTranspose}
+In this report, different implementations of \textit{matTranspose}
 and \textit{checkSymm} are benchmarked, comparing implicit and explicit parallelism
-techniques. In particular, the benchmarks aim to indicate cache and SIMD performance differences,
-speedup with multiple threads and the impact of compile flags optimizations. Data will be compared visually via graphs. All benchmarks
-will be tested against every matrix size from $2^2$ to $2^{12}$, we will assume the size value is a multiple of 4 for ease of implementation.  \\
+techniques. In particular, the benchmarks aim to indicate cache and SIMD performance,
+speedup with multiple threads and the impact of compile flags. Data will be compared visually via graphs. All benchmarks
+will be tested against every matrix size of power of $2$ from $2^2$ to $2^{12}$.  \\
 The algorithms for \textit{matTranspose} will now be explained.
 Each algorithm takes a $N \times N$ input square matrix \textit{input}, a matrix of the same shape \textit{ouput}, and the size of the two matrices \textit{size}.
 The analyzed algorithms are the following:
 \begin{itemize}
-\item \textit{matTranspose}: naive implementation of matTranspose, iterating over values of the input matrix and storing them in the output matrix with indexes of rows and columns swapped. See Algorithm~\ref{matTranspose} for the pseudocode.
+\item \textit{matTranspose}: naive implementation of matTranspose, iterating over values of the input matrix by rows and columns and storing them in the output matrix with indexes swapped. See Algorithm~\ref{matTranspose} for the pseudocode.
 
 \begin{algorithm}
 	\caption{matTranspose}\label{matTranspose}
@@ -162,14 +159,14 @@ The analyzed algorithms are the following:
 \end{algorithm}
 \fi
   
-\item \textit{matTransposeCyclic}: implementation of \cite{b13}, storing the matrix as a contiguous one-dimensional array of size $N*N$. See Algorithm~\ref{matTransposeCyclic} for the pseudocode.
+\item \textit{matTransposeCyclic}: implementation of \cite{b28}, storing the matrix as a contiguous one-dimensional array of size $N*N$. See Algorithm~\ref{matTransposeCyclic} for the pseudocode.
   \begin{algorithm}
   	\caption{matTransposeCyclic}\label{matTransposeCyclic}
   \begin{algorithmic}[1]
 
   	  \For{\textit{n} \textbf{ in } \textit{0..size*size-1}}
         \State $int\ \textit{i} \gets \frac{n}{size}$
-        \State $int\ \textit{j} \gets n \mod N$
+        \State $int\ \textit{j} \gets n \mod size$
         \State $T[n] \gets M[size * j + i]$
         \EndFor
           \end{algorithmic}
@@ -250,7 +247,7 @@ The analyzed algorithms are the following:
 \item \textit{matTransposeOmp16SchedX}: similar to \textit{matTransposeOmpX} with 16 threads using different schedule algorithms, namely: static, dynamic, guided.
 \end{itemize}
 
-The algorithms for \textit{checkSymm} will now be explained. Each algorithm take an $N \times N$ square matrix \textit{input}, a size \textit{size} and return true if the matrix is symmetrix, false otherwise.
+The algorithms for \textit{checkSymm} will now be explained. Each algorithm takes an $N \times N$ square matrix \textit{input}, a size \textit{size} and return \textit{true} if the matrix is symmetrix, \textit{false} otherwise.
 The analyzed algorithms are the following:
 \begin{itemize}
 \item \textit{checkSymm}: naive implementation of checkSymm. It Iterates over the upper half of the matrix and testing if every value is equal to the symmetric value.
@@ -332,13 +329,6 @@ The analyzed algorithms are the following:
 \item \textit{checkSymm16SchedX}: similar to \textit{matTranspose16SchedX} but based on \textit{matTranspose}.
 \end{itemize}
 
-\iffalse
-Remember: write
-- what you did (contribution): high level overview like "hey, i want to test different vectorization ond parallelization implementations"
-- how you did it (methodology): we benchmarked algorithm A ... (all the pseudocodes). Whay we mesured
-
-\fi
-
 \section{Experiments and System Description}
 
 \iffalse
@@ -351,15 +341,6 @@ methodologies used in the project. \\
 or achieve the objectives \\
 \fi
 
-\iffalse
-The experiments were conducted on a cluster equipped with 64 Intel(R) Xeon(R) Gold 6140M CPU with 2.30GHz, 32K of L1d cache, 32K L1i cache, 1025K L2 cache, 25344K L3 cache with cache lines of 64 bits, 1 thread per core, 4GB of DDR4 RAM running Linux 3.10.
-The algorithms were benchmarked using valFuzz \cite{b24}. The set of benchmarks were compiled using gcc-9.1.0 with flags "-fopenmp", "-fopenmp-simd", 4 set of benchmarks are compiled with either no optimizations, -O1, -O2 and "-O3 -Ofast -march=native".
-To obtain results with statistical significance, each benchmark has been executed 100 times collecting the following data concerning wall-clock execution time: minimum, maximum, median, arithmetic mean, standard deviation, Q1, Q3.
-To prevent interference between the benchmarks, the cache is cleared by initializing an array twice as big as the L3 cache size.
-To ensure fair comparison, the same input matrix is provided to all algorithms.
-The input matrix is initialized with an uniform random distribution of floats ranging from -1 to 1 generated using a Linear Congruential Generator (LGC) \cite{b25} with the parameters $a=1664525$, $c = 1013904223$, $m=2^{32}$ \cite{b26} and seed $1337$.
-To save time, generation of random numbers is done at compile time using tenno-tl \cite{b27}. Additional algorithms and data structures were used from tenno-tl including ranges and arrays.
-\fi
 
 Experiments were conducted on a cluster with 64 Intel(R) Xeon(R) Gold 5220 CPUs (2.20GHz) featuring 32K L1d and L1i caches, 1025K L2 cache, 25344K L3 cache (64-bit cache lines), 1 thread per core, and 4GB RAM, running Linux 3.10. The algorithms were benchmarked using valFuzz \cite{b24}, with benchmarks compiled using gcc-9.1.0 and flags "-fopenmp", "-fopenmp-simd". Four benchmark sets were compiled with different optimization levels: none, -O1, -O2 and "-O3 -Ofast -march=native".
 
@@ -376,26 +357,7 @@ To expedite random number generation, values were precomputed at compile time us
 
 cinquantamila grafici qui
 
-Mamma mia ma quanto e' veloce sto asesmbly,
-buu al compilatore che non ci azzecca per bene. 
-Anche ciclico è nammerda, invece l'unrolling
-è figo.
-In generale abbiamo capito
-cose ed il cluster è pazzesco e le differenze
-sono notevoli, evviva i soldi.
-
-Ok fatto un po' meglio:
-
-
-
 \fi
-
-\iffalse
-The results are now presented, matTranspose will be analyzed first.
-The roofline model in figure~\ref{fig:transpose_benchmarks} (d) shows that the base algorithm is memory bounded so improvement over accessing memory efficiently will be rewarded. Starting from the algorithms without any parallelism depicted in figure~\ref{fig:transpose_base}, we notice \textit{matTransposeCyclic} to be constantly
-slower that the others, while \textit{matTransposeColumns} shows little to no difference compared to the base algorithm with the same compiler flags. The performance difference between the other algorithms increases as more aggressive compiler optimizations are enabled. \textit{checkSymmHalf} becomes slower than the base line with the same optimizations, when they are enabled. 
-Taking into consideration implicit parallelism techniques in figure~\ref{fig:transpose_benchmarks} (a), the faster algorithm is \textit{matTransposeIntrinsicCyclic} from size smaller than $10^2$, getting surpassed by \textit{matTransposeIntrinsic} and \textit{matTransposeUnrollingOuter} in larger matrices. \textit{matTransposeCyclicUnrolled} is the slower for all sizes. Looking at explicit parallelism in figure-\ref{fig:transpose_benchmarks} (b), benchmarks with giher number of threads take more time than benchmarks with fewer threads until around size $10^2$ to $10^3$ where the trend is inverted. When analysing schedulers, static is slower for most matrix sixzes but all algorithms converge to about the same timing in the bigger input. 
-\fi 
 
 
 \begin{figure}[htb]
@@ -458,7 +420,7 @@ The performance analysis highlights the importance of optimization techniques an
 
 \section{GIT and Instructions for Reproducibility}
 
-Github link: \href{https://github.com/San7o/parallel-computing-cpp}{https://github.com/San7o/parallel-computing-cpp} \\
+Github link: \href{https://github.com/San7o/parallel-computing-cpp/tree/first-assignment}{https://github.com/San7o/parallel-computing-cpp/tree/first-assignment} \\
 Please read the instructions in the \textit{README.md} for building.
 
 \begin{thebibliography}{00}
@@ -497,6 +459,7 @@ Nicolàs Gui, Wen-Mei W. Hwu. In-Place Transposition of Rectangular Matrices on 
 \bibitem{b26} Numerical Recipes ranqd1, Chapter 7.1, An Even Quicker Generator, Eq. 7.1.6
 parameters from Knuth and H. W. Lewis
 \bibitem{b27} https://github.com/San7o/tenno-tl
+\bibitem{b28} MARTIN F. BERMAN.  A method for Transposing a Matrix. System Developement Corporation, Santa Monica, California.
 \end{thebibliography}
 \vspace{12pt}
 
