@@ -45,51 +45,8 @@ void matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N);
 
 
 /*============================================*\
-|              IMPLICIT PARALLELISM            |
+|                     MPI                      |
 \*============================================*/
-
-// Vectorization (pragma simd)       DONE
-// Loop Unrolling inner (manual)     DONE
-// Loop Unrolling outer (manual)     DONE
-// #pragma GCC ivdep                 ASSUMED IN SIMD
-// branchless inner                  DONE
-// branchless outer                  DONE
-
-void matTransposeVectorization(float **M, float **T, tenno::size N);
-void matTransposeUnrolledInner(float **M, float **T, tenno::size N);
-void matTransposeUnrolledOuter(float **M, float **T, tenno::size N);
-
-void matTransposeHalfVectorization(float **M, float **T, tenno::size N);
-void matTransposeHalfUnrolledInner(float **M, float **T, tenno::size N);
-void matTransposeHalfUnrolledOuter(float **M, float **T, tenno::size N);
-void matTransposeCyclicUnrolled(float *M, float *T, tenno::size N);
-
-
-/*============================================*\
-|              EXPLICIT PARALLELISM            |
-\*============================================*/
-
-// omp                     DONE
-// omp collapse            DONE
-// different schedulers    DONE
-
-void matTransposeOmp2(float **M, float **T, tenno::size N);
-void matTransposeOmp4(float **M, float **T, tenno::size N);
-void matTransposeOmp8(float **M, float **T, tenno::size N);
-void matTransposeOmp16(float **M, float **T, tenno::size N);
-void matTransposeOmp32(float **M, float **T, tenno::size N);
-void matTransposeOmp64(float **M, float **T, tenno::size N);
-
-void matTransposeOmp2Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp4Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp8Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp16Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp32Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp64Collapse(float **M, float **T, tenno::size N);
-
-void matTransposeOmp16SchedStatic(float **M, float **T, tenno::size N);
-void matTransposeOmp16SchedDynamic(float **M, float **T, tenno::size N);
-void matTransposeOmp16SchedGuided(float **M, float **T, tenno::size N);
 
 void matTransposeMPI(float **M, float **T, tenno::size N);
 

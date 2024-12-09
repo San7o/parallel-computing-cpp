@@ -32,39 +32,41 @@ fi
 if [ -d $BUILD_DIR ]; then
     if [ -f "$BUILD_DIR/tests" ]; then
         echo "Running regular benchmarks..."
-        ./$BUILD_DIR/tests \
-                --benchmark \
-                --num-iterations $NUM_ITERATIONS \
-                --no-multithread \
-                --report $OUTPUT_DIR/base.txt \
-                --reporter csv
+        mpirun -np 1 ./$BUILD_DIR/tests \
+                        --benchmark \
+                        --num-iterations $NUM_ITERATIONS \
+                        --no-multithread \
+                        --report $OUTPUT_DIR/base.txt \
+                        --reporter csv \
+			--run-one-benchmark "matTranspose MPI" \
+		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
         echo "Running optimized benchmarks..."
-        ./$BUILD_DIR/tests_opt_o1 \
-                --benchmark \
-                --num-iterations $NUM_ITERATIONS \
-                --no-multithread \
-                --report $OUTPUT_DIR/opt_o1.txt \
-                --reporter csv
+        mpirun -np 1 ./$BUILD_DIR/tests_opt_o1 \
+                        --benchmark \
+                        --num-iterations $NUM_ITERATIONS \
+                        --no-multithread \
+                        --report $OUTPUT_DIR/opt_o1.txt \
+                        --reporter csv
     fi
     if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
         echo "Running optimized benchmarks..."
-        ./$BUILD_DIR/tests_opt_o2 \
-                --benchmark \
-                --num-iterations $NUM_ITERATIONS \
-                --no-multithread \
-                --report $OUTPUT_DIR/opt_o2.txt \
-                --reporter csv
+        mpirun -np 1 ./$BUILD_DIR/tests_opt_o2 \
+                        --benchmark \
+                        --num-iterations $NUM_ITERATIONS \
+                        --no-multithread \
+                        --report $OUTPUT_DIR/opt_o2.txt \
+                        --reporter csv
     fi
     if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
         echo "Running aggressive optimized benchmarks..."
-        ./$BUILD_DIR/tests_opt_o3 \
-                --benchmark \
-                --num-iterations $NUM_ITERATIONS \
-                --no-multithread \
-                --report $OUTPUT_DIR/opt_o3.txt \
-                --reporter csv
+        mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
+                        --benchmark \
+                        --num-iterations $NUM_ITERATIONS \
+                        --no-multithread \
+                        --report $OUTPUT_DIR/opt_o3.txt \
+                        --reporter csv
     fi
 else
     echo "Please run the build script first"

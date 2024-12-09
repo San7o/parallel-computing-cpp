@@ -40,48 +40,4 @@ bool checkSym(float **M, tenno::size N);
 bool checkSymColumns(float **M, tenno::size N);
 
 
-/*============================================*\
-|              IMPLICIT PARALLELISM            |
-\*============================================*/
-
-// Vectorization (pragma simd)       DONE
-// Loop Unrolling inner (manual)     DONE
-// Loop Unrolling outer (manual)     DONE
-// #pragma GCC ivdep                 ASSUMED IN SIMD
-// branchless inner                  DONE
-// branchless outer                  DONE
-
-bool checkSymVectorization(float **M, tenno::size N);
-bool checkSymUnrollingInner(float **M, tenno::size N);
-bool checkSymUnrollingOuter(float **M, tenno::size N);
-bool checkSymUnrollingOuterNoBranch(float **M, tenno::size N);
-bool checkSymUnrollingInnerNoBranch(float **M, tenno::size N);
-
-
-/*============================================*\
-|              EXPLICIT PARALLELISM            |
-\*============================================*/
-
-// omp                     DONE
-// omp collapse            DONE
-// different schedulers    DONE
-
-bool checkSymOmp2(float **M, tenno::size N);
-bool checkSymOmp4(float **M, tenno::size N);
-bool checkSymOmp8(float **M, tenno::size N);
-bool checkSymOmp16(float **M, tenno::size N);
-bool checkSymOmp32(float **M, tenno::size N);
-bool checkSymOmp64(float **M, tenno::size N);
-
-bool checkSymOmp2Collapse(float **M, tenno::size N);
-bool checkSymOmp4Collapse(float **M, tenno::size N);
-bool checkSymOmp8Collapse(float **M, tenno::size N);
-bool checkSymOmp16Collapse(float **M, tenno::size N);
-bool checkSymOmp32Collapse(float **M, tenno::size N);
-bool checkSymOmp64Collapse(float **M, tenno::size N);
-
-bool checkSymOmp16SchedStatic(float **M, tenno::size N);
-bool checkSymOmp16SchedDynamic(float **M, tenno::size N);
-bool checkSymOmp16SchedGuided(float **M, tenno::size N);
-
 } // pc

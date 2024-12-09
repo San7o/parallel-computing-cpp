@@ -89,6 +89,7 @@ if(PC_USE_CLANG)
     list(APPEND PC_LINK_LIBRARIES -fexperimental-library)
 endif()
 
+# MPI
 if (PC_BUILD_MPI)
   message("Compiling with OpenMPI")
   find_package(MPI REQUIRED)
@@ -118,12 +119,22 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
     target_compile_options(tests PRIVATE ${PC_COMPILE_OPTIONS})
     target_link_libraries(tests PRIVATE ${PC_LINK_LIBRARIES})
 
+    # Worker
+    add_executable(worker src/workers.cpp)
+    target_compile_options(worker PRIVATE ${PC_COMPILE_OPTIONS})
+    target_link_libraries(worker PRIVATE ${PC_LINK_LIBRARIES})
+
     if (PC_BUILD_OPTIMIZED_O1)
         message("Building optimized target -O1")
         add_executable(tests_opt_o1 ${PC_SOURCES} ${PC_TEST_SOURCES})
         target_include_directories(tests_opt_o1 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
         target_compile_options(tests_opt_o1 PRIVATE ${PC_COMPILE_OPTIONS} -O1)
         target_link_libraries(tests_opt_o1 PRIVATE ${PC_LINK_LIBRARIES})
+
+	# Worker
+    	add_executable(worker_o1 src/workers.cpp)
+    	target_compile_options(worker PRIVATE ${PC_COMPILE_OPTIONS})
+    	target_link_libraries(worker PRIVATE ${PC_LINK_LIBRARIES} -O1)
     endif()
     if (PC_BUILD_OPTIMIZED_O2)
         message("Building optimized target -O2")
@@ -131,6 +142,11 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
         target_include_directories(tests_opt_o2 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
         target_compile_options(tests_opt_o2 PRIVATE ${PC_COMPILE_OPTIONS} -O2)
         target_link_libraries(tests_opt_o2 PRIVATE ${PC_LINK_LIBRARIES})
+
+	# Worker
+    	add_executable(worker_o2 src/workers.cpp)
+    	target_compile_options(worker PRIVATE ${PC_COMPILE_OPTIONS})
+    	target_link_libraries(worker PRIVATE ${PC_LINK_LIBRARIES} -O2)
     endif()
     if (PC_BUILD_OPTIMIZED_O3)
         message("Building optimized target -O3 -march=native -Ofast")
@@ -138,5 +154,10 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
         target_include_directories(tests_opt_o3 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
         target_compile_options(tests_opt_o3 PRIVATE ${PC_COMPILE_OPTIONS} -O3 -march=native -Ofast)
         target_link_libraries(tests_opt_o3 PRIVATE ${PC_LINK_LIBRARIES})
+
+	# Worker
+    	add_executable(worker_o3 src/workers.cpp)
+    	target_compile_options(worker_o3 PRIVATE ${PC_COMPILE_OPTIONS})
+    	target_link_libraries(worker_o3 PRIVATE ${PC_LINK_LIBRARIES} -O3 -march=native -Ofast)
     endif()
 endif()
