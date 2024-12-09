@@ -21,14 +21,14 @@ int main(int argc, char** argv)
   fprintf(stdout, "WORKER %d is listening...\n", world_rank);
   
   char buff[10] = {};
-  int err = MPI_Recv(&buff, 10, MPI_CHAR, 0, 0, MPI_COMM_WORLD, NULL);
+  int err = MPI_Bcast(&buff, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
   if (err != MPI_SUCCESS)
     {
       fprintf(stderr, "Error: MPI_Recv");
       MPI_Finalize();
       exit(1);
     }
-  fprintf(stdout, "WORKER %d: Received Message: %s", world_rank, buff);
+  fprintf(stdout, "WORKER %d: Received Message: %s\n", world_rank, buff);
 
   // TODO: Receive until STOP message
   
