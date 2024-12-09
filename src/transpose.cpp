@@ -14,7 +14,6 @@
 
 #include <pc/transpose.hpp>
 #include <tenno/ranges.hpp>
-#include <omp.h>
 #include <immintrin.h>         /* For AVX intrinsics */
 #include <mpi.h>
 
@@ -149,7 +148,6 @@ void pc::matTransposeIntrinsic(float **mat_in, float **mat_out, size_t N)
 /*============================================*\
 |                     MPI                      |
 \*============================================*/
-
 
 void pc::matTransposeMPI(float **M, float **T, tenno::size N)
 {

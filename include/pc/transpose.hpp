@@ -27,6 +27,7 @@
 #pragma once
 
 #include <tenno/types.hpp>
+#include <omp.h>
 
 namespace pc
 {
@@ -47,6 +48,22 @@ void matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N);
 /*============================================*\
 |                     MPI                      |
 \*============================================*/
+
+// Blocks Rows            TODO
+// Blocks Columns         TODO
+// Blocks Blocks          TODO
+// Cyclic ColumnWise      TODO
+// Cyclic RowWise         TODO
+
+// NOTE: Use Datatypes. You need this because scatter is so weak and stupid
+// that only sends contiguous data. We can use those datatypes to send
+// data nicely. GG
+// MPI_Datatype
+// MPI_Type_vector / contiguous / subarray (multi dimensional array)
+// MPI_Type_commit
+// MPI_Scatter
+// MPI_Type_free
+// NOTE: Handle cases where the blocks are too large at the end
 
 void matTransposeMPI(float **M, float **T, tenno::size N);
 

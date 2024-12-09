@@ -32,7 +32,6 @@
 
 #include <iostream>
 #include <cstdlib>    /* exit */
-#include <omp.h>
 #include <mpi.h>
 
 #define PC_MATRIX_MAX_SIZE 1<<12

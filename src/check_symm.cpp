@@ -1,6 +1,5 @@
 #include <pc/check_symm.hpp>
 #include <cstdint>
-#include <omp.h>
 
 /*============================================*\
 |                     NOTES                    |
