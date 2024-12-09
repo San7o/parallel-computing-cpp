@@ -20,7 +20,7 @@ set(PC_COMPILE_OPTIONS -Wall -Wextra -Wpedantic
 		       -Werror -Wconversion -Wshadow
 		       -ftemplate-depth=4096
 		       -fconstexpr-depth=4096
-               -fexceptions
+                       -fexceptions
 )
 set(PC_TEST_SOURCES
         tests/transpose_test.cpp
@@ -35,6 +35,7 @@ option(PC_USE_CLANG "Use clang" OFF)
 option(PC_BUILD_TESTS "Build tests" ON)
 option(PC_BUILD_SHARED "Build shared library" OFF)
 option(PC_BUILD_STATIC "Build static library" OFF)
+option(PC_BUILD_MPI "Build with OpenMPI" ON)
 option(PC_BUILD_OPTIMIZED_O1 "Build with optimizations -O1" OFF)
 option(PC_BUILD_OPTIMIZED_O2 "Build with optimizations -O2" OFF)
 option(PC_BUILD_OPTIMIZED_O3 "Build with optimizations -O3" OFF)
@@ -87,6 +88,13 @@ if(PC_USE_CLANG)
     list(APPEND PC_COMPILE_OPTIONS -std=c++23 -fexperimental-library)
     list(APPEND PC_LINK_LIBRARIES -fexperimental-library)
 endif()
+
+if (PC_BUILD_MPI)
+  message("Compiling with OpenMPI")
+  find_package(MPI REQUIRED)
+  list(APPEND PC_LINK_LIBRARIES MPI::MPI_CXX)
+endif()
+
 if(PC_BUILD_SHARED)
     message("Building shared library")
     add_library(pc_shared SHARED ${PC_SOURCES})

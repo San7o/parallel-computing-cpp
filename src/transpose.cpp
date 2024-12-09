@@ -17,6 +17,7 @@
 #include <omp.h>
 #include <immintrin.h>         /* For AVX intrinsics */
 
+
 /*============================================*\
 |                   BASELINE                   |
 \*============================================*/
@@ -396,3 +397,21 @@ void pc::matTransposeOmp16SchedGuided(float **M, float **T, tenno::size N)
   return;
 }
 
+
+/*============================================*\
+|                     MPI                      |
+\*============================================*/
+
+
+void matTransposeMPI(float **M, float **T, tenno::size N)
+{
+  char message[10] = "Ciaone\0";
+  int err = MPI_Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+  if (err != MPI_SUCCESS)
+    return;
+  
+  for (tenno::size i = 0; i < N; ++i)
+      for (tenno::size j = 0; j < N; ++j)
+            T[i][j] = M[j][i];
+  return;
+}

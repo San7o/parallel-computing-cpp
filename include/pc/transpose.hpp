@@ -91,4 +91,6 @@ void matTransposeOmp16SchedStatic(float **M, float **T, tenno::size N);
 void matTransposeOmp16SchedDynamic(float **M, float **T, tenno::size N);
 void matTransposeOmp16SchedGuided(float **M, float **T, tenno::size N);
 
+void matTransposeMPI(float **M, float **T, tenno::size N);
+
 } // namespace pc

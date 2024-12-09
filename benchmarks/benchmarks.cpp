@@ -30,6 +30,10 @@
 #include <tenno/random.hpp>
 #include <valfuzz/valfuzz.hpp>
 
+#include <iostream>
+#include <cstdlib>    /* exit */
+#include <omp.h>
+
 #define PC_MATRIX_MAX_SIZE 1<<12
 #define PC_RANDOM_MATRIX_SIZE 256
 
@@ -103,12 +107,23 @@ BEFORE()
   matrix_in = matrix_alloc(PC_MATRIX_MAX_SIZE);
   matrix_init(matrix_in, PC_MATRIX_MAX_SIZE);
   matrix_out = matrix_alloc(PC_MATRIX_MAX_SIZE);
+
+  MPI_Init();
+  int world_rank;
+  MPI_Comm_rank(MPI_COMM_WORLD, &world_rank);
+  if (world_rank != 0)
+    {
+      std::cerr << "Error initializing: Rank is not 0" << endl;
+      std::exit(1);
+    }
 }
 /* Execute this after all benchmarks */
 AFTER()
 {
   matrix_free(matrix_in, PC_MATRIX_MAX_SIZE);
   matrix_free(matrix_out, PC_MATRIX_MAX_SIZE);
+
+  MPI_Finalize();
 }
 
 
