@@ -42,22 +42,17 @@ void pc::matTransposeHalf(float **M, float **T, tenno::size N)
   return;
 }
 
-/* access pattern */
-
 void pc::matTransposeColumns(float **M, float **T, tenno::size N)
 {
   for (tenno::size i = 0; i < N; ++i)
       for (tenno::size j = 0; j < N; ++j)
             T[j][i] = M[i][j];
   return;
-
 }
 
 void pc::matTransposeCyclic(float *M, float *T, tenno::size N) {
-    for(long unsigned int n = 0; n<N*N; n++) {
-        long unsigned int i = n/N;
-        long unsigned int j = n%N;
-        T[n] = M[N*j + i];
+    for(long unsigned int n = 0; n<N*N; ++n) {
+        T[n] = M[N*(n%N) + n/N];
     }
 }
 

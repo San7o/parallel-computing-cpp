@@ -15,6 +15,7 @@
  * - explicit optimizations: OMP
  */ 
 
+
 /*============================================*\
 |                   BASELINE                   |
 \*============================================*/
@@ -38,5 +39,3 @@ bool pc::checkSymColumns(float **M, tenno::size N)
 	    symm = false;
   return symm;
 }
-
-// TODO: MPI
