@@ -2,7 +2,7 @@
  * MIT License
  *
  * Copyright (c) 2024 Giovanni Santini
-
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
@@ -26,18 +26,13 @@
 
 #pragma once
 
-#include <tenno/types.hpp>
-
 namespace pc
 {
 
+typedef float** matrix;
 
-/*============================================*\
-|                   BASELINE                   |
-\*============================================*/
+extern int world_rank;
+extern matrix matrix_in;
+extern matrix matrix_out;
 
-bool checkSym(float **M, tenno::size N);
-bool checkSymColumns(float **M, tenno::size N);
-
-
-} // pc
+} // namespace pc

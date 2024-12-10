@@ -22,51 +22,31 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-NUM_ITERATIONS=10
 BUILD_DIR="build"
-OUTPUT_DIR=benchmarks/plotting/reports
 
 if [ ! -d $OUTPUT_DIR ]; then
     mkdir $OUTPUT_DIR
 fi
 if [ -d $BUILD_DIR ]; then
     if [ -f "$BUILD_DIR/tests" ]; then
-        echo "Running regular benchmarks..."
+        echo "Running regular tests..."
         mpirun -np 1 ./$BUILD_DIR/tests \
-                        --benchmark \
-                        --num-iterations $NUM_ITERATIONS \
-                        --no-multithread \
-                        --report $OUTPUT_DIR/base.txt \
-                        --reporter csv \
-			--run-one-benchmark "matTransposeMPIInvert2" \
 		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
-        echo "Running optimized benchmarks..."
+        echo "Running tests o1..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o1 \
-                        --benchmark \
-                        --num-iterations $NUM_ITERATIONS \
-                        --no-multithread \
-                        --report $OUTPUT_DIR/opt_o1.txt \
-                        --reporter csv
+		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
-        echo "Running optimized benchmarks..."
+        echo "Running tests o2..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o2 \
-                        --benchmark \
-                        --num-iterations $NUM_ITERATIONS \
-                        --no-multithread \
-                        --report $OUTPUT_DIR/opt_o2.txt \
-                        --reporter csv
+		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
-        echo "Running aggressive optimized benchmarks..."
+        echo "Running tests o3..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
-                        --benchmark \
-                        --num-iterations $NUM_ITERATIONS \
-                        --no-multithread \
-                        --report $OUTPUT_DIR/opt_o3.txt \
-                        --reporter csv
+		: -np 1 ./build/worker
     fi
 else
     echo "Please run the build script first"

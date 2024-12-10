@@ -8,8 +8,7 @@
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
+ * furnished to do so, subject to the following conditions: *
  * The above copyright notice and this permission notice shall be included in
  all
  * copies or substantial portions of the Software.
@@ -25,10 +24,15 @@
  */
 
 #include <pc/transpose.hpp>
+#include <pc/benchmarks.hpp>
 #include <pc/check_symm.hpp>
+#include <pc/mpi.hpp>
 #include <tenno/ranges.hpp>
 #include <tenno/random.hpp>
 #include <valfuzz/valfuzz.hpp>
+
+#include <iostream>
+#include <cstdlib>    /* exit */
 
 #define PC_MATRIX_MAX_SIZE 1<<12
 #define PC_RANDOM_MATRIX_SIZE 256
@@ -38,12 +42,13 @@
 |                     SETUP                    |
 \*============================================*/
 
-typedef float** matrix;
-
 /* Using a global matrix so that it will be
  * initialized only once */
-matrix matrix_in;
-matrix matrix_out;
+pc::matrix pc::matrix_in;
+pc::matrix pc::matrix_out;
+
+/* The MPI world rank */
+int pc::world_rank;
 
 /**
  * Generating two random arrays at compile time for
@@ -64,9 +69,9 @@ constexpr tenno::array<float, PC_RANDOM_MATRIX_SIZE> random_arr2()
     return tenno::random_array<PC_RANDOM_MATRIX_SIZE>(seed2, min, max);
 }
 
-matrix matrix_alloc(tenno::size N)
+pc::matrix matrix_alloc(tenno::size N)
 {
-  matrix M = new float*[N];
+  pc::matrix M = new float*[N];
   for (unsigned int i = 0; i < N; ++i)
     {
       M[i] = new float[N];
@@ -74,7 +79,7 @@ matrix matrix_alloc(tenno::size N)
   return M;
 }
 
-void matrix_init(matrix M, tenno::size N)
+void matrix_init(pc::matrix M, tenno::size N)
 {
   constexpr auto arr1 = random_arr1();
   constexpr auto arr2 = random_arr2();
@@ -90,7 +95,7 @@ void matrix_init(matrix M, tenno::size N)
       }
 }
 
-void matrix_free(matrix M, tenno::size N)
+void matrix_free(pc::matrix M, tenno::size N)
 {
   for (unsigned int i = 0; i < N; ++i)
     delete[] M[i];
@@ -100,15 +105,27 @@ void matrix_free(matrix M, tenno::size N)
 /* Execute this before any benchmark */
 BEFORE()
 {
-  matrix_in = matrix_alloc(PC_MATRIX_MAX_SIZE);
-  matrix_init(matrix_in, PC_MATRIX_MAX_SIZE);
-  matrix_out = matrix_alloc(PC_MATRIX_MAX_SIZE);
+  pc::matrix_in = matrix_alloc(PC_MATRIX_MAX_SIZE);
+  matrix_init(pc::matrix_in, PC_MATRIX_MAX_SIZE);
+  pc::matrix_out = matrix_alloc(PC_MATRIX_MAX_SIZE);
+
+  mpi::Init(NULL, NULL);
+  mpi::Comm_rank(MPI_COMM_WORLD, &pc::world_rank);
+  if (pc::world_rank != 0)
+    {
+      std::cerr << "Error initializing: Rank is not 0" << std::endl;
+      MPI_Finalize();
+      std::exit(1);
+    }
 }
+
 /* Execute this after all benchmarks */
 AFTER()
 {
-  matrix_free(matrix_in, PC_MATRIX_MAX_SIZE);
-  matrix_free(matrix_out, PC_MATRIX_MAX_SIZE);
+  matrix_free(pc::matrix_in, PC_MATRIX_MAX_SIZE);
+  matrix_free(pc::matrix_out, PC_MATRIX_MAX_SIZE);
+
+  MPI_Finalize();
 }
 
 
@@ -116,38 +133,40 @@ AFTER()
 |                   TRANSPOSE                  |
 \*============================================*/
 
+// Sequencial
+
 BENCHMARK(transpose_benchmark,
-	  "matTranspose base")
+	  "matTranspose")
 {
   for (size_t N = 2; N <= 12; ++N)
     {
       RUN_BENCHMARK((1<<N),
-		    pc::matTranspose(matrix_in, matrix_out, (1<<N)));
+		    pc::matTranspose(pc::matrix_in, pc::matrix_out, (1<<N)));
     }
 }
 
 BENCHMARK(transpose_half_benchmark,
-	  "matTranspose half")
+	  "matTransposeHalf")
 {
     for (size_t N = 2; N <= 12; ++N)
     {
       RUN_BENCHMARK((1<<N),
-		    pc::matTransposeHalf(matrix_in, matrix_out, (1<<N)));
+		    pc::matTransposeHalf(pc::matrix_in, pc::matrix_out, (1<<N)));
     }
 }
 
 BENCHMARK(transpose_columns_benchmark,
-	  "matTranspose columns")
+	  "matTransposeColumns")
 {
     for (size_t N = 2; N <= 12; ++N)
     {
       RUN_BENCHMARK((1<<N),
-		    pc::matTransposeColumns(matrix_in, matrix_out, (1<<N)));
+		    pc::matTransposeColumns(pc::matrix_in, pc::matrix_out, (1<<N)));
     }
 }
 
 BENCHMARK(transpose_cyclic_benchmark,
-	  "matTranspose cyclic")
+	  "matTransposeCyclic")
 {
     /* Initialize the vector */
     float* arr_in = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
@@ -169,7 +188,7 @@ BENCHMARK(transpose_cyclic_benchmark,
 }
 
 BENCHMARK(transpose_4x4_intrinsic_cyclic_benchmark,
-	  "matTranspose intrinsic cyclic")
+	  "matTransposeIntrinsicCyclic")
 {
     /* Initialize the vector */
     float* arr_in = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
@@ -191,195 +210,44 @@ BENCHMARK(transpose_4x4_intrinsic_cyclic_benchmark,
 }
 
 BENCHMARK(transpose_4x4_intrinsic_benchmark,
-	  "matTranspose intrinsic")
+	  "matTransposeIntrinsic")
 {
     for (size_t N = 2; N <= 12; ++N)
     {
       RUN_BENCHMARK((1<<N),
-		    pc::matTransposeIntrinsic(matrix_in, matrix_out, (1<<N)));
+		    pc::matTransposeIntrinsic(pc::matrix_in, pc::matrix_out, (1<<N)));
     }
 }
 
-BENCHMARK(transpose_vectorization_benchmark,
-	  "matTranspose vectorization")
+// MPI
+
+BENCHMARK(transpose_mpi,
+	  "matTransposeMPIInvert2")
 {
+    if (pc::world_rank != 0)
+      return;
+
+    /* Message the workers */
+    char message[10] = "Invert2\0";
+    int err = mpi::Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+    if (err != mpi::SUCCESS)
+      return;
+
     for (size_t N = 2; N <= 12; ++N)
     {
+      err = mpi::Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
+      if (err != mpi::SUCCESS)
+        return;
+
       RUN_BENCHMARK((1<<N),
-		    pc::matTransposeVectorization(matrix_in, matrix_out, (1<<N)));
-    }
-}
+		    pc::matTransposeMPIInvert2(pc::matrix_in, pc::matrix_out, (1<<N)));
 
-BENCHMARK(transpose_unrolling_outer_benchmark,
-	  "matTranspose unrolling outer")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp2(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_cyclic_unrolled_benchmark,
-	  "matTranspose cyclic unrolled")
-{
-    /* Initialize the vector */
-    float* arr_in = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
-    float* arr_out = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
-
-    constexpr auto arr1 = random_arr1();
-
-    for (size_t i = 0; i < PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE; ++i)
-      arr_in[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
-      
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeCyclicUnrolled(arr_in, arr_out, (1<<N)));
     }
 
-    delete[] arr_in;
-    delete[] arr_out;
-}
-
-
-BENCHMARK(transpose_omp_4_benchmark,
-	  "matTranspose omp 4")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp4(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_8_benchmark,
-	  "matTranspose omp 8")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp8(matrix_in, matrix_out, (1<<N)));
-    }
-}
-BENCHMARK(transpose_omp_16_benchmark,
-	  "matTranspose omp 16")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp16(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_32_benchmark,
-	  "matTranspose omp 32")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp32(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_64_benchmark,
-	  "matTranspose omp 64")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp64(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_2_collapse_benchmark,
-	  "matTranspose omp 2 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp2Collapse(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_4_collapse_benchmark,
-	  "matTranspose omp 4 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp4Collapse(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_8_collapse_benchmark,
-	  "matTranspose omp 8 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp8Collapse(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_16_collapse_benchmark,
-	  "matTranspose omp 16 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp16Collapse(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_32_collapse_benchmark,
-	  "matTranspose omp 32 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp32Collapse(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_64_collapse_benchmark,
-	  "matTranspose omp 64 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp64Collapse(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_16_sched_static_benchmark,
-	  "matTranspose omp 16 sched static")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp16SchedStatic(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_16_sched_dynamic_benchmark,
-	  "matTranspose omp 16 sched dynamic")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp16SchedDynamic(matrix_in, matrix_out, (1<<N)));
-    }
-}
-
-BENCHMARK(transpose_omp_16_sched_guided_benchmark,
-	  "matTranspose omp 16 sched guided")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::matTransposeOmp16SchedGuided(matrix_in, matrix_out, (1<<N)));
-    }
+    int fin = -1;
+    err = mpi::Bcast(&fin, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    if (err != mpi::SUCCESS)
+      return;
 }
 
 
@@ -387,7 +255,7 @@ BENCHMARK(transpose_omp_16_sched_guided_benchmark,
 |                   CHECK SYMM                 |
 \*============================================*/
 
-BENCHMARK(check_sym_benchmark, "checkSymm base")
+BENCHMARK(check_sym_benchmark, "checkSymm")
 {
     // Make the matrix symmetric (worst case scenario)
     // from now on the input matrix will be symmetric
@@ -396,222 +264,23 @@ BENCHMARK(check_sym_benchmark, "checkSymm base")
     {
         for (auto j : tenno::range(i, PC_MATRIX_MAX_SIZE))
         {
-            matrix_in[i][j] = matrix_out[j][i];
+	  pc::matrix_in[i][j] = pc::matrix_out[j][i];
         }
     }
 
     for (size_t N = 2; N <= 12; ++N)
     {
       RUN_BENCHMARK((1<<N),
-		    pc::checkSym(matrix_in, (1<<N)));
+		    pc::checkSym(pc::matrix_in, (1<<N)));
     }
 }
 
 BENCHMARK(check_sym_columns_benchmark,
-	  "checkSymm columns")
+	  "checkSymmColumns")
 {
     for (size_t N = 2; N <= 12; ++N)
     {
       RUN_BENCHMARK((1<<N),
-		    pc::checkSymColumns(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_vectorization_benchmark,
-	  "checkSymm vectorization")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymVectorization(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_unrolling_outer_benchmark,
-	  "checkSymm unrolling outer")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymUnrollingOuter(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_unrolling_inner_benchmark,
-	  "checkSymm unrolling inner")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymUnrollingInner(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_unrolling_outer_branchless_benchmark,
-	  "checkSymm unrolling outer branchless")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymUnrollingOuterNoBranch(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_unrolling_inner__branchless_benchmark,
-	  "checkSymm unrolling inner branchless")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymUnrollingInnerNoBranch(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_2_benchmark,
-	  "checkSymm omp 2")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp2(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_4_benchmark,
-	  "checkSymm omp 4")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp4(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_8_benchmark,
-	  "checkSymm omp 8")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp8(matrix_in, (1<<N)));
-    }
-}
-BENCHMARK(check_sym_omp_16_benchmark,
-	  "checkSymm omp 16")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp16(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_32_benchmark,
-	  "checkSymm omp 32")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp32(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_64_benchmark,
-	  "checkSymm omp 64")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp64(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_2_collapse_benchmark,
-	  "checkSymm omp 2 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp2Collapse(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_4_collapse_benchmark,
-	  "checkSymm omp 4 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp4Collapse(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_8_collapse_benchmark,
-	  "checkSymm omp 8 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp8Collapse(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_16_collapse_benchmark,
-	  "checkSymm omp 16 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp16Collapse(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_32_collapse_benchmark,
-	  "checkSymm omp 32 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp32Collapse(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_64_collapse_benchmark,
-	  "checkSymm omp 64 collapse")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp64Collapse(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_16_sched_static_benchmark,
-	  "checkSymm omp 16 sched static")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp16SchedStatic(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_16_sched_dynamic_benchmark,
-	  "checkSymm omp 16 sched dynamic")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp16SchedDynamic(matrix_in, (1<<N)));
-    }
-}
-
-BENCHMARK(check_sym_omp_16_sched_guided_benchmark,
-	  "checkSymm omp 16 sched guided")
-{
-    for (size_t N = 2; N <= 12; ++N)
-    {
-      RUN_BENCHMARK((1<<N),
-		    pc::checkSymOmp16SchedGuided(matrix_in, (1<<N)));
+		    pc::checkSymColumns(pc::matrix_in, (1<<N)));
     }
 }

@@ -27,6 +27,7 @@
 #pragma once
 
 #include <tenno/types.hpp>
+#include <omp.h>
 
 namespace pc
 {
@@ -45,50 +46,33 @@ void matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N);
 
 
 /*============================================*\
-|              IMPLICIT PARALLELISM            |
+|                     MPI                      |
 \*============================================*/
 
-// Vectorization (pragma simd)       DONE
-// Loop Unrolling inner (manual)     DONE
-// Loop Unrolling outer (manual)     DONE
-// #pragma GCC ivdep                 ASSUMED IN SIMD
-// branchless inner                  DONE
-// branchless outer                  DONE
+// Blocks Rows            TODO
+// Blocks Columns         TODO
+// Blocks Blocks          TODO
+// Cyclic ColumnWise      TODO
+// Cyclic RowWise         TODO
 
-void matTransposeVectorization(float **M, float **T, tenno::size N);
-void matTransposeUnrolledInner(float **M, float **T, tenno::size N);
-void matTransposeUnrolledOuter(float **M, float **T, tenno::size N);
+// NOTE: Use Datatypes. You need this because scatter is so weak and stupid
+// that only sends contiguous data. We can use those datatypes to send
+// data nicely. GG
+// MPI_Datatype
+// MPI_Type_vector / contiguous / subarray (multi dimensional array)
+// MPI_Type_commit
+// MPI_Scatter
+// MPI_Type_free
+// NOTE: Handle cases where the blocks are too large at the end
+// NOTE: Use MPI_Scatter to distribute pieces of an array between
+// different processes and MPI_Gather to get the results.
+// In this last function, only the root must have a receive buffer, all
+// the other can pass NULL. recv_count is the count of element received per process.
 
-void matTransposeHalfVectorization(float **M, float **T, tenno::size N);
-void matTransposeHalfUnrolledInner(float **M, float **T, tenno::size N);
-void matTransposeHalfUnrolledOuter(float **M, float **T, tenno::size N);
-void matTransposeCyclicUnrolled(float *M, float *T, tenno::size N);
-
-
-/*============================================*\
-|              EXPLICIT PARALLELISM            |
-\*============================================*/
-
-// omp                     DONE
-// omp collapse            DONE
-// different schedulers    DONE
-
-void matTransposeOmp2(float **M, float **T, tenno::size N);
-void matTransposeOmp4(float **M, float **T, tenno::size N);
-void matTransposeOmp8(float **M, float **T, tenno::size N);
-void matTransposeOmp16(float **M, float **T, tenno::size N);
-void matTransposeOmp32(float **M, float **T, tenno::size N);
-void matTransposeOmp64(float **M, float **T, tenno::size N);
-
-void matTransposeOmp2Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp4Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp8Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp16Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp32Collapse(float **M, float **T, tenno::size N);
-void matTransposeOmp64Collapse(float **M, float **T, tenno::size N);
-
-void matTransposeOmp16SchedStatic(float **M, float **T, tenno::size N);
-void matTransposeOmp16SchedDynamic(float **M, float **T, tenno::size N);
-void matTransposeOmp16SchedGuided(float **M, float **T, tenno::size N);
+// Example naive approach:
+// use MPI_Type_contiguous for rows, scatter, reverse order of all rows, gather,
+// use MPI_Type_vector for columns, scatter, reverse order of all columns, gather.
+  
+void matTransposeMPIInvert2(float **M, float **T, tenno::size N);
 
 } // namespace pc

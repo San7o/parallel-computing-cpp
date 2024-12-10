@@ -13,9 +13,11 @@
  */ 
 
 #include <pc/transpose.hpp>
+#include <pc/benchmarks.hpp>
+#include <pc/mpi.hpp>
 #include <tenno/ranges.hpp>
-#include <omp.h>
 #include <immintrin.h>         /* For AVX intrinsics */
+
 
 /*============================================*\
 |                   BASELINE                   |
@@ -138,257 +140,38 @@ void pc::matTransposeIntrinsic(float **mat_in, float **mat_out, size_t N)
     }
 }
 
-/*============================================*\
-|              IMPLICIT PARALLELISM            |
-\*============================================*/
-
-void pc::matTransposeVectorization(float **M, float **T, tenno::size N)
-{
-  #pragma omp for simd
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeUnrolledInner(float **M, float **T, tenno::size N)
-{
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; j += 4)
-	{
-            T[i][j] = M[j][i];
-            T[i][j+1] = M[j+1][i];
-            T[i][j+2] = M[j+2][i];
-            T[i][j+3] = M[j+3][i];
-	}
-  return;
-}
-
-void pc::matTransposeUnrolledOuter(float **M, float **T, tenno::size N)
-{
-  for (tenno::size i = 0; i < N; i += 4)
-      for (tenno::size j = 0; j < N; ++j)
-	{
-            T[i][j] = M[j][i];
-            T[i+1][j] = M[j][i+1];
-            T[i+2][j] = M[j][i+2];
-            T[i+3][j] = M[j][i+3];
-	}
-  return;
-}
-
-/* half */
-
-void pc::matTransposeHalfVectorization(float **M, float **T, tenno::size N)
-{
-  #pragma omp simd
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = i; j < N; ++j)
-        {
-            T[i][j] = M[j][i];
-            T[j][i] = M[i][j];
-        }
-  return;
-}
-
-void pc::matTransposeHalfUnrolledInner(float **M, float **T, tenno::size N)
-{
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = i; j < N; j += 4)
-        {
-            T[i][j] = M[j][i];
-            T[i][j+1] = M[j+1][i];
-            T[i][j+2] = M[j+2][i];
-            T[i][j+3] = M[j+3][i];
-
-            T[j][i] = M[i][j];
-            T[j+1][i] = M[i][j+1];
-            T[j+2][i] = M[i][j+2];
-            T[j+3][i] = M[i][j+3];
-        }
-  return;
-}
-
-void pc::matTransposeHalfUnrolledOuter(float **M, float **T, tenno::size N)
-{
-  for (tenno::size i = 0; i < N; i +=4)
-      for (tenno::size j = i; j < N; ++j)
-        {
-            T[i][j] = M[j][i];
-            T[i+1][j] = M[j][i+1];
-            T[i+2][j] = M[j][i+2];
-            T[i+3][j] = M[j][i+3];
-
-            T[j][i] = M[i][j];
-            T[j][i+1] = M[i+1][j];
-            T[j][i+2] = M[i+2][j];
-            T[j][i+3] = M[i+3][j];
-        }
-  return;
-}
-
-void pc::matTransposeCyclicUnrolled(float *M, float *T, tenno::size N) {
-  for(long unsigned int n = 0; n<N*N - 4; n+=4) {
-        T[n] = M[N*(n%N) + (n/N)];
-        T[n+1] = M[N*((n+1)%N) + ((n+1)/N)];
-        T[n+2] = M[N*((n+2)%N) + ((n+2)/N)];
-        T[n+3] = M[N*((n+3)%N) + ((n+3)/N)];
-    }
-}
-
 
 /*============================================*\
-|              EXPLICIT PARALLELISM            |
+|                     MPI                      |
 \*============================================*/
 
-
-void pc::matTransposeOmp2(float **M, float **T, tenno::size N)
+void pc::matTransposeMPIInvert2(float **M, float **T, tenno::size N)
 {
-  omp_set_num_threads(2);
-  #pragma omp parallel for
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
+  (void) T;
+  (void) M;
+
+  /* Create a new datatype */
+  MPI_Datatype row_t;
+  int err = mpi::Type_vector((int) N, (int) N, 0, MPI_FLOAT, &row_t);
+  if (err != mpi::SUCCESS)
+    return;
+
+  /* Scatter */
+  float *row = new float[N*N];
+  /*
+  err = mpi::Scatter(M, (int) N, row_t, row, 1, row_t, 0, MPI_COMM_WORLD);
+  if (err != mpi::SUCCESS)
+    return;
+  */
+
+  /* Gather */
+
+  /* Create a new datatype */
+
+  /* Scatter */
+
+  /* Gather */
+
+  delete[] row;
   return;
 }
-
-void pc::matTransposeOmp4(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(4);
-  #pragma omp parallel for
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp8(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(8);
-  #pragma omp parallel for
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp16(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(16);
-  #pragma omp parallel for
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp32(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(32);
-  #pragma omp parallel for
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp64(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(64);
-  #pragma omp parallel for
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp2Collapse(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(2);
-#pragma omp parallel for collapse(2)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp4Collapse(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(4);
-#pragma omp parallel for collapse(2)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp8Collapse(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(8);
-#pragma omp parallel for collapse(2)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp16Collapse(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(16);
-#pragma omp parallel for collapse(2)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp32Collapse(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(32);
-#pragma omp parallel for collapse(2)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp64Collapse(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(64);
-#pragma omp parallel for collapse(2)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp16SchedStatic(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(16);
-#pragma omp parallel for schedule(static, 16)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp16SchedDynamic(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(16);
-#pragma omp parallel for schedule(dynamic, 16)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
-void pc::matTransposeOmp16SchedGuided(float **M, float **T, tenno::size N)
-{
-  omp_set_num_threads(16);
-#pragma omp parallel for schedule(guided, 16)
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
-  return;
-}
-
