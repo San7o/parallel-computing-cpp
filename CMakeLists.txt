@@ -33,6 +33,7 @@ set(PC_LINK_LIBRARIES pthread)
 
 option(PC_USE_CLANG "Use clang" OFF)
 option(PC_BUILD_TESTS "Build tests" ON)
+option(PC_BUILD_DEBUG "Build in debug mode" OFF)
 option(PC_BUILD_SHARED "Build shared library" OFF)
 option(PC_BUILD_STATIC "Build static library" OFF)
 option(PC_BUILD_MPI "Build with OpenMPI" ON)
@@ -97,6 +98,10 @@ if (PC_BUILD_MPI)
   list(APPEND PC_LINK_LIBRARIES MPI::MPI_CXX)
 endif()
 
+if (PC_BUILD_DEBUG)
+   list(APPEND PC_COMPILE_OPTIONS -O0 -ggdb)
+endif()
+
 if(PC_BUILD_SHARED)
     message("Building shared library")
     add_library(pc_shared SHARED ${PC_SOURCES})
@@ -121,7 +126,7 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
     target_link_libraries(tests PRIVATE ${PC_LINK_LIBRARIES})
 
     # Worker
-    add_executable(worker src/workers.cpp)
+    add_executable(worker src/workers.cpp src/transpose.cpp src/check_symm.cpp)
     target_compile_options(worker PRIVATE ${PC_COMPILE_OPTIONS})
     target_link_libraries(worker PRIVATE ${PC_LINK_LIBRARIES})
     target_include_directories(worker PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
@@ -134,7 +139,7 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
         target_link_libraries(tests_opt_o1 PRIVATE ${PC_LINK_LIBRARIES})
 
 	# Worker
-    	add_executable(worker_o1 src/workers.cpp)
+    	add_executable(worker_o1 src/workers.cpp src/transpose.cpp src/check_symm.cpp)
     	target_compile_options(worker PRIVATE ${PC_COMPILE_OPTIONS})
     	target_link_libraries(worker PRIVATE ${PC_LINK_LIBRARIES} -O1)
     	target_include_directories(worker_o1 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
@@ -147,7 +152,7 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
         target_link_libraries(tests_opt_o2 PRIVATE ${PC_LINK_LIBRARIES})
 
 	# Worker
-    	add_executable(worker_o2 src/workers.cpp)
+    	add_executable(worker_o2 src/workers.cpp src/transpose.cpp src/check_symm.cpp)
     	target_compile_options(worker PRIVATE ${PC_COMPILE_OPTIONS})
     	target_link_libraries(worker PRIVATE ${PC_LINK_LIBRARIES} -O2)
     	target_include_directories(worker_o2 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
@@ -160,7 +165,7 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
         target_link_libraries(tests_opt_o3 PRIVATE ${PC_LINK_LIBRARIES})
 
 	# Worker
-    	add_executable(worker_o3 src/workers.cpp)
+    	add_executable(worker_o3 src/workers.cpp src/transpose.cpp src/check_symm.cpp)
     	target_compile_options(worker_o3 PRIVATE ${PC_COMPILE_OPTIONS})
     	target_link_libraries(worker_o3 PRIVATE ${PC_LINK_LIBRARIES} -O3 -march=native -Ofast)
     	target_include_directories(worker_o3 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})

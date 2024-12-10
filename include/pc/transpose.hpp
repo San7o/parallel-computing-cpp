@@ -64,7 +64,15 @@ void matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N);
 // MPI_Scatter
 // MPI_Type_free
 // NOTE: Handle cases where the blocks are too large at the end
+// NOTE: Use MPI_Scatter to distribute pieces of an array between
+// different processes and MPI_Gather to get the results.
+// In this last function, only the root must have a receive buffer, all
+// the other can pass NULL. recv_count is the count of element received per process.
 
-void matTransposeMPI(float **M, float **T, tenno::size N);
+// Example naive approach:
+// use MPI_Type_contiguous for rows, scatter, reverse order of all rows, gather,
+// use MPI_Type_vector for columns, scatter, reverse order of all columns, gather.
+  
+void matTransposeMPIInvert2(float **M, float **T, tenno::size N);
 
 } // namespace pc

@@ -25,10 +25,12 @@
  */
 
 #include <pc/transpose.hpp>
+#include <pc/mpi.hpp>
+#include <pc/benchmarks.hpp>  /* contains definition of matrices and world_rank */
 #include <tenno/ranges.hpp>
 #include <valfuzz/valfuzz.hpp>
 
-TEST(transpose_matrix_test, "Matrix Transpose")
+TEST(transpose_matrix_test, "matTranspose")
 {
     tenno::size N = 10;
     float **M = new float *[N];
@@ -57,7 +59,7 @@ TEST(transpose_matrix_test, "Matrix Transpose")
     }
 }
 
-TEST(transpose_matrix_half_test, "Matrix Transpose Half")
+TEST(transpose_matrix_half_test, "matTransposeHalf")
 {
     tenno::size N = 10;
     float **M = new float *[N];
@@ -82,6 +84,47 @@ TEST(transpose_matrix_half_test, "Matrix Transpose Half")
         for (auto j : tenno::range(N))
         {
             ASSERT(M[i][j] == T[j][i]);
+        }
+    }
+}
+
+TEST(transpose_matrix_mpi_invert2, "matTransposeMPIInvert2")
+{
+    if (pc::world_rank != 0)
+      ASSERT(false);
+
+    constexpr tenno::size N = 10;
+    float **M = new float *[N];
+    float **T = new float *[N];
+    for (auto i : tenno::range(N))
+    {
+        M[i] = new float[N];
+	T[i] = new float[N];
+        for (auto j : tenno::range(N))
+        {
+	  M[i][j] = float(i * N + j);
+        }
+    }
+
+    /* Message the workers */
+    char message[10] = "Invert2\0";
+    int err = MPI_Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+    if (err != MPI_SUCCESS)
+      return;
+
+    int n = N; /* -fpermissive gets angry */
+    err = mpi::Bcast(&n, 10, MPI_INT, 0, MPI_COMM_WORLD);
+    if (err != MPI_SUCCESS)
+      return;
+
+    pc::matTransposeMPIInvert2(M, T, N);
+
+    for (auto i : tenno::range(N))
+    {
+        for (auto j : tenno::range(N))
+        {
+            ASSERT(M[i][j] == T[j][i]);
+	    return;
         }
     }
 }

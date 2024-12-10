@@ -13,9 +13,10 @@
  */ 
 
 #include <pc/transpose.hpp>
+#include <pc/benchmarks.hpp>
+#include <pc/mpi.hpp>
 #include <tenno/ranges.hpp>
 #include <immintrin.h>         /* For AVX intrinsics */
-#include <mpi.h>
 
 
 /*============================================*\
@@ -149,15 +150,33 @@ void pc::matTransposeIntrinsic(float **mat_in, float **mat_out, size_t N)
 |                     MPI                      |
 \*============================================*/
 
-void pc::matTransposeMPI(float **M, float **T, tenno::size N)
+void pc::matTransposeMPIInvert2(float **M, float **T, tenno::size N)
 {
-  char message[10] = "Ciaone\0";
-  int err = MPI_Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
-  if (err != MPI_SUCCESS)
+  (void) T;
+  (void) M;
+
+  /* Create a new datatype */
+  MPI_Datatype row_t;
+  int err = mpi::Type_vector((int) N, (int) N, 0, MPI_FLOAT, &row_t);
+  if (err != mpi::SUCCESS)
     return;
-  
-  for (tenno::size i = 0; i < N; ++i)
-      for (tenno::size j = 0; j < N; ++j)
-            T[i][j] = M[j][i];
+
+  /* Scatter */
+  float *row = new float[N*N];
+  /*
+  err = mpi::Scatter(M, (int) N, row_t, row, 1, row_t, 0, MPI_COMM_WORLD);
+  if (err != mpi::SUCCESS)
+    return;
+  */
+
+  /* Gather */
+
+  /* Create a new datatype */
+
+  /* Scatter */
+
+  /* Gather */
+
+  delete[] row;
   return;
 }
