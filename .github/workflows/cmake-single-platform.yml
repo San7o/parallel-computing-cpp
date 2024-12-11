@@ -19,8 +19,11 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: Enable the proposed repository
+      run: sudo echo deb http://archive.ubuntu.com/ubuntu 24.04-proposed main restricted universe multiverse >> /etc/apt/sources.list
+
     - name: Install libomp
-      run: sudo apt-get update; sudo apt-get install -y openmpi-bin libopenmpi-dev
+      run: sudo apt-get update; sudo apt-get install -t -y openmpi-bin libopenmpi-dev
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
