@@ -17,6 +17,8 @@
 #include <pc/mpi.hpp>
 #include <tenno/ranges.hpp>
 #include <immintrin.h>         /* For AVX intrinsics */
+#include <algorithm>
+#include <cstdio> /* TODO remove */
 
 
 /*============================================*\
@@ -145,33 +147,98 @@ void pc::matTransposeIntrinsic(float **mat_in, float **mat_out, size_t N)
 |                     MPI                      |
 \*============================================*/
 
-void pc::matTransposeMPIInvert2(float **M, float **T, tenno::size N)
+void pc::matTransposeMPIInvert2(float *M, float *T, tenno::size N)
 {
   (void) T;
-  (void) M;
 
-  /* Create a new datatype */
-  MPI_Datatype row_t;
-  int err = mpi::Type_vector((int) N, (int) N, 0, MPI_FLOAT, &row_t);
-  if (err != mpi::SUCCESS)
-    return;
-
-  /* Scatter */
-  float *row = new float[N*N];
   /*
-  err = mpi::Scatter(M, (int) N, row_t, row, 1, row_t, 0, MPI_COMM_WORLD);
-  if (err != mpi::SUCCESS)
-    return;
+  // DEBUG
+  if (pc::world_rank == 0)
+    {
+      fprintf(stdout, "First row: \n");
+      for (size_t i = 0; i < N; ++i)
+	fprintf(stdout, "%f ", M[i]);
+      fprintf(stdout, "\n");
+    }
   */
 
+  /* Send rows */
+  MPI_Datatype row_t;
+  int err = mpi::Type_contiguous((int) N, MPI_FLOAT, &row_t);
+  if (err != mpi::SUCCESS)
+    return;
+  err = mpi::Type_commit(&row_t);
+  if (err != mpi::SUCCESS)
+    return;
+
+  float *row = new float[N * N / world_size];
+  err = mpi::Scatter(M, (int) (N / world_size), row_t,   /* send */
+		     row, (int) (N / world_size), row_t, /* recv */
+		     0, MPI_COMM_WORLD);
+  if (err != mpi::SUCCESS)
+    return;
+
+  /*
+  // DEBUG
+  fprintf(stdout, "WORKER %d: Got row: ", world_rank);
+  for (size_t i = 0; i < N * N / world_size; ++i)
+    fprintf(stdout, "%f ", row[i]);
+  fprintf(stdout, "\n");
+  */
+
+  /* Reverse rows */
+  for (size_t i = 0; i < N / world_size; ++i)
+    std::reverse(row + i * N, row + N + i*N);
+  
   /* Gather */
+  err = mpi::Gather(row, (int) N / world_size, row_t, T, (int) N / world_size, row_t, 0, MPI_COMM_WORLD);
+  if (err != mpi::SUCCESS)
+    return;
 
-  /* Create a new datatype */
+  // DEBUG
+  if (pc::world_rank == 0)
+    {
+	fprintf(stdout, "Reverse rows: \n");
+	for (size_t i = 0; i < N*N; ++i)
+	{
+	    if (i % N == 0 && i != 0)
+	    fprintf(stdout, "\n");
+	    fprintf(stdout, "%f ", T[i]);
+	}
+	fprintf(stdout, "\n");
+    }
 
-  /* Scatter */
+  MPI_Datatype col_t;
+  err = mpi::Type_vector((int) N, (int) N / world_size, (int) N, MPI_FLOAT, &col_t);
+  if (err != mpi::SUCCESS)
+    return;
+  //err = mpi::Type_create_resized(col_t_tmp, 0, sizeof(float), &col_t);
+  err = mpi::Type_commit(&col_t);
+  if (err != mpi::SUCCESS)
+    return;
+
+  /* Send columns */
+  float *col_block = new float[N * N / world_size];
+  err = mpi::Scatter(T, 1, col_t,
+		     col_block, (int) (N * N / world_size), MPI_FLOAT,
+		     0, MPI_COMM_WORLD);
+  if (err != mpi::SUCCESS)
+    return;
+
+  /* Reverse columns */
+  for (size_t i = 0; i < N / world_size; ++i)
+    std::reverse(col_block + i * N, col_block + N + i*N);
 
   /* Gather */
+  err = mpi::Gather(col_block, (int) (N / world_size), MPI_FLOAT,
+		    T, 1, col_t,
+		    0, MPI_COMM_WORLD);
+  if (err != mpi::SUCCESS)
+    return;
 
   delete[] row;
+  delete[] col_block;
+  mpi::Type_free(&row_t);
+  mpi::Type_free(&col_t);
   return;
 }

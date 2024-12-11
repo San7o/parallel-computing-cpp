@@ -73,6 +73,6 @@ void matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N);
 // use MPI_Type_contiguous for rows, scatter, reverse order of all rows, gather,
 // use MPI_Type_vector for columns, scatter, reverse order of all columns, gather.
   
-void matTransposeMPIInvert2(float **M, float **T, tenno::size N);
+void matTransposeMPIInvert2(float *M, float *T, tenno::size N);
 
 } // namespace pc

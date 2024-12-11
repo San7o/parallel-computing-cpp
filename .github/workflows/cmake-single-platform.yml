@@ -10,6 +10,8 @@ env:
   BUILD_TYPE: Release
   CC: gcc-14
   CXX: g++-14
+  PATH: $PATH:/usr/local/mpi/bin
+  OPAL_PREFIX: /opt/hpcx/ompi
 
 jobs:
   build:

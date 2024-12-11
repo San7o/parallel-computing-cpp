@@ -32,6 +32,7 @@ namespace pc
 typedef float** matrix;
 
 extern int world_rank;
+extern int world_size;
 extern matrix matrix_in;
 extern matrix matrix_out;
 

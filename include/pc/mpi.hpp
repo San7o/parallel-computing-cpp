@@ -1108,7 +1108,8 @@ inline int MPI_Comm_set_attr(MPI_Comm comm, int comm_keyval, void *attribute_val
 inline int MPI_Comm_set_errhandler(MPI_Comm comm, MPI_Errhandler errhandler);
 inline int MPI_Comm_set_info(MPI_Comm comm, MPI_Info info);
 inline int MPI_Comm_set_name(MPI_Comm comm, const char *comm_name);
-inline int MPI_Comm_size(MPI_Comm comm, int *size);
+inline int Comm_size(MPI_Comm comm, int *size)
+{ return MPI_Comm_size(comm, size); }
 inline int MPI_Comm_spawn(const char *command, char *argv[], int maxprocs, MPI_Info info,
                                   int root, MPI_Comm comm, MPI_Comm *intercomm,
                                   int array_of_errcodes[]);
@@ -1235,9 +1236,11 @@ inline int MPI_File_sync(MPI_File fh);
 inline int Finalize(void) { return MPI_Finalize(); }
 inline int MPI_Finalized(int *flag);
 inline int MPI_Free_mem(void *base);
-inline int MPI_Gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
+inline int Gather(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
                               void *recvbuf, int recvcount, MPI_Datatype recvtype,
-                              int root, MPI_Comm comm);
+                              int root, MPI_Comm comm)
+{ return MPI_Gather(sendbuf, sendcount, sendtype, recvbuf, recvcount, recvtype,
+		    root, comm); }
 inline int MPI_Igather(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
                                void *recvbuf, int recvcount, MPI_Datatype recvtype,
                                int root, MPI_Comm comm, MPI_Request *request);
@@ -1585,9 +1588,11 @@ inline int MPI_Testsome(int incount, MPI_Request array_of_requests[],
                                 MPI_Status array_of_statuses[]);
 inline int MPI_Topo_test(MPI_Comm comm, int *status);
 inline MPI_Fint MPI_Type_c2f(MPI_Datatype datatype);
-inline int MPI_Type_commit(MPI_Datatype *type);
-inline int MPI_Type_contiguous(int count, MPI_Datatype oldtype,
-                                       MPI_Datatype *newtype);
+inline int Type_commit(Datatype *type)
+{ return MPI_Type_commit(type); }
+inline int Type_contiguous(int count, Datatype oldtype,
+                                       Datatype *newtype)
+{ return MPI_Type_contiguous(count, oldtype, newtype); }
 inline int MPI_Type_create_darray(int size, int rank, int ndims,
                                           const int gsize_array[], const int distrib_array[],
                                           const int darg_array[], const int psize_array[],
@@ -1621,11 +1626,13 @@ inline int MPI_Type_create_struct(int count, const int array_of_block_lengths[],
 inline int MPI_Type_create_subarray(int ndims, const int size_array[], const int subsize_array[],
                                             const int start_array[], int order,
                                             MPI_Datatype oldtype, MPI_Datatype *newtype);
-inline int MPI_Type_create_resized(MPI_Datatype oldtype, MPI_Aint lb,
-                                           MPI_Aint extent, MPI_Datatype *newtype);
+inline int Type_create_resized(Datatype oldtype, Aint lb,
+                                           Aint extent, Datatype *newtype)
+{ return MPI_Type_create_resized(oldtype, lb, extent, newtype); }
 inline int MPI_Type_delete_attr(MPI_Datatype type, int type_keyval);
 inline int MPI_Type_dup(MPI_Datatype type, MPI_Datatype *newtype);
-inline int MPI_Type_free(MPI_Datatype *type);
+inline int Type_free(Datatype *type)
+{ return MPI_Type_free(type); }
 inline int MPI_Type_free_keyval(int *type_keyval);
 inline MPI_Datatype MPI_Type_f2c(MPI_Fint datatype);
 inline int MPI_Type_get_attr(MPI_Datatype type, int type_keyval,

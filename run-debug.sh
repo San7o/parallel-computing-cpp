@@ -31,22 +31,22 @@ if [ -d $BUILD_DIR ]; then
     if [ -f "$BUILD_DIR/tests" ]; then
         echo "Running regular tests..."
         mpirun -np 1 ./$BUILD_DIR/tests \
-		: -np 1 gdb ./build/worker
+		: -np 1 xterm -e gdb ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
         echo "Running tests o1..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o1 \
-		: -np 1 gdb ./build/worker
+		: -np 1 xterm -e gdb ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
         echo "Running tests o2..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o2 \
-		: -np 1 gdb ./build/worker
+		: -np 1 xterm -e gdb ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
         echo "Running tests o3..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
-		: -np 1 gdb ./build/worker
+		: -np 1 xterm -e gdb ./build/worker
     fi
 else
     echo "Please run the build script first"

@@ -47,8 +47,9 @@
 pc::matrix pc::matrix_in;
 pc::matrix pc::matrix_out;
 
-/* The MPI world rank */
+/* The MPI world rank and world_size */
 int pc::world_rank;
+int pc::world_size;
 
 /**
  * Generating two random arrays at compile time for
@@ -117,6 +118,7 @@ BEFORE()
       MPI_Finalize();
       std::exit(1);
     }
+  mpi::Comm_size(MPI_COMM_WORLD, &pc::world_size);
 }
 
 /* Execute this after all benchmarks */
@@ -235,17 +237,20 @@ BENCHMARK(transpose_mpi,
 
     for (size_t N = 2; N <= 12; ++N)
     {
-      err = mpi::Bcast(&N, 1, MPI_INT, 0, MPI_COMM_WORLD);
+      err = mpi::Bcast(&N, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
       if (err != mpi::SUCCESS)
         return;
 
+      /*
       RUN_BENCHMARK((1<<N),
 		    pc::matTransposeMPIInvert2(pc::matrix_in, pc::matrix_out, (1<<N)));
+      */
 
+      break; /* TODO remove */
     }
 
-    int fin = -1;
-    err = mpi::Bcast(&fin, 1, MPI_INT, 0, MPI_COMM_WORLD);
+    size_t fin = 0;  /* terminate */
+    err = mpi::Bcast(&fin, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     if (err != mpi::SUCCESS)
       return;
 }
