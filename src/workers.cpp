@@ -55,11 +55,11 @@ int main(int argc, char** argv)
     fprintf(stdout, "WORKER %d: N: %ld\n", pc::world_rank, N);
 
 
-    if (strcmp(func, "Invert2") == 0)
+    if (strcmp(func, "Base") == 0)
     {
 	float *mat1 = {};
 	float *mat2 = {};
-	pc::matTransposeMPIInvert2(mat1, mat2, N);
+	pc::matTransposeMPI(mat1, mat2, N);
     }
     else {
       fprintf(stdout, "WORKER %d: No function detected\n", pc::world_rank);

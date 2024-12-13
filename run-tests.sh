@@ -30,7 +30,7 @@ fi
 if [ -d $BUILD_DIR ]; then
     if [ -f "$BUILD_DIR/tests" ]; then
         echo "Running regular tests..."
-        mpirun -np 1 ./$BUILD_DIR/tests \
+        mpirun --mca mpi_param_check 0 -np 1 ./$BUILD_DIR/tests \
 		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then

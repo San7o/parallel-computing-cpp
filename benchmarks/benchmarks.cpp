@@ -193,22 +193,19 @@ BENCHMARK(transpose_4x4_intrinsic_cyclic_benchmark,
 	  "matTransposeIntrinsicCyclic")
 {
     /* Initialize the vector */
-    float* arr_in = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
-    float* arr_out = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float M_cyclic[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float T_cyclic[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE] = {};
 
     constexpr auto arr1 = random_arr1();
 
     for (size_t i = 0; i < PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE; ++i)
-      arr_in[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
+      M_cyclic[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
       
     for (size_t N = 2; N <= 12; ++N)
     {
       RUN_BENCHMARK((1<<N),
-		    pc::matTransposeIntrinsicCyclic(arr_in, arr_out, (1<<N)));
+		    pc::matTransposeIntrinsicCyclic(M_cyclic, T_cyclic, (1<<N)));
     }
-
-    delete[] arr_in;
-    delete[] arr_out;
 }
 
 BENCHMARK(transpose_4x4_intrinsic_benchmark,
@@ -224,13 +221,22 @@ BENCHMARK(transpose_4x4_intrinsic_benchmark,
 // MPI
 
 BENCHMARK(transpose_mpi,
-	  "matTransposeMPIInvert2")
+	  "matTransposeMPI")
 {
     if (pc::world_rank != 0)
       return;
 
+    float M_cyclic[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float T_cyclic[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE] = {};
+
+    constexpr auto arr1 = random_arr1();
+
+    for (size_t i = 0; i < PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE; ++i)
+      M_cyclic[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
+      
+
     /* Message the workers */
-    char message[10] = "Invert2\0";
+    char message[10] = "Base\0";
     int err = mpi::Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
     if (err != mpi::SUCCESS)
       return;
@@ -240,13 +246,9 @@ BENCHMARK(transpose_mpi,
       err = mpi::Bcast(&N, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
       if (err != mpi::SUCCESS)
         return;
-
-      /*
+      
       RUN_BENCHMARK((1<<N),
-		    pc::matTransposeMPIInvert2(pc::matrix_in, pc::matrix_out, (1<<N)));
-      */
-
-      break; /* TODO remove */
+		    pc::matTransposeMPI(M_cyclic, T_cyclic, (1<<N)));
     }
 
     size_t fin = 0;  /* terminate */

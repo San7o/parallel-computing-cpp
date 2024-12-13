@@ -88,18 +88,19 @@ TEST(transpose_matrix_half_test, "matTransposeHalf")
     }
 }
 
-TEST(transpose_matrix_mpi_invert2, "matTransposeMPIInvert2")
+TEST(transpose_matrix_mpi_invert2, "matTransposeMPI")
 {
     if (pc::world_rank != 0)
       ASSERT(false);
 
-    constexpr tenno::size N = (1<<2);
+    constexpr tenno::size N = (1<<6);
     /* stack allocated matrix */
     float M_cyclic[N*N];
     float T_cyclic[N*N] = {};
     for (size_t i = 0; i < N*N; ++i)
 	M_cyclic[i] = float(i);
 
+    /*
     fprintf(stdout, "Original: \n");
     for (size_t i = 0; i < N*N; ++i)
       {
@@ -108,9 +109,10 @@ TEST(transpose_matrix_mpi_invert2, "matTransposeMPIInvert2")
 	fprintf(stdout, "%f ", M_cyclic[i]);
       }
     fprintf(stdout, "\n");
+    */
 
     /* Message the workers */
-    char message[10] = "Invert2\0";
+    char message[10] = "Base\0";
     int err = MPI_Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
     if (err != MPI_SUCCESS)
       return;
@@ -120,13 +122,13 @@ TEST(transpose_matrix_mpi_invert2, "matTransposeMPIInvert2")
     if (err != MPI_SUCCESS)
       return;
 
-    pc::matTransposeMPIInvert2(M_cyclic, T_cyclic, N);
+    pc::matTransposeMPI(M_cyclic, T_cyclic, N);
 
     size_t fin = 0;
     err = mpi::Bcast(&fin, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     if (err != MPI_SUCCESS)
       return;
-
+    /*
     fprintf(stdout, "Transposed: \n");
     for (size_t i = 0; i < N*N; ++i)
       {
@@ -134,7 +136,8 @@ TEST(transpose_matrix_mpi_invert2, "matTransposeMPIInvert2")
 	  fprintf(stdout, "\n");
 	fprintf(stdout, "%f ", T_cyclic[i]);
       }
-
+    printf("\n");
+    */
 
     for (auto i : tenno::range(N))
         for (auto j : tenno::range(N))
