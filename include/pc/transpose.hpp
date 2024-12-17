@@ -49,30 +49,6 @@ void matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N);
 |                     MPI                      |
 \*============================================*/
 
-// Blocks Rows            TODO
-// Blocks Columns         TODO
-// Blocks Blocks          TODO
-// Cyclic ColumnWise      TODO
-// Cyclic RowWise         TODO
-
-// NOTE: Use Datatypes. You need this because scatter is so weak and stupid
-// that only sends contiguous data. We can use those datatypes to send
-// data nicely. GG
-// MPI_Datatype
-// MPI_Type_vector / contiguous / subarray (multi dimensional array)
-// MPI_Type_commit
-// MPI_Scatter
-// MPI_Type_free
-// NOTE: Handle cases where the blocks are too large at the end
-// NOTE: Use MPI_Scatter to distribute pieces of an array between
-// different processes and MPI_Gather to get the results.
-// In this last function, only the root must have a receive buffer, all
-// the other can pass NULL. recv_count is the count of element received per process.
-
-// Example naive approach:
-// use MPI_Type_contiguous for rows, scatter, reverse order of all rows, gather,
-// use MPI_Type_vector for columns, scatter, reverse order of all columns, gather.
-  
 void matTransposeMPI(float *M, float *T, tenno::size N);
 void matTransposeMPIBlock(float *M, float *T, tenno::size N);
 

@@ -28,7 +28,7 @@
 #include <tenno/ranges.hpp>
 #include <valfuzz/valfuzz.hpp>
 
-TEST(check_sym_test, "Check Symmetry")
+TEST(check_sym_test, "checkSym")
 {
     tenno::size N = 10;
     float **M = new float *[N];
@@ -52,4 +52,30 @@ TEST(check_sym_test, "Check Symmetry")
     }
 
     ASSERT(pc::checkSym(M, N) == true);
+}
+
+TEST(check_sym_columns_test, "checkSymColumns")
+{
+    tenno::size N = 10;
+    float **M = new float *[N];
+    for (auto i : tenno::range(N))
+    {
+        M[i] = new float[N];
+        for (auto j : tenno::range(N))
+        {
+            M[i][j] = valfuzz::get_random<float>();
+        }
+    }
+
+    ASSERT(pc::checkSymColumns(M, N) == false);
+
+    for (auto i : tenno::range(N))
+    {
+        for (auto j : tenno::range(N))
+        {
+            M[i][j] = M[j][i];
+        }
+    }
+
+    ASSERT(pc::checkSymColumns(M, N) == true);
 }

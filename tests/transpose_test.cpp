@@ -32,7 +32,7 @@
 
 TEST(transpose_matrix_test, "matTranspose")
 {
-    tenno::size N = 10;
+    tenno::size N = 64;
     float **M = new float *[N];
     float **T = new float *[N];
     for (auto i : tenno::range(N))
@@ -61,7 +61,7 @@ TEST(transpose_matrix_test, "matTranspose")
 
 TEST(transpose_matrix_half_test, "matTransposeHalf")
 {
-    tenno::size N = 10;
+    tenno::size N = 64;
     float **M = new float *[N];
     float **T = new float *[N];
     for (auto i : tenno::range(N))
@@ -86,6 +86,158 @@ TEST(transpose_matrix_half_test, "matTransposeHalf")
             ASSERT(M[i][j] == T[j][i]);
         }
     }
+}
+
+TEST(transpose_matrix_columns_test, "matTransposeColumns")
+{
+    tenno::size N = 64;
+    float **M = new float *[N];
+    float **T = new float *[N];
+    for (auto i : tenno::range(N))
+    {
+        M[i] = new float[N];
+        for (auto j : tenno::range(N))
+        {
+            M[i][j] = valfuzz::get_random<float>();
+        }
+    }
+    for (auto i : tenno::range(N))
+    {
+        T[i] = new float[N];
+    }
+
+    pc::matTransposeColumns(M, T, N);
+
+    for (auto i : tenno::range(N))
+    {
+        for (auto j : tenno::range(N))
+        {
+            ASSERT(M[i][j] == T[j][i]);
+        }
+    }
+}
+
+TEST(transpose_matrix_cyclic, "matTransposeCyclic")
+{
+    if (pc::world_rank != 0)
+      ASSERT(false);
+
+    constexpr tenno::size N = (1<<6);
+    /* stack allocated matrix */
+    float M_cyclic[N*N];
+    float T_cyclic[N*N] = {};
+    for (size_t i = 0; i < N*N; ++i)
+	M_cyclic[i] = float(i);
+
+    /*
+    fprintf(stdout, "Original: \n");
+    for (size_t i = 0; i < N*N; ++i)
+      {
+	if (i % N == 0 && i != 0)
+	  fprintf(stdout, "\n");
+	fprintf(stdout, "%f ", M_cyclic[i]);
+      }
+    fprintf(stdout, "\n");
+    */
+
+    pc::matTransposeCyclic(M_cyclic, T_cyclic, N);
+
+    /*
+    fprintf(stdout, "Transposed: \n");
+    for (size_t i = 0; i < N*N; ++i)
+      {
+	if (i % N == 0 && i != 0)
+	  fprintf(stdout, "\n");
+	fprintf(stdout, "%f ", T_cyclic[i]);
+      }
+    printf("\n");
+    */
+
+    for (auto i : tenno::range(N))
+        for (auto j : tenno::range(N))
+	    if (M_cyclic[i*N + j] != T_cyclic[j*N + i])
+	      {
+	        ASSERT(false);
+		goto end;
+	      }
+ end:
+    return;
+}
+
+TEST(transpose_matrix_intrinsic_test, "matTransposeIntrinsic")
+{
+    tenno::size N = 64;
+    float **M = new float *[N];
+    float **T = new float *[N];
+    for (auto i : tenno::range(N))
+    {
+        M[i] = new float[N];
+        for (auto j : tenno::range(N))
+        {
+            M[i][j] = valfuzz::get_random<float>();
+        }
+    }
+    for (auto i : tenno::range(N))
+    {
+        T[i] = new float[N];
+    }
+
+    pc::matTransposeIntrinsic(M, T, N);
+
+    for (auto i : tenno::range(N))
+    {
+        for (auto j : tenno::range(N))
+        {
+            ASSERT(M[i][j] == T[j][i]);
+        }
+    }
+}
+
+TEST(transpose_matrix_intrinsic_cyclic_test, "matTransposeIntrinsicCyclic")
+{
+    if (pc::world_rank != 0)
+      ASSERT(false);
+
+    constexpr tenno::size N = (1<<6);
+    /* stack allocated matrix */
+    float M_cyclic[N*N];
+    float T_cyclic[N*N] = {};
+    for (size_t i = 0; i < N*N; ++i)
+	M_cyclic[i] = float(i);
+
+    /*
+    fprintf(stdout, "Original: \n");
+    for (size_t i = 0; i < N*N; ++i)
+      {
+	if (i % N == 0 && i != 0)
+	  fprintf(stdout, "\n");
+	fprintf(stdout, "%f ", M_cyclic[i]);
+      }
+    fprintf(stdout, "\n");
+    */
+
+    pc::matTransposeIntrinsicCyclic(M_cyclic, T_cyclic, N);
+
+    /*
+    fprintf(stdout, "Transposed: \n");
+    for (size_t i = 0; i < N*N; ++i)
+      {
+	if (i % N == 0 && i != 0)
+	  fprintf(stdout, "\n");
+	fprintf(stdout, "%f ", T_cyclic[i]);
+      }
+    printf("\n");
+    */
+
+    for (auto i : tenno::range(N))
+        for (auto j : tenno::range(N))
+	    if (M_cyclic[i*N + j] != T_cyclic[j*N + i])
+	      {
+	        ASSERT(false);
+		goto end;
+	      }
+ end:
+    return;
 }
 
 TEST(transpose_matrix_mpi_test, "matTransposeMPI")
