@@ -31,21 +31,25 @@ if [ -d $BUILD_DIR ]; then
     if [ -f "$BUILD_DIR/tests" ]; then
         echo "Running regular tests..."
         mpirun --mca mpi_param_check 0 -np 1 ./$BUILD_DIR/tests \
+	       --no-multithread \
 		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
         echo "Running tests o1..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o1 \
+	       --no-multithread \
 		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
         echo "Running tests o2..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o2 \
+	       --no-multithread \
 		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
         echo "Running tests o3..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
+	       --no-multithread \
 		: -np 1 ./build/worker
     fi
 else

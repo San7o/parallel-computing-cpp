@@ -88,7 +88,7 @@ TEST(transpose_matrix_half_test, "matTransposeHalf")
     }
 }
 
-TEST(transpose_matrix_mpi_invert2, "matTransposeMPI")
+TEST(transpose_matrix_mpi_test, "matTransposeMPI")
 {
     if (pc::world_rank != 0)
       ASSERT(false);
@@ -122,12 +122,14 @@ TEST(transpose_matrix_mpi_invert2, "matTransposeMPI")
     if (err != MPI_SUCCESS)
       return;
 
+    long unsigned int num_iterations = 1;
+    err = mpi::Bcast(&num_iterations, 1,
+                     MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    if (err != mpi::SUCCESS)
+      return;
+
     pc::matTransposeMPI(M_cyclic, T_cyclic, N);
 
-    size_t fin = 0;
-    err = mpi::Bcast(&fin, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-    if (err != MPI_SUCCESS)
-      return;
     /*
     fprintf(stdout, "Transposed: \n");
     for (size_t i = 0; i < N*N; ++i)
@@ -147,5 +149,71 @@ TEST(transpose_matrix_mpi_invert2, "matTransposeMPI")
 		goto end;
 	      }
  end:
+    return;
+}
+
+TEST(transpose_matrix_mpi_block_test, "matTransposeMPIBlock")
+{
+    if (pc::world_rank != 0)
+      ASSERT(false);
+
+    constexpr tenno::size N = (1<<6);
+    /* stack allocated matrix */
+    float *M_cyclic = new float[N*N];
+    float *T_cyclic = new float[N*N];
+    for (size_t i = 0; i < N*N; ++i)
+	M_cyclic[i] = float(i);
+
+    /*
+    fprintf(stdout, "Original: \n");
+    for (size_t i = 0; i < N*N; ++i)
+      {
+	if (i % N == 0 && i != 0)
+	  fprintf(stdout, "\n");
+	fprintf(stdout, "%f ", M_cyclic[i]);
+      }
+    fprintf(stdout, "\n");
+    */
+
+    /* Message the workers */
+    char message[10] = "Block\0";
+    int err = MPI_Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+    if (err != MPI_SUCCESS)
+      return;
+
+    size_t n = N; /* -fpermissive gets angry */
+    err = mpi::Bcast(&n, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    if (err != MPI_SUCCESS)
+      return;
+
+    long unsigned int num_iterations = 1;
+    err = mpi::Bcast(&num_iterations, 1,
+                     MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    if (err != mpi::SUCCESS)
+      return;
+
+    pc::matTransposeMPIBlock(M_cyclic, T_cyclic, N);
+
+    /*
+    fprintf(stdout, "Transposed: \n");
+    for (size_t i = 0; i < N*N; ++i)
+      {
+	if (i % N == 0 && i != 0)
+	  fprintf(stdout, "\n");
+	fprintf(stdout, "%f ", T_cyclic[i]);
+      }
+    printf("\n");
+    */
+
+    for (auto i : tenno::range(N))
+        for (auto j : tenno::range(N))
+	    if (M_cyclic[i*N + j] != T_cyclic[j*N + i])
+	      {
+	        ASSERT(false);
+		goto end;
+	      }
+ end:
+    delete[] M_cyclic;
+    delete[] T_cyclic;
     return;
 }

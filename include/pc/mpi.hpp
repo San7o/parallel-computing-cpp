@@ -1524,9 +1524,11 @@ inline int MPI_Iscatter(const void *sendbuf, int sendcount, MPI_Datatype sendtyp
 inline int MPI_Scatter_init(const void *sendbuf, int sendcount, MPI_Datatype sendtype,
                                     void *recvbuf, int recvcount, MPI_Datatype recvtype,
                                     int root, MPI_Comm comm, MPI_Info info, MPI_Request *request);
-inline int MPI_Scatterv(const void *sendbuf, const int sendcounts[], const int displs[], MPI_Datatype sendtype,
+inline int Scatterv(const void *sendbuf, const int sendcounts[], const int displs[], MPI_Datatype sendtype,
                                 void *recvbuf, int recvcount, MPI_Datatype recvtype,
-                                int root, MPI_Comm comm);
+                                int root, MPI_Comm comm)
+{ return MPI_Scatterv(sendbuf, sendcounts, displs, sendtype, recvbuf, recvcount,
+		      recvtype, root, comm); }
 inline int MPI_Iscatterv(const void *sendbuf, const int sendcounts[], const int displs[], MPI_Datatype sendtype,
                                  void *recvbuf, int recvcount, MPI_Datatype recvtype,
                                  int root, MPI_Comm comm, MPI_Request *request);

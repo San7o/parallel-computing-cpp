@@ -148,6 +148,16 @@ void pc::matTransposeIntrinsic(float **mat_in, float **mat_out, size_t N)
 
 void pc::matTransposeMPI(float *M, float *T, tenno::size N)
 {
+  if (world_size > (int) N) /* fallback */
+  {
+    if (world_rank == 0)
+    {
+      for (tenno::size i; i < N*N; ++i)
+	T[i] = M[N*(i % N) + (i / N)];
+    }
+    return;
+  }
+
   MPI_Datatype row_t;
   int err = mpi::Type_contiguous((int) N,   /* count   */
 				 MPI_FLOAT, /* oldtype */
@@ -204,61 +214,91 @@ void pc::matTransposeMPI(float *M, float *T, tenno::size N)
   return;
 }
 
-void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N, tenno::size B)
+void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N)
 {
-  (void) B;
-  MPI_Datatype row_t;
-  int err = mpi::Type_contiguous((int) N,   /* count   */
-				 MPI_FLOAT, /* oldtype */
-				 &row_t);   /* newtype */
+  if (world_size > (int) (N * N) || world_size < 4) /* fallback */
+  {
+    if (world_rank == 0)
+    {
+      for (tenno::size i = 0; i < N*N; ++i)
+	T[i] = M[N*(i % N) + (i / N)];
+    }
+    return;
+  }
+
+  MPI_Datatype block_t_tmp, block_t;
+  int err = mpi::Type_vector((int) N / world_size * 2, /* count   */
+                         (int) N / world_size * 2, /* blocklength */
+			 (int) world_size * 2,     /* stride      */
+			 MPI_FLOAT,                /* oldtype     */
+			 &block_t_tmp);            /* newtype     */
   if (err != mpi::SUCCESS)
     return;
-  err = mpi::Type_commit(&row_t);
+  err = mpi::Type_create_resized(
+		   block_t_tmp,                      /* oldtype */
+		   0,                                /* lb      */
+	           sizeof(float) * world_size / 2,   /* extent  */
+		   &block_t);                        /* newtype */
+  err = mpi::Type_commit(&block_t);
+  if (err != mpi::SUCCESS)
+    return;
+  mpi::Type_free(&block_t_tmp);
+
+  MPI_Datatype block_transposed_t;
+  err = mpi::Type_vector((int) N / world_size * 2, /* count       */
+			 (int) N / world_size * 2, /* blocklength */
+			 (int) world_size * 2,     /* stride      */
+			 MPI_FLOAT,                /* oldtype     */
+			 &block_transposed_t);     /* newtype     */
+  if (err != mpi::SUCCESS)
+    return;
+  err = mpi::Type_commit(&block_transposed_t);
   if (err != mpi::SUCCESS)
     return;
 
-  MPI_Datatype col_t_tmp, col_t;
-  err = mpi::Type_vector((int) N,        /* count       */
-			 1,              /* blocklength */
-			 (int) N,        /* stride      */
-			 MPI_FLOAT,      /* oldtype     */
-			 &col_t_tmp);    /* newtype     */
-  if (err != mpi::SUCCESS)
-    return;
-  err = mpi::Type_create_resized(col_t_tmp,     /* oldtype */
-				 0,             /* lb      */
-				 sizeof(float), /* extent  */
-				 &col_t);       /* newtype */
-  err = mpi::Type_commit(&col_t);
-  if (err != mpi::SUCCESS)
-    return;
-  mpi::Type_free(&col_t_tmp);
-
-  float *row = new float[N * N / world_size];
-  err = mpi::Scatter(M,                      /* sendbuf   */
-		     (int) (N / world_size), /* sendcount */
-		     row_t,                  /* sendtype  */
-		     row,                    /* recvbuf   */
-		     (int) (N / world_size), /* recvcount */
-		     row_t,                  /* recvtype  */
-		     0,                      /* root      */
- 		     MPI_COMM_WORLD);        /* comm      */
+  /* Calculate the displacement */
+  int *displacement = new int[world_size];
+  int *count = new int[world_size];
+  for (int i = 0; i < world_size; ++i)
+  {
+    displacement[i] = (i * ((int) N * world_size / 2) ) % (world_size / 2)
+      + (i / world_size * 2) * (world_size / 2 * (int) sizeof(float));
+    count[i] = 1;
+  }
+  
+  float *block = new float[N / world_size];
+  err = mpi::Scatterv(M,              /* sendbuf      */
+		     count,           /* sendcount    */
+		     displacement,    /* displacement */
+		     block_t,         /* sendtype     */
+		     block,           /* recvbuf      */
+		     1,               /* recvcount    */
+		     block_t,         /* recvtype     */
+		     0,               /* root         */
+ 		     MPI_COMM_WORLD); /* comm         */
   if (err != mpi::SUCCESS)
     return;
 
-  err = mpi::Gather(row,                  /* sendbuf   */
-		    (int) N / world_size, /* sendcount */
-		    row_t,                /* sendtype  */
+  /* Transpose the block */
+  for (int i = 0; i < (int) N / world_size * 2; ++i)
+    std::swap(block[N * (i / N) + (i % N)],
+	      block[N * (i % N) + (i / N)]);
+
+  err = mpi::Gather(block,                /* sendbuf   */
+		    world_size,           /* sendcount */
+		    block_t,              /* sendtype  */
 		    T,                    /* recvbuf   */
-		    (int) N / world_size, /* recvcount */
-		    col_t,                /* recvtype  */
+		    world_size,           /* recvcount */
+		    block_transposed_t,   /* recvtype  */
 		    0,                    /* root      */
 		    MPI_COMM_WORLD);      /* comm      */
   if (err != mpi::SUCCESS)
     return;
 
-  delete[] row;
-  mpi::Type_free(&row_t);
-  mpi::Type_free(&col_t);
+  delete[] block;
+  delete[] displacement;
+  delete[] count;
+  mpi::Type_free(&block_t);
+  mpi::Type_free(&block_transposed_t);
   return;
 }

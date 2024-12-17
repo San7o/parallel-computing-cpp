@@ -22,7 +22,7 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-NUM_ITERATIONS=10
+NUM_ITERATIONS=1
 BUILD_DIR="build"
 OUTPUT_DIR=benchmarks/plotting/reports
 
@@ -38,7 +38,6 @@ if [ -d $BUILD_DIR ]; then
                         --no-multithread \
                         --report $OUTPUT_DIR/base.txt \
                         --reporter csv \
-			--run-one-benchmark "matTransposeMPIInvert2" \
 		: -np 1 ./build/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then

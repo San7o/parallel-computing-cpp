@@ -92,7 +92,8 @@ void matrix_init(pc::matrix M, tenno::size N)
 	// M[i][j] = valfuzz::get_random<float>();
 
 	/* Using constexpr random, very fast */
-	M[i][j] = arr1[i % PC_RANDOM_MATRIX_SIZE] + arr2[j % PC_RANDOM_MATRIX_SIZE];
+	M[i][j] = arr1[i % PC_RANDOM_MATRIX_SIZE] +
+	  arr2[j % PC_RANDOM_MATRIX_SIZE];
       }
 }
 
@@ -127,7 +128,11 @@ AFTER()
   matrix_free(pc::matrix_in, PC_MATRIX_MAX_SIZE);
   matrix_free(pc::matrix_out, PC_MATRIX_MAX_SIZE);
 
-  MPI_Finalize();
+  /* Stop the worker */
+  char fin[10] = "";
+  mpi::Bcast(&fin, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+
+  mpi::Finalize();
 }
 
 
@@ -193,8 +198,8 @@ BENCHMARK(transpose_4x4_intrinsic_cyclic_benchmark,
 	  "matTransposeIntrinsicCyclic")
 {
     /* Initialize the vector */
-    float M_cyclic[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
-    float T_cyclic[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE] = {};
+    float* M_cyclic = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float* T_cyclic = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
 
     constexpr auto arr1 = random_arr1();
 
@@ -206,6 +211,8 @@ BENCHMARK(transpose_4x4_intrinsic_cyclic_benchmark,
       RUN_BENCHMARK((1<<N),
 		    pc::matTransposeIntrinsicCyclic(M_cyclic, T_cyclic, (1<<N)));
     }
+    delete[] M_cyclic;
+    delete[] T_cyclic;
 }
 
 BENCHMARK(transpose_4x4_intrinsic_benchmark,
@@ -220,41 +227,93 @@ BENCHMARK(transpose_4x4_intrinsic_benchmark,
 
 // MPI
 
-BENCHMARK(transpose_mpi,
+BENCHMARK(transpose_mpi_benchmark,
 	  "matTransposeMPI")
 {
     if (pc::world_rank != 0)
       return;
 
-    float M_cyclic[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
-    float T_cyclic[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE] = {};
+    float *M_cyclic = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float *T_cyclic = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
 
     constexpr auto arr1 = random_arr1();
 
     for (size_t i = 0; i < PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE; ++i)
       M_cyclic[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
       
-
-    /* Message the workers */
+    int err;
     char message[10] = "Base\0";
-    int err = mpi::Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
-    if (err != mpi::SUCCESS)
-      return;
-
+    long unsigned int num_iterations =
+	valfuzz::get_num_iterations_benchmark() + 2;
+    long unsigned int size;
     for (size_t N = 2; N <= 12; ++N)
     {
-      err = mpi::Bcast(&N, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+      err = mpi::Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+      if (err != mpi::SUCCESS)
+        return;
+ 
+      size = (1<<N);
+      err = mpi::Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+      if (err != mpi::SUCCESS)
+        return;
+
+      err = mpi::Bcast(&num_iterations, 1,
+		       MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
       if (err != mpi::SUCCESS)
         return;
       
       RUN_BENCHMARK((1<<N),
-		    pc::matTransposeMPI(M_cyclic, T_cyclic, (1<<N)));
+      	    pc::matTransposeMPI(M_cyclic, T_cyclic, (1<<N)));
     }
 
-    size_t fin = 0;  /* terminate */
-    err = mpi::Bcast(&fin, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-    if (err != mpi::SUCCESS)
+    delete[] M_cyclic;
+    delete[] T_cyclic;
+    return;
+}
+
+BENCHMARK(transpose_mpi_block_benchmark,
+	  "matTransposeMPIBlock")
+{
+    if (pc::world_rank != 0)
       return;
+
+    float *M_cyclic = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+    float *T_cyclic = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+
+    constexpr auto arr1 = random_arr1();
+
+    for (size_t i = 0; i < PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE; ++i)
+      M_cyclic[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
+      
+    int err;
+    char message[10] = "Block\0";
+    long unsigned int num_iterations =
+	valfuzz::get_num_iterations_benchmark() + 2;
+    long unsigned int size;
+    for (size_t N = 4; N <= 12; ++N)
+    {
+      /* Message the workers */
+      err = mpi::Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+      if (err != mpi::SUCCESS)
+      return;
+
+      size = (1<<N);
+      err = mpi::Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+      if (err != mpi::SUCCESS)
+        return;
+
+      err = mpi::Bcast(&num_iterations, 1,
+		       MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+      if (err != mpi::SUCCESS)
+        return;
+      
+      RUN_BENCHMARK((1<<N),
+		    pc::matTransposeMPIBlock(M_cyclic, T_cyclic, (1<<N)));
+    }
+
+    delete[] M_cyclic;
+    delete[] T_cyclic;
+    return;
 }
 
 
