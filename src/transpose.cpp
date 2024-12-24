@@ -14,7 +14,7 @@
 
 #include <pc/transpose.hpp>
 #include <pc/benchmarks.hpp>
-#include <pc/mpi4.hpp>
+#include <mpi.h>
 #include <tenno/ranges.hpp>
 #include <immintrin.h>         /* For AVX intrinsics */
 #include <algorithm>
@@ -159,34 +159,34 @@ void pc::matTransposeMPI(float *M, float *T, tenno::size N)
   }
 
   MPI_Datatype row_t;
-  int err = mpi::Type_contiguous((int) N,   /* count   */
+  int err = MPI_Type_contiguous((int) N,   /* count   */
 				 MPI_FLOAT, /* oldtype */
 				 &row_t);   /* newtype */
-  if (err != mpi::SUCCESS)
+  if (err != MPI_SUCCESS)
     return;
-  err = mpi::Type_commit(&row_t);
-  if (err != mpi::SUCCESS)
+  err = MPI_Type_commit(&row_t);
+  if (err != MPI_SUCCESS)
     return;
 
   MPI_Datatype col_t_tmp, col_t;
-  err = mpi::Type_vector((int) N,        /* count       */
+  err = MPI_Type_vector((int) N,        /* count       */
 			 1,              /* blocklength */
 			 (int) N,        /* stride      */
 			 MPI_FLOAT,      /* oldtype     */
 			 &col_t_tmp);    /* newtype     */
-  if (err != mpi::SUCCESS)
+  if (err != MPI_SUCCESS)
     return;
-  err = mpi::Type_create_resized(col_t_tmp,     /* oldtype */
+  err = MPI_Type_create_resized(col_t_tmp,     /* oldtype */
 				 0,             /* lb      */
 				 sizeof(float), /* extent  */
 				 &col_t);       /* newtype */
-  err = mpi::Type_commit(&col_t);
-  if (err != mpi::SUCCESS)
+  err = MPI_Type_commit(&col_t);
+  if (err != MPI_SUCCESS)
     return;
-  mpi::Type_free(&col_t_tmp);
+  MPI_Type_free(&col_t_tmp);
 
   float *row = new float[N * N / world_size];
-  err = mpi::Scatter(M,                      /* sendbuf   */
+  err = MPI_Scatter(M,                      /* sendbuf   */
 		     (int) (N / world_size), /* sendcount */
 		     row_t,                  /* sendtype  */
 		     row,                    /* recvbuf   */
@@ -194,10 +194,10 @@ void pc::matTransposeMPI(float *M, float *T, tenno::size N)
 		     row_t,                  /* recvtype  */
 		     0,                      /* root      */
  		     MPI_COMM_WORLD);        /* comm      */
-  if (err != mpi::SUCCESS)
+  if (err != MPI_SUCCESS)
     return;
 
-  err = mpi::Gather(row,                  /* sendbuf   */
+  err = MPI_Gather(row,                  /* sendbuf   */
 		    (int) N / world_size, /* sendcount */
 		    row_t,                /* sendtype  */
 		    T,                    /* recvbuf   */
@@ -205,12 +205,12 @@ void pc::matTransposeMPI(float *M, float *T, tenno::size N)
 		    col_t,                /* recvtype  */
 		    0,                    /* root      */
 		    MPI_COMM_WORLD);      /* comm      */
-  if (err != mpi::SUCCESS)
+  if (err != MPI_SUCCESS)
     return;
 
   delete[] row;
-  mpi::Type_free(&row_t);
-  mpi::Type_free(&col_t);
+  MPI_Type_free(&row_t);
+  MPI_Type_free(&col_t);
   return;
 }
 
@@ -227,33 +227,33 @@ void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N)
   }
 
   MPI_Datatype block_t_tmp, block_t;
-  int err = mpi::Type_vector((int) N / world_size * 2, /* count   */
+  int err = MPI_Type_vector((int) N / world_size * 2, /* count   */
                          (int) N / world_size * 2, /* blocklength */
 			 (int) world_size * 2,     /* stride      */
 			 MPI_FLOAT,                /* oldtype     */
 			 &block_t_tmp);            /* newtype     */
-  if (err != mpi::SUCCESS)
+  if (err != MPI_SUCCESS)
     return;
-  err = mpi::Type_create_resized(
+  err = MPI_Type_create_resized(
 		   block_t_tmp,                      /* oldtype */
 		   0,                                /* lb      */
 	           sizeof(float) * world_size / 2,   /* extent  */
 		   &block_t);                        /* newtype */
-  err = mpi::Type_commit(&block_t);
-  if (err != mpi::SUCCESS)
+  err = MPI_Type_commit(&block_t);
+  if (err != MPI_SUCCESS)
     return;
-  mpi::Type_free(&block_t_tmp);
+  MPI_Type_free(&block_t_tmp);
 
   MPI_Datatype block_transposed_t;
-  err = mpi::Type_vector((int) N / world_size * 2, /* count       */
+  err = MPI_Type_vector((int) N / world_size * 2, /* count       */
 			 (int) N / world_size * 2, /* blocklength */
 			 (int) world_size * 2,     /* stride      */
 			 MPI_FLOAT,                /* oldtype     */
 			 &block_transposed_t);     /* newtype     */
-  if (err != mpi::SUCCESS)
+  if (err != MPI_SUCCESS)
     return;
-  err = mpi::Type_commit(&block_transposed_t);
-  if (err != mpi::SUCCESS)
+  err = MPI_Type_commit(&block_transposed_t);
+  if (err != MPI_SUCCESS)
     return;
 
   /* Calculate the displacement */
@@ -267,7 +267,7 @@ void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N)
   }
   
   float *block = new float[N / world_size];
-  err = mpi::Scatterv(M,              /* sendbuf      */
+  err = MPI_Scatterv(M,              /* sendbuf      */
 		     count,           /* sendcount    */
 		     displacement,    /* displacement */
 		     block_t,         /* sendtype     */
@@ -276,7 +276,7 @@ void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N)
 		     block_t,         /* recvtype     */
 		     0,               /* root         */
  		     MPI_COMM_WORLD); /* comm         */
-  if (err != mpi::SUCCESS)
+  if (err != MPI_SUCCESS)
     return;
 
   /* Transpose the block */
@@ -284,7 +284,7 @@ void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N)
     std::swap(block[N * (i / N) + (i % N)],
 	      block[N * (i % N) + (i / N)]);
 
-  err = mpi::Gather(block,                /* sendbuf   */
+  err = MPI_Gather(block,                /* sendbuf   */
 		    world_size,           /* sendcount */
 		    block_t,              /* sendtype  */
 		    T,                    /* recvbuf   */
@@ -292,13 +292,13 @@ void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N)
 		    block_transposed_t,   /* recvtype  */
 		    0,                    /* root      */
 		    MPI_COMM_WORLD);      /* comm      */
-  if (err != mpi::SUCCESS)
+  if (err != MPI_SUCCESS)
     return;
 
   delete[] block;
   delete[] displacement;
   delete[] count;
-  mpi::Type_free(&block_t);
-  mpi::Type_free(&block_transposed_t);
+  MPI_Type_free(&block_t);
+  MPI_Type_free(&block_transposed_t);
   return;
 }
