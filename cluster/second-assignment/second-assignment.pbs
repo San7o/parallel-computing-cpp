@@ -7,7 +7,7 @@
 # =========================================== #
 
 # Job name
-#PBS -N first-assignment
+#PBS -N second-assignment
 # Output files
 #PBS -o ./out.txt
 #PBS -e ./error.txt
