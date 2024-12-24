@@ -18,6 +18,7 @@
 #include <tenno/ranges.hpp>
 #include <immintrin.h>         /* For AVX intrinsics */
 #include <algorithm>
+#include <math.h>
 
 
 /*============================================*\
@@ -226,79 +227,136 @@ void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N)
     return;
   }
 
+  /* Calculate the displacement */
+  int block_side = (int)N/int(sqrt(world_size));
+  float *block = new float[block_side * block_side];
+  int *displacements = new int[world_size];
+  int *displacements_transposed = new int[world_size];
+  int *counts = new int[world_size];
+  for (int i = 0; i < world_size; ++i)
+  { /* Displacement of block types, assuming a stride of sizeof(float) beween 2 blocks */
+    displacements[i] =
+                 ((i*block_side)%(int)N)        /* col */
+               + (i*block_side/(int)N)*(int)N*block_side; /* row    */
+    displacements_transposed[i] =
+                 ((i*block_side)%(int)N)*(int)N /* col */
+               + (i*block_side/(int)N)*block_side;       /*  row */
+    counts[i] = 1;
+  }
+
+  /* Debug */
+  /*
+  if (world_rank == 0)
+  {
+  printf("Displacements:\n");
+  for (int i = 0; i < world_size; ++i)
+      printf("%d ", displacements[i]);
+  printf("\n");
+  for (int i = 0; i < world_size; ++i)
+      printf("%d ", displacements_transposed[i]);
+  printf("\n");
+  }
+  */
+
+  //printf("Lots of processes\n");
+
   MPI_Datatype block_t_tmp, block_t;
-  int err = MPI_Type_vector((int) N / world_size * 2, /* count   */
-                         (int) N / world_size * 2, /* blocklength */
-			 (int) world_size * 2,     /* stride      */
-			 MPI_FLOAT,                /* oldtype     */
-			 &block_t_tmp);            /* newtype     */
+  int err = MPI_Type_vector(block_side, /* count       */
+                         block_side,    /* blocklength */
+			 (int)N,        /* stride      */
+			 MPI_FLOAT,     /* oldtype     */
+			 &block_t_tmp); /* newtype     */
   if (err != MPI_SUCCESS)
+  {
+    delete[] block;
+    delete[] counts;
+    delete[] displacements;
+    delete[] displacements_transposed;
     return;
-  err = MPI_Type_create_resized(
-		   block_t_tmp,                      /* oldtype */
-		   0,                                /* lb      */
-	           sizeof(float) * world_size / 2,   /* extent  */
-		   &block_t);                        /* newtype */
+  }
+  err = MPI_Type_create_resized(block_t_tmp,     /* oldtype */
+				 0,             /* lb      */
+				 sizeof(float), /* extent  */
+				 &block_t);       /* newtype */
   err = MPI_Type_commit(&block_t);
   if (err != MPI_SUCCESS)
+  {
+    delete[] block;
+    delete[] counts;
+    delete[] displacements;
+    delete[] displacements_transposed;
     return;
+  }
   MPI_Type_free(&block_t_tmp);
 
-  MPI_Datatype block_transposed_t;
-  err = MPI_Type_vector((int) N / world_size * 2, /* count       */
-			 (int) N / world_size * 2, /* blocklength */
-			 (int) world_size * 2,     /* stride      */
-			 MPI_FLOAT,                /* oldtype     */
-			 &block_transposed_t);     /* newtype     */
-  if (err != MPI_SUCCESS)
-    return;
-  err = MPI_Type_commit(&block_transposed_t);
-  if (err != MPI_SUCCESS)
-    return;
-
-  /* Calculate the displacement */
-  int *displacement = new int[world_size];
-  int *count = new int[world_size];
-  for (int i = 0; i < world_size; ++i)
-  {
-    displacement[i] = (i * ((int) N * world_size / 2) ) % (world_size / 2)
-      + (i / world_size * 2) * (world_size / 2 * (int) sizeof(float));
-    count[i] = 1;
-  }
+  //printf("Scattering\n");
   
-  float *block = new float[N / world_size];
-  err = MPI_Scatterv(M,              /* sendbuf      */
-		     count,           /* sendcount    */
-		     displacement,    /* displacement */
-		     block_t,         /* sendtype     */
-		     block,           /* recvbuf      */
-		     1,               /* recvcount    */
-		     block_t,         /* recvtype     */
-		     0,               /* root         */
- 		     MPI_COMM_WORLD); /* comm         */
+  err = MPI_Scatterv(M,                /* sendbuf       */
+		     counts,           /* sendcount     */
+                     displacements,    /* displacements */
+		     block_t,          /* sendtype      */
+		     block,            /* recvbuf       */
+		     block_side * block_side, /* recvcount */
+		     MPI_FLOAT,        /* recvtype      */
+		     0,                /* root          */
+ 		     MPI_COMM_WORLD);  /* comm          */
   if (err != MPI_SUCCESS)
-    return;
+    goto end;
+
+  //printf("Scattered\n");
+  /*
+  if (pc::world_rank == 0)
+  {
+  for (size_t i = 0; i < block_side * block_side; ++i)
+  {
+      if (i % block_side == 0 && i != 0)
+        fprintf(stdout, "\n");
+      fprintf(stdout, "%f ", block[i]);
+  }
+  printf("\n");
+  }
+  */
 
   /* Transpose the block */
-  for (int i = 0; i < (int) N / world_size * 2; ++i)
-    std::swap(block[N * (i / N) + (i % N)],
-	      block[N * (i % N) + (i / N)]);
+  //printf("Transposed:\n");
+  for (int i = 0; i < (int) (block_side); ++i)
+    for (int j = i; j < (int) (block_side); ++j)
+        std::swap(block[block_side*i + j], block[j*block_side + i]);
+  /*
+  if (pc::world_rank == 0)
+  {
+  fprintf(stdout, "Transposed: \n");
+  for (size_t i = 0; i < block_side * block_side; ++i)
+  {
+      if (i % block_side == 0 && i != 0)
+        fprintf(stdout, "\n");
+      fprintf(stdout, "%f ", block[i]);
+  }
+  printf("\n");
+  }
+  */
 
-  err = MPI_Gather(block,                /* sendbuf   */
-		    world_size,           /* sendcount */
-		    block_t,              /* sendtype  */
+  // printf("Gathering\n");
+
+  err = MPI_Gatherv(block,                 /* sendbuf   */
+		    block_side * block_side,                    /* sendcount */
+		    MPI_FLOAT,              /* sendtype  */
 		    T,                    /* recvbuf   */
-		    world_size,           /* recvcount */
-		    block_transposed_t,   /* recvtype  */
+		    counts,           /* recvcount */
+		    displacements_transposed, /* displacements */
+		    block_t,   /* recvtype  */
 		    0,                    /* root      */
 		    MPI_COMM_WORLD);      /* comm      */
   if (err != MPI_SUCCESS)
-    return;
+    goto end;
 
+  //printf("Gathered\n");
+
+end:
   delete[] block;
-  delete[] displacement;
-  delete[] count;
+  delete[] displacements;
+  delete[] displacements_transposed;
+  delete[] counts;
   MPI_Type_free(&block_t);
-  MPI_Type_free(&block_transposed_t);
   return;
 }

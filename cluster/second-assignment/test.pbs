@@ -91,11 +91,11 @@ if [ -d $BUILD_DIR ]; then
                --verbose \
 	       --no-multithread \
 		: -np 3 ./build/worker
-        echo "Running regular benchmarks with 8 processes..."
+        echo "Running regular benchmarks with 16 processes..."
         mpirun -np 1 ./$BUILD_DIR/tests \
                --verbose \
 	       --no-multithread \
-		: -np 7 ./build/worker
+		: -np 15 ./build/worker
     fi
     if [ -f $BUILD_DIR/tests_opt_o1 ]; then
         echo "Running optimized benchmarks -01..."
