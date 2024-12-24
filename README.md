@@ -104,6 +104,7 @@ If you are on the cluster, please load the necessary modules first:
 ```bash
 module load gcc91 &&
 module load cmake-3.15.4
+module load mpich-3.2
 ```
 
 To build the full benchmark suite, run the following command:

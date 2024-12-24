@@ -25,7 +25,7 @@
  */
 
 #include <pc/transpose.hpp>
-#include <pc/mpi.hpp>
+#include <pc/mpi4.hpp>
 #include <pc/benchmarks.hpp>  /* contains definition of matrices and world_rank */
 #include <tenno/ranges.hpp>
 #include <valfuzz/valfuzz.hpp>

@@ -26,7 +26,7 @@
 #include <pc/transpose.hpp>
 #include <pc/benchmarks.hpp>
 #include <pc/check_symm.hpp>
-#include <pc/mpi.hpp>
+#include <pc/mpi4.hpp>
 #include <tenno/ranges.hpp>
 #include <tenno/random.hpp>
 #include <valfuzz/valfuzz.hpp>

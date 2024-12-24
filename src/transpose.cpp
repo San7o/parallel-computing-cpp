@@ -14,7 +14,7 @@
 
 #include <pc/transpose.hpp>
 #include <pc/benchmarks.hpp>
-#include <pc/mpi.hpp>
+#include <pc/mpi4.hpp>
 #include <tenno/ranges.hpp>
 #include <immintrin.h>         /* For AVX intrinsics */
 #include <algorithm>

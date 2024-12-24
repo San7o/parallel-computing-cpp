@@ -1,5 +1,5 @@
 #include <pc/transpose.hpp>
-#include <pc/mpi.hpp>
+#include <pc/mpi4.hpp>
 #include <unistd.h>
 #include <stdio.h>
 #include <cstdlib>
