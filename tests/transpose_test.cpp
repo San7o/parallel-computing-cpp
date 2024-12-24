@@ -25,7 +25,7 @@
  */
 
 #include <pc/transpose.hpp>
-#include <pc/mpi4.hpp>
+#include <mpi.h>
 #include <pc/benchmarks.hpp>  /* contains definition of matrices and world_rank */
 #include <tenno/ranges.hpp>
 #include <valfuzz/valfuzz.hpp>
@@ -270,14 +270,14 @@ TEST(transpose_matrix_mpi_test, "matTransposeMPI")
       return;
 
     size_t n = N; /* -fpermissive gets angry */
-    err = mpi::Bcast(&n, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    err = MPI_Bcast(&n, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     if (err != MPI_SUCCESS)
       return;
 
     long unsigned int num_iterations = 1;
-    err = mpi::Bcast(&num_iterations, 1,
+    err = MPI_Bcast(&num_iterations, 1,
                      MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-    if (err != mpi::SUCCESS)
+    if (err != MPI_SUCCESS)
       return;
 
     pc::matTransposeMPI(M_cyclic, T_cyclic, N);
@@ -334,14 +334,14 @@ TEST(transpose_matrix_mpi_block_test, "matTransposeMPIBlock")
       return;
 
     size_t n = N; /* -fpermissive gets angry */
-    err = mpi::Bcast(&n, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+    err = MPI_Bcast(&n, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
     if (err != MPI_SUCCESS)
       return;
 
     long unsigned int num_iterations = 1;
-    err = mpi::Bcast(&num_iterations, 1,
+    err = MPI_Bcast(&num_iterations, 1,
                      MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-    if (err != mpi::SUCCESS)
+    if (err != MPI_SUCCESS)
       return;
 
     pc::matTransposeMPIBlock(M_cyclic, T_cyclic, N);

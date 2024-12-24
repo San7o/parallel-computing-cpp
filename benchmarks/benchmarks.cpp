@@ -26,7 +26,7 @@
 #include <pc/transpose.hpp>
 #include <pc/benchmarks.hpp>
 #include <pc/check_symm.hpp>
-#include <pc/mpi4.hpp>
+#include <mpi.h>
 #include <tenno/ranges.hpp>
 #include <tenno/random.hpp>
 #include <valfuzz/valfuzz.hpp>
@@ -111,15 +111,15 @@ BEFORE()
   matrix_init(pc::matrix_in, PC_MATRIX_MAX_SIZE);
   pc::matrix_out = matrix_alloc(PC_MATRIX_MAX_SIZE);
 
-  mpi::Init(NULL, NULL);
-  mpi::Comm_rank(MPI_COMM_WORLD, &pc::world_rank);
+  MPI_Init(NULL, NULL);
+  MPI_Comm_rank(MPI_COMM_WORLD, &pc::world_rank);
   if (pc::world_rank != 0)
     {
       std::cerr << "Error initializing: Rank is not 0" << std::endl;
       MPI_Finalize();
       std::exit(1);
     }
-  mpi::Comm_size(MPI_COMM_WORLD, &pc::world_size);
+  MPI_Comm_size(MPI_COMM_WORLD, &pc::world_size);
 }
 
 /* Execute this after all benchmarks */
@@ -130,9 +130,9 @@ AFTER()
 
   /* Stop the worker */
   char fin[10] = "";
-  mpi::Bcast(&fin, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+  MPI_Bcast(&fin, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
 
-  mpi::Finalize();
+  MPI_Finalize();
 }
 
 
@@ -248,18 +248,18 @@ BENCHMARK(transpose_mpi_benchmark,
     long unsigned int size;
     for (size_t N = 2; N <= 12; ++N)
     {
-      err = mpi::Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
-      if (err != mpi::SUCCESS)
+      err = MPI_Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+      if (err != MPI_SUCCESS)
         return;
  
       size = (1<<N);
-      err = mpi::Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-      if (err != mpi::SUCCESS)
+      err = MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+      if (err != MPI_SUCCESS)
         return;
 
-      err = mpi::Bcast(&num_iterations, 1,
+      err = MPI_Bcast(&num_iterations, 1,
 		       MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-      if (err != mpi::SUCCESS)
+      if (err != MPI_SUCCESS)
         return;
       
       RUN_BENCHMARK((1<<N),
@@ -293,18 +293,18 @@ BENCHMARK(transpose_mpi_block_benchmark,
     for (size_t N = 4; N <= 12; ++N)
     {
       /* Message the workers */
-      err = mpi::Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
-      if (err != mpi::SUCCESS)
+      err = MPI_Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+      if (err != MPI_SUCCESS)
       return;
 
       size = (1<<N);
-      err = mpi::Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-      if (err != mpi::SUCCESS)
+      err = MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+      if (err != MPI_SUCCESS)
         return;
 
-      err = mpi::Bcast(&num_iterations, 1,
+      err = MPI_Bcast(&num_iterations, 1,
 		       MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-      if (err != mpi::SUCCESS)
+      if (err != MPI_SUCCESS)
         return;
       
       RUN_BENCHMARK((1<<N),

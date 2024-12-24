@@ -1,5 +1,5 @@
 #include <pc/transpose.hpp>
-#include <pc/mpi4.hpp>
+#include <mpi.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <cstdlib>
@@ -17,15 +17,15 @@ int world_size;
 
 int main(int argc, char** argv)
 {
-  mpi::Init(&argc, &argv);
-  mpi::Comm_rank(MPI_COMM_WORLD, &pc::world_rank);
+  MPI_Init(&argc, &argv);
+  MPI_Comm_rank(MPI_COMM_WORLD, &pc::world_rank);
   if (pc::world_rank == 0)
     {
       fprintf(stderr, "Error: worker should never be rank 0\n");
-      mpi::Finalize();
+      MPI_Finalize();
       exit(1);
     }
-  mpi::Comm_size(MPI_COMM_WORLD, &pc::world_size);
+  MPI_Comm_size(MPI_COMM_WORLD, &pc::world_size);
 
   fprintf(stdout, "WORKER %d is listening...\n", pc::world_rank);
   
@@ -33,36 +33,36 @@ int main(int argc, char** argv)
   while(true) {
 
     char func[10] = {};
-    int err = mpi::Bcast(&func, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
-    if (err != mpi::SUCCESS)
+    int err = MPI_Bcast(&func, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+    if (err != MPI_SUCCESS)
     {
 	fprintf(stderr, "Error: MPI_Recv");
-	mpi::Finalize();
+	MPI_Finalize();
 	exit(1);
     }
 
     if (strcmp(func, "") == 0) /* stop message */
     {
       fprintf(stderr, "WORKER %d: DONE\n", pc::world_rank);
-      mpi::Finalize();
+      MPI_Finalize();
       exit(0);
     }
 
-    err = mpi::Bcast(&N, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD); /* get N */
-    if (err != mpi::SUCCESS)
+    err = MPI_Bcast(&N, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD); /* get N */
+    if (err != MPI_SUCCESS)
     {
 	fprintf(stderr, "Error: MPI_Bcast");
-	mpi::Finalize();
+	MPI_Finalize();
 	exit(1);
     }
 
     long unsigned int num_iterations;
-    err = mpi::Bcast(&num_iterations, 1,
+    err = MPI_Bcast(&num_iterations, 1,
 		     MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
-    if (err != mpi::SUCCESS)
+    if (err != MPI_SUCCESS)
     {
 	fprintf(stderr, "Error: MPI_Bcast 2");
-	mpi::Finalize();
+	MPI_Finalize();
 	exit(1);
     }
 
@@ -90,6 +90,6 @@ int main(int argc, char** argv)
     }
   };
   
-  mpi::Finalize();
+  MPI_Finalize();
   return 0;
 }
