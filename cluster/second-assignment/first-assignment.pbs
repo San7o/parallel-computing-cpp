@@ -1,0 +1,142 @@
+#!/bin/bash
+
+# BEGIN first-assignment.pbs
+
+# =========================================== #
+#                   PBS SETUP                 #
+# =========================================== #
+
+# Job name
+#PBS -N first-assignment
+# Output files
+#PBS -o ./out.txt
+#PBS -e ./error.txt
+# Queue name
+#PBS -q short_cpuQ
+# Set the maximum wall time
+#PBS -l walltime=0:50:00
+# Number of nodes, cpus, and amount of memory
+#PBS -l select=1:ncpus=64:mem=4G
+
+NUM_ITERATIONS=100
+BUILD_DIR=./build
+OUTPUT_DIR=./benchmarks/plotting/reports
+# Load the necessary modules
+module load gcc91
+module load cmake-3.15.4
+# Select the working directory
+cd $HOME/parallel-computing-cpp/
+
+# =========================================== #
+#               BUILD THE TARGETS             #
+#                                             #
+#  Each executable contains all the necessary #
+#     benchmarks. Three executables will be   #
+#         generated: test, test_opt and       #
+#       test_opt_aggressive based on the      #
+# optimization level enabled in the compiler. #
+# =========================================== #
+
+if [ -d ./$BUILD_DIR ]; then
+    rm -rf ./$BUILD_DIR/
+fi    
+cmake \
+     -B $BUILD_DIR \
+     -D PC_BUILD_OPTIMIZED_O1=ON \
+     -D PC_BUILD_OPTIMIZED_O2=ON \
+     -D PC_BUILD_OPTIMIZED_O3=ON
+
+if [ ! -d ./$BUILD_DIR ]; then
+    echo "Build directory was not created" 
+    exit 1
+fi    
+
+cmake --build $BUILD_DIR -j$(nproc)
+
+if [ ! -f ./$BUILD_DIR/tests ]; then
+    echo "Target tests not found" 
+    exit 1
+fi
+
+# =========================================== #
+#            GENERATE THE INFO FILE           #
+#                                             #
+#   This file contains information about the  #
+#   system such as atchitecture, memory and   #
+#                kernel version.              #
+# =========================================== #
+
+if [ -d $OUTOUT_DIR ]; then
+    # Remove old output
+    rm $OUTPUT_DIR/* || :
+fi
+if [ ! -d $OUTPUT_DIR ]; then
+    mkdir $OUTPUT_DIR
+fi
+
+INFO_FILE=$OUTPUT_DIR/info.txt
+touch $INFO_FILE
+if [ ! -f $INFO_FILE ]; then
+    echo "Error generating the info file"
+    exit 1
+fi
+echo "===== /proc/meminfo =====" > $INFO_FILE
+cat /proc/meminfo >> $INFO_FILE
+echo "===== /proc/cpuinfo =====" >> $INFO_FILE
+cat /proc/cpuinfo >> $INFO_FILE
+echo "========= lscpu =========" >> $INFO_FILE
+lscpu >> $INFO_FILE
+echo "========= uname =========" >> $INFO_FILE
+uname -a >> $INFO_FILE 
+echo "========= coherency_line_size =========" >> $INFO_FILE
+cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size >> $INFO_FILE
+
+
+# =========================================== #
+#                 RUN THE TESTS               #
+#                                             #
+#              Patience is advised            #
+# =========================================== #
+
+if [ -d $BUILD_DIR ]; then
+    if [ -f $BUILD_DIR/tests ]; then
+        echo "Running regular benchmarks..."
+        ./$BUILD_DIR/tests \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/base.txt \
+		--reporter csv
+    fi
+    if [ -f $BUILD_DIR/tests_opt_o1 ]; then
+        echo "Running optimized benchmarks -01..."
+        $BUILD_DIR/tests_opt_o1 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o1.txt \
+		--reporter csv
+    fi
+    if [ -f $BUILD_DIR/tests_opt_o2 ]; then
+        echo "Running optimized benchmarks -02 ..."
+        $BUILD_DIR/tests_opt_o2 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o2.txt \
+		--reporter csv
+    fi
+    if [ -f $BUILD_DIR/tests_opt_o3 ]; then
+        echo "Running optimized benchmarks -03..."
+        $BUILD_DIR/tests_opt_o3 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o3.txt \
+		--reporter csv
+    fi
+else
+    echo "Please run the build script first"
+fi
+
+# END first-assignment.pbs

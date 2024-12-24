@@ -29,28 +29,36 @@ if [ ! -d $OUTPUT_DIR ]; then
 fi
 if [ -d $BUILD_DIR ]; then
     if [ -f "$BUILD_DIR/tests" ]; then
-        echo "Running regular tests..."
-        mpirun --mca mpi_param_check 0 -np 1 ./$BUILD_DIR/tests \
+        echo "Running regular tests with 2 workers..."
+        mpirun -np 1 ./$BUILD_DIR/tests \
 	       --no-multithread \
-		: -np 1 ./build/worker
+		: -np 1 ./$BUILD_DIR/worker
+        echo "Running regular tests with 4 workers..."
+        mpirun -np 1 ./$BUILD_DIR/tests \
+	       --no-multithread \
+		: -np 3 ./$BUILD_DIR/worker
+        echo "Running regular tests with 8 workers..."
+        mpirun -np 1 ./$BUILD_DIR/tests \
+	       --no-multithread \
+		: -np 7 ./$BUILD_DIR/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
         echo "Running tests o1..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o1 \
 	       --no-multithread \
-		: -np 1 ./build/worker
+		: -np 1 ./build/worker_opt_o1
     fi
     if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
         echo "Running tests o2..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o2 \
 	       --no-multithread \
-		: -np 1 ./build/worker
+		: -np 1 ./build/worker_opt_o2
     fi
     if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
         echo "Running tests o3..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
 	       --no-multithread \
-		: -np 1 ./build/worker
+		: -np 1 ./build/worker_opt_o3
     fi
 else
     echo "Please run the build script first"
