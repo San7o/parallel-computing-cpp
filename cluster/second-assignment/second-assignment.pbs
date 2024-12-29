@@ -193,7 +193,7 @@ if [ -d $BUILD_DIR ]; then
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_o3.txt \
+                --report $OUTPUT_DIR/opt_o3_np4.txt \
 		--reporter csv \
                 : -np 1 ./$BUILD_DIR/worker_opt_o3
         echo "Running optimized benchmarks -03 np 16 ..."
@@ -201,7 +201,7 @@ if [ -d $BUILD_DIR ]; then
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_o3_np64.txt \
+                --report $OUTPUT_DIR/opt_o3_np16.txt \
 		--reporter csv \
                 : -np 15 ./$BUILD_DIR/worker_opt_o3
         echo "Running optimized benchmarks -03 np 64 ..."
