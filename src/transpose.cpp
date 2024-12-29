@@ -153,7 +153,7 @@ void pc::matTransposeMPI(float *M, float *T, tenno::size N)
   {
     if (world_rank == 0)
     {
-      for (tenno::size i; i < N*N; ++i)
+      for (tenno::size i = 0; i < N*N; ++i)
 	T[i] = M[N*(i % N) + (i / N)];
     }
     return;

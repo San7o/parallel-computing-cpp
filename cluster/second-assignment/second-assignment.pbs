@@ -18,12 +18,13 @@
 # Number of nodes, cpus, and amount of memory
 #PBS -l select=1:ncpus=64:mem=4G
 
-NUM_ITERATIONS=100
+NUM_ITERATIONS=10
 BUILD_DIR=./build
 OUTPUT_DIR=./benchmarks/plotting/reports
 # Load the necessary modules
 module load gcc91
 module load cmake-3.15.4
+module load mpich-3.2.1--gcc-9.1.0
 # Select the working directory
 cd $HOME/parallel-computing-cpp/
 
@@ -100,40 +101,117 @@ cat /sys/devices/system/cpu/cpu0/cache/index0/coherency_line_size >> $INFO_FILE
 
 if [ -d $BUILD_DIR ]; then
     if [ -f $BUILD_DIR/tests ]; then
-        echo "Running regular benchmarks..."
-        ./$BUILD_DIR/tests \
+        echo "Running regular benchmarks 4 processes..."
+        mpirun -np 1 \
+                ./$BUILD_DIR/tests \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/base.txt \
-		--reporter csv
+                --report $OUTPUT_DIR/base_np4.txt \
+		--reporter csv \
+                : -np 3 ./$BUILD_DIR/worker
+        echo "Running regular benchmarks 16 processes..."
+        mpirun -np 1 \
+                ./$BUILD_DIR/tests \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/base_np16.txt \
+		--reporter csv \
+                : -np 15 ./$BUILD_DIR/worker
+        echo "Running regular benchmarks 64 processes..."
+        mpirun -np 1 \
+                ./$BUILD_DIR/tests \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/base_np64.txt \
+		--reporter csv \
+                : -np 63 ./$BUILD_DIR/worker
     fi
     if [ -f $BUILD_DIR/tests_opt_o1 ]; then
-        echo "Running optimized benchmarks -01..."
-        $BUILD_DIR/tests_opt_o1 \
+        echo "Running optimized benchmarks -01 np 4..."
+        mpirun -np 1 \
+                ./$BUILD_DIR/tests_opt_o1 \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_o1.txt \
-		--reporter csv
+                --report $OUTPUT_DIR/opt_o1_np4.txt \
+		--reporter csv \
+                : -np 1 ./$BUILD_DIR/worker_opt_o1
+        echo "Running optimized benchmarks -01 np 16..."
+        mpirun -np 1 \
+                ./$BUILD_DIR/tests_opt_o1 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o1_np16.txt \
+		--reporter csv \
+                : -np 14 ./$BUILD_DIR/worker_opt_o1
+        echo "Running optimized benchmarks -01 np 64..."
+        mpirun -np 1 \
+                ./$BUILD_DIR/tests_opt_o1 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o1_np64.txt \
+		--reporter csv \
+                : -np 63 ./$BUILD_DIR/worker_opt_o1
     fi
     if [ -f $BUILD_DIR/tests_opt_o2 ]; then
-        echo "Running optimized benchmarks -02 ..."
-        $BUILD_DIR/tests_opt_o2 \
+        echo "Running optimized benchmarks -02 np 4 ..."
+        mpirun -np 1 \
+                ./$BUILD_DIR/tests_opt_o2 \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
-                --report $OUTPUT_DIR/opt_o2.txt \
-		--reporter csv
+                --report $OUTPUT_DIR/opt_o2_np4.txt \
+		--reporter csv \
+                : -np 1 ./$BUILD_DIR/worker_opt_o2
+        echo "Running optimized benchmarks -02 np 16 ..."
+        mpirun -np 1 \
+                ./$BUILD_DIR/tests_opt_o2 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o2_np16.txt \
+		--reporter csv \
+                : -np 15 ./$BUILD_DIR/worker_opt_o2
+        echo "Running optimized benchmarks -02 np 64 ..."
+        mpirun -np 1 \
+               ./$BUILD_DIR/tests_opt_o2 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o2_np64.txt \
+		--reporter csv \
+                : -np 63 ./$BUILD_DIR/worker_opt_o2
     fi
     if [ -f $BUILD_DIR/tests_opt_o3 ]; then
-        echo "Running optimized benchmarks -03..."
-        $BUILD_DIR/tests_opt_o3 \
+        echo "Running optimized benchmarks -03 np 4 ..."
+        mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
                 --benchmark \
                 --num-iterations $NUM_ITERATIONS \
                 --no-multithread \
                 --report $OUTPUT_DIR/opt_o3.txt \
-		--reporter csv
+		--reporter csv \
+                : -np 1 ./$BUILD_DIR/worker_opt_o3
+        echo "Running optimized benchmarks -03 np 16 ..."
+        mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o3_np64.txt \
+		--reporter csv \
+                : -np 15 ./$BUILD_DIR/worker_opt_o3
+        echo "Running optimized benchmarks -03 np 64 ..."
+        mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
+                --benchmark \
+                --num-iterations $NUM_ITERATIONS \
+                --no-multithread \
+                --report $OUTPUT_DIR/opt_o3_np64.txt \
+		--reporter csv \
+                : -np 63 ./$BUILD_DIR/worker_opt_o3
     fi
 else
     echo "Please run the build script first"
