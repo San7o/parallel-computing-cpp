@@ -35,18 +35,6 @@ if [ -d $BUILD_DIR ]; then
 	       --no-multithread \
                --verbose \
 		: -np 1 ./$BUILD_DIR/worker
-        echo "Running regular tests with 4 workers..."
-        mpirun -np 1 \
-               ./$BUILD_DIR/tests \
-	       --no-multithread \
-               --verbose \
-		: -np 3 ./$BUILD_DIR/worker
-        #echo "Running regular tests with 16 workers..."
-        #mpirun -np 1 \
-        #       ./$BUILD_DIR/tests \
-	#       --no-multithread \
-        #       --verbose \
-        #	 : -np 15 ./$BUILD_DIR/worker
     fi
     if [ -f "$BUILD_DIR/tests_opt_o1" ]; then
         echo "Running tests o1..."

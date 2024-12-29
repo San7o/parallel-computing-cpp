@@ -1,4 +1,5 @@
 #include <pc/transpose.hpp>
+#include <pc/check_symm.hpp>
 #include <mpi.h>
 #include <unistd.h>
 #include <stdio.h>
@@ -84,6 +85,11 @@ int main(int argc, char** argv)
     {
       for (unsigned long i = 0; i < num_iterations; ++i)
 	pc::matTransposeMPIBlock(mat1, mat2, N);
+    }
+    else if (strcmp(func, "Sym") == 0)
+    {
+      for (unsigned long i = 0; i < num_iterations; ++i)
+	pc::checkSymMPI(mat1, N);
     }
     else {
       fprintf(stdout, "WORKER %d: No function detected\n", pc::world_rank);

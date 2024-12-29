@@ -36,7 +36,6 @@ if [ -d $BUILD_DIR ]; then
                         --benchmark \
                         --num-iterations $NUM_ITERATIONS \
                         --no-multithread \
-                        --report $OUTPUT_DIR/base.txt \
                         --reporter csv \
 		: -np 1 ./build/worker
     fi
@@ -46,7 +45,6 @@ if [ -d $BUILD_DIR ]; then
                         --benchmark \
                         --num-iterations $NUM_ITERATIONS \
                         --no-multithread \
-                        --report $OUTPUT_DIR/opt_o1.txt \
                         --reporter csv
     fi
     if [ -f "$BUILD_DIR/tests_opt_o2" ]; then
@@ -55,7 +53,6 @@ if [ -d $BUILD_DIR ]; then
                         --benchmark \
                         --num-iterations $NUM_ITERATIONS \
                         --no-multithread \
-                        --report $OUTPUT_DIR/opt_o2.txt \
                         --reporter csv
     fi
     if [ -f "$BUILD_DIR/tests_opt_o3" ]; then
@@ -64,7 +61,6 @@ if [ -d $BUILD_DIR ]; then
                         --benchmark \
                         --num-iterations $NUM_ITERATIONS \
                         --no-multithread \
-                        --report $OUTPUT_DIR/opt_o3.txt \
                         --reporter csv
     fi
 else

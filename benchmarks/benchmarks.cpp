@@ -350,3 +350,51 @@ BENCHMARK(check_sym_columns_benchmark,
 		    pc::checkSymColumns(pc::matrix_in, (1<<N)));
     }
 }
+
+
+BENCHMARK(check_sum_MPI_benchmark,
+	  "checkSymMPI")
+{
+    if (pc::world_rank != 0)
+      return;
+
+    float *M_cyclic = new float[PC_MATRIX_MAX_SIZE*PC_MATRIX_MAX_SIZE];
+
+    constexpr auto arr1 = random_arr1();
+
+    for (size_t i = 0; i < PC_MATRIX_MAX_SIZE; ++i)
+      for (size_t j = 0; j < PC_MATRIX_MAX_SIZE; ++j)
+	{
+          M_cyclic[(i*PC_MATRIX_MAX_SIZE) + j] = arr1[i % PC_RANDOM_MATRIX_SIZE];
+          M_cyclic[(j*PC_MATRIX_MAX_SIZE) + i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
+	}
+      
+    int err;
+    char message[10] = "Sym\0";
+    long unsigned int num_iterations =
+	valfuzz::get_num_iterations_benchmark() + 2;
+    long unsigned int size;
+    for (size_t N = 4; N <= 12; ++N)
+    {
+      /* Message the workers */
+      err = MPI_Bcast(&message, 10, MPI_CHAR, 0, MPI_COMM_WORLD);
+      if (err != MPI_SUCCESS)
+      return;
+
+      size = (1<<N);
+      err = MPI_Bcast(&size, 1, MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+      if (err != MPI_SUCCESS)
+        return;
+
+      err = MPI_Bcast(&num_iterations, 1,
+		       MPI_UNSIGNED_LONG, 0, MPI_COMM_WORLD);
+      if (err != MPI_SUCCESS)
+        return;
+      
+      RUN_BENCHMARK((1<<N),
+		    pc::checkSymMPI(M_cyclic, (1<<N)));
+    }
+
+    delete[] M_cyclic;
+    return;
+}

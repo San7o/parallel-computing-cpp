@@ -44,6 +44,6 @@ bool checkSymColumns(float **M, tenno::size N);
 |                     MPI                      |
 \*============================================*/
 
-// TODO
+bool checkSymMPI(float *M, tenno::size N);
 
 } // pc
