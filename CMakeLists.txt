@@ -10,7 +10,6 @@ set(CMAKE_HAVE_THREADS_LIBRARY 1)
 set(CMAKE_USE_WIN32_THREADS_INIT 0)
 set(CMAKE_USE_PTHREADS_INIT 1)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
-
 set(PC_SOURCES
         src/transpose.cpp
         src/check_symm.cpp
@@ -141,6 +140,12 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
     target_link_libraries(worker PRIVATE ${PC_LINK_LIBRARIES})
     target_include_directories(worker PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
 
+    # Master
+    add_executable(master src/master.cpp src/transpose.cpp src/check_symm.cpp)
+    target_compile_options(master PRIVATE ${PC_COMPILE_OPTIONS})
+    target_link_libraries(master PRIVATE ${PC_LINK_LIBRARIES})
+    target_include_directories(master PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
+
     if (PC_BUILD_OPTIMIZED_O1)
         message("Building optimized target -O1")
         add_executable(tests_opt_o1 ${PC_SOURCES} ${PC_TEST_SOURCES})
@@ -153,6 +158,11 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
     	target_compile_options(worker_opt_o1 PRIVATE ${PC_COMPILE_OPTIONS})
     	target_link_libraries(worker_opt_o1 PRIVATE ${PC_LINK_LIBRARIES} -O1)
     	target_include_directories(worker_opt_o1 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
+	# Master
+    	add_executable(master_opt_o1 src/master.cpp src/transpose.cpp src/check_symm.cpp)
+    	target_compile_options(master_opt_o1 PRIVATE ${PC_COMPILE_OPTIONS})
+    	target_link_libraries(master_opt_o1 PRIVATE ${PC_LINK_LIBRARIES} -O1)
+    	target_include_directories(master_opt_o1 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
     endif()
     if (PC_BUILD_OPTIMIZED_O2)
         message("Building optimized target -O2")
@@ -166,6 +176,12 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
     	target_compile_options(worker_opt_o2 PRIVATE ${PC_COMPILE_OPTIONS})
     	target_link_libraries(worker_opt_o2 PRIVATE ${PC_LINK_LIBRARIES} -O2)
     	target_include_directories(worker_opt_o2 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
+	# Master
+	
+    	add_executable(master_opt_o2 src/master.cpp src/transpose.cpp src/check_symm.cpp)
+    	target_compile_options(master_opt_o2 PRIVATE ${PC_COMPILE_OPTIONS})
+    	target_link_libraries(master_opt_o2 PRIVATE ${PC_LINK_LIBRARIES} -O2)
+    	target_include_directories(master_opt_o2 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
     endif()
     if (PC_BUILD_OPTIMIZED_O3)
         message("Building optimized target -O3 -march=native -Ofast")
@@ -179,5 +195,10 @@ if(PC_BUILD_TESTS AND valfuzz_ADDED)
     	target_compile_options(worker_opt_o3 PRIVATE ${PC_COMPILE_OPTIONS})
     	target_link_libraries(worker_opt_o3 PRIVATE ${PC_LINK_LIBRARIES} -O3 -march=native -Ofast)
     	target_include_directories(worker_opt_o3 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
+	# Master
+    	add_executable(master_opt_o3 src/master.cpp src/transpose.cpp src/check_symm.cpp)
+    	target_compile_options(master_opt_o3 PRIVATE ${PC_COMPILE_OPTIONS})
+    	target_link_libraries(master_opt_o3 PRIVATE ${PC_LINK_LIBRARIES} -O3 -march=native -Ofast)
+    	target_include_directories(master_opt_o3 PRIVATE ${PC_HEADERS} ${PC_TEST_HEADERS})
     endif()
 endif()

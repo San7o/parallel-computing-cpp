@@ -25,6 +25,11 @@ Create a kernel for jupyter:
 python -m ipykernel install --user --name=venv
 ```
 
+Adjust yout python path:
+```bash
+export PYTHONPATH="$(pwd)"
+```
+
 Run jupyter notebook:
 ```bash
 jupyter lab
