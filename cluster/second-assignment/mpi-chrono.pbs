@@ -1,0 +1,81 @@
+#!/bin/bash
+
+# BEGIN first-assignment.pbs
+
+# =========================================== #
+#                   PBS SETUP                 #
+# =========================================== #
+
+# Job name
+#PBS -N mpi-chrono
+# Output files
+#PBS -o ./out.txt
+#PBS -e ./error.txt
+# Queue name
+#PBS -q short_cpuQ
+# Set the maximum wall time
+#PBS -l walltime=0:10:00
+# Number of nodes, cpus, and amount of memory
+#PBS -l select=1:ncpus=64:mem=4G
+
+NUM_ITERATIONS=1000
+BUILD_DIR=./build
+# Load the necessary modules
+module load gcc91
+module load cmake-3.15.4
+module load mpich-3.2.1--gcc-9.1.0
+# Select the working directory
+cd $HOME/parallel-computing-cpp/
+
+# =========================================== #
+#               BUILD THE TARGETS             #
+#                                             #
+#  Each executable contains all the necessary #
+#     benchmarks. Three executables will be   #
+#         generated: test, test_opt and       #
+#       test_opt_aggressive based on the      #
+# optimization level enabled in the compiler. #
+# =========================================== #
+
+if [ -d ./$BUILD_DIR ]; then
+    rm -rf ./$BUILD_DIR/
+fi    
+cmake \
+     -B $BUILD_DIR
+
+if [ ! -d ./$BUILD_DIR ]; then
+    echo "Build directory was not created" 
+    exit 1
+fi    
+
+cmake --build $BUILD_DIR -j$(nproc)
+
+if [ ! -f ./$BUILD_DIR/master ]; then
+    echo "Target master not found" 
+    exit 1
+fi
+if [ ! -f ./$BUILD_DIR/worker ]; then
+    echo "Target worker not found" 
+    exit 1
+fi
+
+
+# =========================================== #
+#                 RUN THE TESTS               #
+#                                             #
+#              Patience is advised            #
+# =========================================== #
+
+if [ -f ./dbg.txt ]; then
+  rm dbg.txt
+fi
+
+if [ -d $BUILD_DIR ]; then
+    if [ -f "$BUILD_DIR/tests" ]; then
+        echo "Running regular tests..."
+        mpirun -np 1 ./$BUILD_DIR/master "BlockDbg" 2048 $NUM_ITERATIONS \
+		: -np 15 ./$BUILD_DIR/worker
+    fi
+else
+    echo "Please run the build script first"
+fi
