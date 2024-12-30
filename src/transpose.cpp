@@ -446,7 +446,7 @@ void pc::matTransposeMPIBlockDebug(float *M, float *T, tenno::size N)
     return;
   }
   MPI_Type_free(&block_t_tmp);
-
+  
   end = std::chrono::high_resolution_clock::now();
   const std::chrono::duration<double> setup = end - start;
   std::chrono::duration<double> scatter, transpose, gather;
