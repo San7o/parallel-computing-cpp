@@ -21,6 +21,7 @@
 #include <math.h>
 #include <chrono>
 #include <iostream>
+#include <fstream>
 
 
 /*============================================*\
@@ -533,13 +534,13 @@ void pc::matTransposeMPIBlockDebug(float *M, float *T, tenno::size N)
 
   if (pc::world_rank == 0)
   {
-    //fprintf(stdout, "AO!\n");
-    std::cout << "matTransposeMPIBlock results:\n"
-              << " - displacement: " << displacement << "\n"
-              << " - setup: " << setup << "\n"
-              << " - scatter: " << scatter << "\n"
-              << " - transpose: " << transpose << "\n"
-              << " - gather: " << gather << std::endl;
+    std::ofstream out("dbg.txt", std::ofstream::out | std::ofstream::app);
+    out << displacement.count() << ","
+	<< setup.count() << ","
+        << scatter.count() << ","
+        << transpose.count() << ","
+        << gather.count() << std::endl;
+    out.close();
   }
   
 end:
