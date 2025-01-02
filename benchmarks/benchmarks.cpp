@@ -286,7 +286,7 @@ BENCHMARK(transpose_mpi_nonblocking_benchmark,
       M_cyclic[i] = arr1[i % PC_RANDOM_MATRIX_SIZE];
       
     int err;
-    char message[10] = "Base\0";
+    char message[10] = "NB\0";
     long unsigned int num_iterations =
 	valfuzz::get_num_iterations_benchmark() + 2;
     long unsigned int size;

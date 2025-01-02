@@ -81,6 +81,11 @@ int main(int argc, char** argv)
 	pc::matTransposeMPI(mat1, mat2, N);
       }
     }
+    else if (strcmp(func, "NB") == 0)
+    {
+      for (unsigned long i = 0; i < num_iterations; ++i)
+	pc::matTransposeMPINonblocking(mat1, mat2, N);
+    }
     else if (strcmp(func, "BlockDbg") == 0)
     {
       for (unsigned long i = 0; i < num_iterations; ++i)
