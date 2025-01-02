@@ -270,7 +270,7 @@ void pc::matTransposeMPINonblocking(float *M, float *T, tenno::size N)
 		     &request);              /* request   */
   if (err != MPI_SUCCESS)
     return;
-  MPI_Wait(&request, NULL);
+  MPI_Wait(&request,MPI_STATUS_IGNORE);
 
   err = MPI_Igather(row,                  /* sendbuf   */
 		    (int) N / world_size, /* sendcount */
@@ -283,7 +283,7 @@ void pc::matTransposeMPINonblocking(float *M, float *T, tenno::size N)
 		    &request);
   if (err != MPI_SUCCESS)
     return;
-  MPI_Wait(&request, NULL);
+  MPI_Wait(&request, MPI_STATUS_IGNORE);
 
   delete[] row;
   MPI_Type_free(&row_t);
