@@ -6,17 +6,20 @@
 References draft:
 
 Jaeyoung Choi, Jack J. Dongarra, David W. Walker.  Parallel Matrix Transpose Algorithms on Distributed Memory Concurrent Computers.  Mathematical Sciences Section Oak Ridge National Laboratory P.O. Box 2008, Bldg. 6012 Oak Ridge, TN 37831-6367
-
-Notes: The communication is based of the greatest commond divisor (GCD) of the number of rows and columns (P and Q). If P and Q are relatively prima, the matrix transpose algorithm involves complete exchange communication. A block is LCM/P x LCM/Q if not relativaly prime and only LCM/GCD communications are required.
+- Notes: The communication is based of the greatest commond divisor (GCD) of the number of rows and columns (P and Q). If P and Q are relatively prima, the matrix transpose algorithm involves complete exchange communication. A block is LCM/P x LCM/Q if not relativaly prime and only LCM/GCD communications are required.
+- The algorithms make use of non-blocking, point-to-point communication between proces-
+sors. The use of nonblocking communication allows a processor to overlap the messages that it sends to different processors, thereby avoiding unnecessary synchronization.
 
 Jonathan Eckstein, Gyorgy Matyasfalvi. Efficient Distributed-Memory Parallel Matrix-Vector Multiplication with Wide or Tall Unstructured Sparse Matrices.
+- on sparse matrixes, but Its about vector multiplications
 
 John C. Bowman, Malcolm Roberts. Adaptive Matrix Transpose Algorithms for Distributed Multicore Processors.
-
-Notes: "The most popular algorithms for transposing an NxN matrix distributed over P processes are the direct communicatoin (all-to-all, simpler implementation) and recursive binary exchange (butterfly) algorithms."
+- really nice for my problem
+- hybrid approach with both shared and distributed
+- Notes: "The most popular algorithms for transposing an NxN matrix distributed over P processes are the direct communicatoin (all-to-all, simpler implementation) and recursive binary exchange (butterfly) algorithms."
 
 Jaeyoung Choi, Jack Dongarra, David W. Walker. The design of scalable software libraries for distributed memory concurrent computers. Oak Ridge National Laboartory Mathematical Sciences Section. Oak RIdge, TN 37831-6367.
-- they explained (apparently) block cyclic data distribution
+- they explained (apparently) block cyclic data distribution. Actually no
 
 
 So we learned that block cyclic data distribution (round robin) is efficient for data access. You can mix blocks with cycles to get a few combinations to try out.

@@ -50,6 +50,7 @@ void matTransposeIntrinsicCyclic(float *mat_in, float *mat_out, size_t N);
 \*============================================*/
 
 void matTransposeMPI(float *M, float *T, tenno::size N);
+void matTransposeMPINonblocking(float *M, float *T, tenno::size N);
 void matTransposeMPIBlock(float *M, float *T, tenno::size N);
 
 // Used for debugging purposes

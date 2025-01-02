@@ -218,6 +218,78 @@ void pc::matTransposeMPI(float *M, float *T, tenno::size N)
   return;
 }
 
+void pc::matTransposeMPINonblocking(float *M, float *T, tenno::size N)
+{
+  if (world_size > (int) N) /* fallback */
+  {
+    if (world_rank == 0)
+    {
+      for (tenno::size i = 0; i < N*N; ++i)
+	T[i] = M[N*(i % N) + (i / N)];
+    }
+    return;
+  }
+
+  MPI_Datatype row_t;
+  int err = MPI_Type_contiguous((int) N,   /* count   */
+				 MPI_FLOAT, /* oldtype */
+				 &row_t);   /* newtype */
+  if (err != MPI_SUCCESS)
+    return;
+  err = MPI_Type_commit(&row_t);
+  if (err != MPI_SUCCESS)
+    return;
+
+  MPI_Datatype col_t_tmp, col_t;
+  err = MPI_Type_vector((int) N,        /* count       */
+			 1,              /* blocklength */
+			 (int) N,        /* stride      */
+			 MPI_FLOAT,      /* oldtype     */
+			 &col_t_tmp);    /* newtype     */
+  if (err != MPI_SUCCESS)
+    return;
+  err = MPI_Type_create_resized(col_t_tmp,     /* oldtype */
+				 0,             /* lb      */
+				 sizeof(float), /* extent  */
+				 &col_t);       /* newtype */
+  err = MPI_Type_commit(&col_t);
+  if (err != MPI_SUCCESS)
+    return;
+  MPI_Type_free(&col_t_tmp);
+
+  MPI_Request request;
+  float *row = new float[N * N / world_size];
+  err = MPI_Iscatter(M,                      /* sendbuf   */
+		     (int) (N / world_size), /* sendcount */
+		     row_t,                  /* sendtype  */
+		     row,                    /* recvbuf   */
+		     (int) (N / world_size), /* recvcount */
+		     row_t,                  /* recvtype  */
+		     0,                      /* root      */
+ 		     MPI_COMM_WORLD,         /* comm      */
+		     &request);              /* request   */
+  if (err != MPI_SUCCESS)
+    return;
+  MPI_Wait(&request, NULL);
+
+  err = MPI_Igather(row,                  /* sendbuf   */
+		    (int) N / world_size, /* sendcount */
+		    row_t,                /* sendtype  */
+		    T,                    /* recvbuf   */
+		    (int) N / world_size, /* recvcount */
+		    col_t,                /* recvtype  */
+		    0,                    /* root      */
+		    MPI_COMM_WORLD,       /* comm      */
+		    &request);
+  if (err != MPI_SUCCESS)
+    return;
+  MPI_Wait(&request, NULL);
+
+  delete[] row;
+  MPI_Type_free(&row_t);
+  MPI_Type_free(&col_t);
+  return;
+}
 void pc::matTransposeMPIBlock(float *M, float *T, tenno::size N)
 {
   if (world_size > (int) (N * N) || world_size < 4) /* fallback */
