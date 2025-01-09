@@ -4,6 +4,9 @@ deps/
 bazel-*
 update/
 perf.data
+perf.data.old
+.cache
+latex/paper2.out
 info.txt
 *~
 *#

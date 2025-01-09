@@ -81,38 +81,48 @@ fi
 
 if [ -d $BUILD_DIR ]; then
     if [ -f $BUILD_DIR/tests ]; then
-        echo "Running regular benchmarks with 2 processes..."
+        echo "Running regular tests with 2 processes..."
         mpirun -np 1 ./$BUILD_DIR/tests \
                --verbose \
 	       --no-multithread \
 		: -np 1 ./$BUILD_DIR/worker
-        echo "Running regular benchmarks with 4 processes..."
+        echo "Running regular tests with 4 processes..."
         mpirun -np 1 ./$BUILD_DIR/tests \
                --verbose \
 	       --no-multithread \
 		: -np 3 ./$BUILD_DIR/worker
-        echo "Running regular benchmarks with 16 processes..."
+        echo "Running regular tests with 16 processes..."
         mpirun -np 1 ./$BUILD_DIR/tests \
                --verbose \
 	       --no-multithread \
 		: -np 15 ./$BUILD_DIR/worker
+        echo "Running regular tests with 64 processes..."
+        mpirun -np 1 ./$BUILD_DIR/tests \
+               --verbose \
+	       --no-multithread \
+		: -np 63 ./$BUILD_DIR/worker
+        echo "Running regular tests with 256 processes..."
+        mpirun -np 1 ./$BUILD_DIR/tests \
+               --verbose \
+	       --no-multithread \
+		: -np 255 ./$BUILD_DIR/worker
     fi
     if [ -f $BUILD_DIR/tests_opt_o1 ]; then
-        echo "Running optimized benchmarks -01..."
+        echo "Running optimized tests -01..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o1 \
                --verbose \
 	       --no-multithread \
 		: -np 1 ./$BUILD_DIR/worker_opt_o1
     fi
     if [ -f $BUILD_DIR/tests_opt_o2 ]; then
-        echo "Running optimized benchmarks -02 ..."
+        echo "Running optimized tests -02 ..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o2 \
                --verbose \
 	       --no-multithread \
 		: -np 1 ./$BUILD_DIR/worker_opt_o2
     fi
     if [ -f $BUILD_DIR/tests_opt_o3 ]; then
-        echo "Running optimized benchmarks -03..."
+        echo "Running optimized tests -03..."
         mpirun -np 1 ./$BUILD_DIR/tests_opt_o3 \
                --verbose \
 	       --no-multithread \

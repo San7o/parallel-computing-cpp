@@ -81,33 +81,8 @@ parallel computing, matrix transpose, symmetric matrix, benchmark
 
 \section{Introduction}
 
-\iffalse
-Shared-memory sytems are widely used in performance critial applications
-since application can leverage multiple cores on a system.
-There are, however, limitations to this approach due to all the CPU-cores
-competing for access to memory over a shared bus. When memory bandwidth is
-the bottlenexk, It is worth considering distributed-memory models as
-the memory operations can be distributed on multiple nodes. Implementing
-algorithms on distributed-memory systems can be more complex compared
-to shared-memory ones since the information needs to be communicated
-between nodes; however several libraries and standards assist developers on
-writing algorithms for such systems, with
-the most famous being MPI. Distributed-memory systems rely on the network layer
-to distribute information, introducing network latency and bandwidth as a possible bottleneck.
-Therefore, technologies like infiniband, RDMA and NUMA are trying to bridge the gap between the two and
-MPI implementation such as OpenMPI are configured to leverage them by default.
-Comparing different approaches is important to evaluate the optimal perormance
-of the system. In this report we are going to present an implementation of
-matTranspose and checkSymm on distributed systems using MPI. We will then
-compare this implementation against a shared-memory one using OpenMP. Different
-compiler optimizations will also be discussed, as well as implicit parallelism
-techniques such as SIMD optimizations.
+Introduction here
 
-NOTE: Maybe infiniband is used for the shared aswell, then why using distriubted at all?
-NOTE: RDMA e Infiniband sono la stessa cosa alla fine?
-\fi
-
-\\
 In section 2, we discuss the state of the art of the two algorithms.
 In section 3, we elaborate on the algorithms analyzed.
 In section 4, we explain the benchmarking procedures and system information.
