@@ -16,7 +16,7 @@
 # Set the maximum wall time
 #PBS -l walltime=0:50:00
 # Number of nodes, cpus, and amount of memory
-#PBS -l select=1:ncpus=64:mem=4G
+#PBS -l select=4:ncpus=256:mem=4G
 
 NUM_ITERATIONS=10
 BUILD_DIR=./build
