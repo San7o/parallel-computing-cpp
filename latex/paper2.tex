@@ -33,6 +33,12 @@ From the source code: coll/coll_base_scatter:
   - linear non blocking
 - The decision is taken in coll/tuned/coll_tuned_scatter_decision.c
 
+GPU:
+J. Gómez-Luna, I. -J. Sung, L. -W. Chang, J. M. González-Linares, N. Guil and W. -M. W. Hwu, "In-Place Matrix Transposition on GPUs," in IEEE Transactions on Parallel and Distributed Systems, vol. 27, no. 3, pp. 776-788, 1 March 2016, doi: 10.1109/TPDS.2015.2412549. 
+
+Wonderful paper about cache:
+S. Chatterjee and S. Sen, "Cache-efficient matrix transposition," Proceedings Sixth International Symposium on High-Performance Computer Architecture. HPCA-6 (Cat. No.PR00550), Touluse, France, 2000, pp. 195-205, doi: 10.1109/HPCA.2000.824350.
+
 \fi
 
 
@@ -55,25 +61,24 @@ From the source code: coll/coll_base_scatter:
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
-\title{Matrix Transposition and Symmetry on Distributed Memory Systems\\
+\title{Comparing shared and distributed memory performance: A case study on Matrix Transposition and Symmetry Check\\
 %{\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
 %should not be used}
 %\thanks{Identify applicable funding agency here. If none, delete this.}
 }
 
 \author{\IEEEauthorblockN{Giovanni Santini}
-\IEEEauthorblockA{\textit{Dept.\ of Information Engineering and Computer Science} \\
-\textit{University of Trento}\\
+\IEEEauthorblockA{\textit{University of Trento}\\
 Trento, Italy \\
 giovanni.santini@studenti.unitn.it \\
-MAT. 235441}
+MAT. 235441 \\
+\href{https://github.com/San7o/parallel-computing-cpp}{github.com/San7o/parallel-computing-cpp}}
 }
 
 \maketitle
 
 \begin{abstract}
-TODO for later
-\end{abstract}
+TODO for later \end{abstract}
 
 \begin{IEEEkeywords}
 parallel computing, matrix transpose, symmetric matrix, benchmark
@@ -81,47 +86,79 @@ parallel computing, matrix transpose, symmetric matrix, benchmark
 
 \section{Introduction}
 
-\iffalse
-Shared-memory sytems are widely used in performance critial applications
-since application can leverage multiple cores on a system.
-There are, however, limitations to this approach due to all the CPU-cores
-competing for access to memory over a shared bus. When memory bandwidth is
-the bottlenexk, It is worth considering distributed-memory models as
-the memory operations can be distributed on multiple nodes. Implementing
-algorithms on distributed-memory systems can be more complex compared
-to shared-memory ones since the information needs to be communicated
-between nodes; however several libraries and standards assist developers on
-writing algorithms for such systems, with
-the most famous being MPI. Distributed-memory systems rely on the network layer
-to distribute information, introducing network latency and bandwidth as a possible bottleneck.
-Therefore, technologies like infiniband, RDMA and NUMA are trying to bridge the gap between the two and
-MPI implementation such as OpenMPI are configured to leverage them by default.
-Comparing different approaches is important to evaluate the optimal perormance
-of the system. In this report we are going to present an implementation of
-matTranspose and checkSymm on distributed systems using MPI. We will then
-compare this implementation against a shared-memory one using OpenMP. Different
-compiler optimizations will also be discussed, as well as implicit parallelism
-techniques such as SIMD optimizations.
+Shared-memory systems are widely used in performance-critial applications
+to leverage multiple CPU cores on the same machine.
+There are, however, limitations to this approach due to all CPU cores
+competing for access to memory over a shared bus, which creates contention
+and reduces performance. Additionally, scaling the number of cores in
+shared-memory systems is challenging. Consequently, distributed-memory
+models are widely used, as they allow memory operations to be
+distributed across multiple computing nodes, and the system can
+be scaled by adding new nodes to the cluster. While distributed-memory
+systems offer significant advantages, they
+depend on the network layer to exchange information, which can
+introduce network latency and bandwidth saturation as potential
+bottlenecks. To mitigate these challenges, technologies such as
+InfiniBand \cite{b0}, RDMA \cite{b-1} and local caching \cite{b-2}
+aim to minimize communication overhead and
+enhance data transfer efficiency. Modern MPI implementations,
+including OpenMPI and MPICH2, are optimized to utilize these
+technologies \cite{b1} \cite{b2}, enabling improved performance in
+distributed-memory environments. The two memory models each
+have distinct strengths and limitations,
+making a comparison between the two essential for evaluating optimal
+system performance. In this report, we present an implementation of
+matTranspose and checkSymm on distributed-memory systems using MPI.
+This implementation is then compared with a shared-memory counterpart
+developed using OpenMP. Additionally, we discuss various compiler
+optimization strategies and explore implicit parallelism techniques,
+such as SIMD optimizations.
 
-NOTE: Maybe infiniband is used for the shared aswell, then why using distriubted at all?
-NOTE: RDMA e Infiniband sono la stessa cosa alla fine?
-\fi
-
-\\
+The rest of the report is organized as follows.
 In section 2, we discuss the state of the art of the two algorithms.
 In section 3, we elaborate on the algorithms analyzed.
-In section 4, we explain the benchmarking procedures and system information.
-In section 5, we present the results. The conclusion is in section 6. Section 7 contains
-the project's github link
-
+In section 4, we explain the benchmarking procedures and system
+information. In section 5, we present the results. The conclusion
+is in section 6. Section 7 contains the project's github link
 
 \section{State of the Art}
 
-TODO
+\iffalse
+- Parallel Matrix Transpose Algorithms on Distributed Memory Concurrent
+  Computers
+- Adaptive Matrix Transpose Algorithms for Distributed Multicore Processors
+- Efficient Distributed-Memory Parallel Matrix-Vector Multiplication with
+  Wide or Tall Unstructured Sparse Matrices.
+- In-Place Matrix Transposition on GPUs
+
+\fi
+
+Distributed-memory matrix transposition is a well discussed problem.
+Choi, Dongarra and Walker \cite{b3} presented an implementation
+based on the block cyclic data distribution. In their approach, the
+matrix is divided into blocks of arbitrary size. If the numbers of rows and
+columns are relatively prime, then the algorithm consists of a two-dimension
+complete exchange of information where each processor sends a sub block
+to every other processor. Binary exchange was shown to be the faster communication
+scheme \cite{b4} which completes the exchange in $log_2 P$ steps where
+$P$ is the number of processors. If the number of rows and columns
+are not relatively prime, processors are grouped into a number of groups
+equal to the greatest common divisor of the number of rows and columns, and
+communication is overlapped between groups using
+non-blocking point-to-point communication. Bowman and Roberts \cite{b5} later
+presented an hybrid approach leveraging both shared and distributed memory.
+First, block of the matrix are transposed locally. Eckstein and Matyasfalvi
+\cite{b6} studied the distributed problem on wide or tall unstructured sparce matrices.
+Their implementation assignes nonzero elements of the matrix evenly
+between processes by partitioning the matrix by sections of non zero
+elements of the same length. Juan Gómez-Luna et. al. \cite{b7} presented
+several GPU applications and an heuristic to detect the optimal approach.
 
 \section{Contribution and Methodology}
 
 TODO
+In this section, implementations of both \textit{matTranspose}
+and \textit{checkSymm} using MPI are presented. 
 
 \section{Experiments and System Description}
 
@@ -161,7 +198,18 @@ Github link: \href{https://github.com/San7o/parallel-computing-cpp}{https://gith
 Please read the instructions in the \textit{README.md} for building.
 
 \begin{thebibliography}{00}
-\bibitem{b1} TODO
+\bibitem{b0} P. Grun, Introduction to InfiniBand for End Users, InfiniBand
+Trade Assoc., Beaverton, OR, USA, 2010. [Online]. Available:
+cw.infinibandta.org/document/dl/7268
+\bibitem{b-1} Kalia, A., Kaminsky, M., and Andersen, D. G. (2016). Design Guidelines for High Performance RDMA Systems. 2016 USENIX Annual Technical Conference (USENIX ATC 16), 437–450. https://www.usenix.org/conference/atc16/technical-sessions/presentation/kalia 
+\bibitem{b-2} Message Passing Interface Forum. (2023). MPI: A Message-Passing Interface Standard Version 4.1. Chapter 8.7 "Caching". https://www.mpi-forum.org/docs/mpi-4.1/mpi41-report.pdf 
+\bibitem{b1} G. M. Shipman, T. S. Woodall, R. L. Graham, A. B. Maccabe and P. G. Bridges, "Infiniband scalability in Open MPI," Proceedings 20th IEEE International Parallel and Distributed Processing Symposium, Rhodes, Greece, 2006, pp. 10 pp.-, doi: 10.1109/IPDPS.2006.1639335.
+\bibitem{b2} J. Liu et al., "Design and implementation of MPICH2 over InfiniBand with RDMA support," 18th International Parallel and Distributed Processing Symposium, 2004. Proceedings., Santa Fe, NM, USA, 2004, pp. 16-, doi: 10.1109/IPDPS.2004.1302922.
+\bibitem{b3} Jaeyoung Choi, Jack J. Dongarra, David W. Walker.  Parallel Matrix Transpose Algorithms on Distributed Memory Concurrent Computers.  Mathematical Sciences Section Oak Ridge National Laboratory P.O. Box 2008, Bldg. 6012 Oak Ridge, TN 37831-6367
+\bibitem{b4} S. Takkella and S. Seidel, "Complete exchange and broadcast algorithms for meshes," Proceedings of IEEE Scalable High Performance Computing Conference, Knoxville, TN, USA, 1994, pp. 422-428, doi: 10.1109/SHPCC.1994.296674.
+\bibitem{b5} John C. Bowman and Malcolm Roberts. Adaptive Matrix Transpose Algorithms for Distributed Multicore Processors
+\bibitem{b6} Eckstein, J., Matyasfalvi, G. (2018). Efficient Distributed-Memory Parallel Matrix-Vector Multiplication with Wide or Tall Unstructured Sparse Matrices. https://arxiv.org/abs/1812.00904 
+\bibitem{b7} J. Gómez-Luna, I. -J. Sung, L. -W. Chang, J. M. González-Linares, N. Guil and W. -M. W. Hwu, "In-Place Matrix Transposition on GPUs," in IEEE Transactions on Parallel and Distributed Systems, vol. 27, no. 3, pp. 776-788, 1 March 2016, doi: 10.1109/TPDS.2015.2412549.
 \end{thebibliography}
 \vspace{12pt}
 

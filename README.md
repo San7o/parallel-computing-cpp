@@ -10,9 +10,6 @@
 - [Dependencies](#dependencies)
 - [Build and run on the cluster](#cluster)
 - [Building manually](#building_manually)
-  - [Using cmake](#cmake)
-  - [Using bazel](#bazel)
-  - [Using meson](#meson)
 - [Running manually](#running_manually)
 - [Additional Information](#additional_info)
   - [Analyze data](#analyze_data)
@@ -91,19 +88,11 @@ containing collected data in csv format.
 <a name="building_manually"></a>
 ## Building manually
 
-This project primarly supports building with `cmake >= 3.15.4` and
-Its use is advised. Additionally, building with `bazel`
-and `meson` is also supported for faster build time and better 
-developement experience. Note that the instructions to run
-the benchmarks on the cluster are specified using cmake.
-
-<a name="cmake"></a>
-### Using cmake
-
+This project primarly supports building with `cmake >= 3.15.4`.
 If you are on the cluster, please load the necessary modules first:
 ```bash
 module load gcc91 &&
-module load cmake-3.15.4
+module load cmake-3.15.4 &&
 module load mpich-3.2
 ```
 
@@ -112,7 +101,7 @@ To build the full benchmark suite, run the following command:
 ```bash
 git clone https://github.com/San7o/parallel-computing-cpp.git &&
 cd parallel-computing-cpp &&
-git checkout first-assignment &&
+git checkout second-assignment &&
 cmake -Bbuild \
 	  -D PC_BUILD_OPTIMIZED_O1=ON \
 	  -D PC_BUILD_OPTIMIZED_O2=ON \
@@ -138,31 +127,6 @@ omp support. You can build with clang by enabling
 `PC_USE_CLANG` but the project is not fully compatible
 with clang yet.
 
-<a name="bazel"></a>
-### Using bazel
-
-If you decided to build with bazel, first clone the
-repository with `--recursive` and then build the
-target `first_assignment`:
-
-```bash
-git clone --recursive https://github.com/San7o/parallel-computing-cpp.git &&
-bazel build //:first_assignment
-```
-
-The binaries will be generated in `bazel-bin`
-
-<a name="meson"></a>
-### Using meson
-
-To build with meson, run the following:
-
-```bash
-git clone --recursive https://github.com/San7o/parallel-computing-cpp.git &&
-meson setup build &&
-ninja -C build
-```
-
 <a name="running_manually"></a>
 ## Running manually
 
@@ -175,6 +139,7 @@ the help message with `--help`:
 ```c++
 module load gcc91 &&
 module load cmake-3.15.4 &&
+module load mpich-3.2 &&
 ./build/tests --benchmark          \
               --num-iterations 100 \
               --report report.txt
