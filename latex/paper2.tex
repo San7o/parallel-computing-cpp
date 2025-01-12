@@ -147,7 +147,7 @@ equal to the greatest common divisor of the number of rows and columns, and
 communication is overlapped between groups using
 non-blocking point-to-point communication. Bowman and Roberts \cite{b5} later
 presented an hybrid approach leveraging both shared and distributed memory.
-First, block of the matrix are transposed locally. Eckstein and Matyasfalvi
+Eckstein and Matyasfalvi
 \cite{b6} studied the distributed problem on wide or tall unstructured sparce matrices.
 Their implementation assignes nonzero elements of the matrix evenly
 between processes by partitioning the matrix by sections of non zero
@@ -156,9 +156,61 @@ several GPU applications and an heuristic to detect the optimal approach.
 
 \section{Contribution and Methodology}
 
-TODO
 In this section, implementations of both \textit{matTranspose}
-and \textit{checkSymm} using MPI are presented. 
+and \textit{checkSymm} using MPI are presented, starting with
+\textit{matTranspose}. We benchmark the bandwidth and speedup
+of different MPI implementations compared to a serial and to a OpenMPI one.
+Different compiler optimizations will also be compared. All benchmarks
+will be tested against every matrix size from $2^2$ to $2^{12}$,
+we will assume the number of processes is divisible by the matrix size
+and the square root is an integer number for ease of implementation,
+however the algorithms can be generalised with few modifications.
+The algorithms for \textit{matTranspose} will now be explained.
+
+\textit{matTranspose} takes a $N \times N$ input square matrix
+\textit{input}, a matrix of the same shape \textit{ouput}, and the
+size of the two matrices \textit{size}. The analyzed algorithms are the following:
+\begin{itemize}
+\item \textit{matTranspose}: naive implementation of matTranspose, iterating over values of the input matrix and storing them in the output matrix with indexes of rows and columns swapped.
+\item \textit{matTransposeMPI}: this implementation takes full advantage
+  of MPI datatypes to test bandwidth. MPI has the possibility to define a
+  custom datatype to access memory, we used \textit{MPI\_Type\_contiguous}
+  to define a row type and \textit{MPI\_Type\_vector} + \textit{MPI\_Type\_create\_resized}
+  for a column type. The root process scatters rows with \textit{MPI\_Scatter} and
+  retrieves columns with \textit{MPI\_Gather}, therefore
+  transposing the matrix. Each process receives a block of rows and
+  sends back the same block to the root but as column type. The algorithm
+  automatically assign the correct number of rows/column to each process based on the
+  number of processes so that the entire matrix is transposed.
+  For example, in a $16x16$ matrix with $4$ processes, each processes
+  receives $\frac{16}{4}=4$ rows and sends the same number back as
+  columns.
+  This implementation fully tests the communication
+  bandwidth and latency by relying only on communication and MPI
+  functionalities.
+\item \textit{matTransposeMPIBlock}: this implementation divides the
+  original matrix into a mesh of square sub-matrixes with side length equal to
+  $\frac{N}{\sqrt{\#processes}}$ using MPI datatypes. Each sub-matrix is assigned
+  to a different processes. The root process sends the sub-matrix to the
+  other processes with \textit{MPI\_Scatterv} and receives the same
+  number of sub-matrices but in transposed order with \textit{MPI\_Gatherv},
+  for example process[0][1] will sand to root[1][0].
+  Each process tranposes its sub-matrix and sends It back to the root.
+  This approach tests a different communication method.
+\end{itemize}
+The algorithm for \textit{checkSymm} will now be explained. The algorithm
+takes an $N \times N$ square matrix \textit{input}, a size \textit{size}
+and returns true if the matrix is symmetrix, false otherwise.
+The algorithm the following:
+\begin{itemize}
+\item \textit{checkSymm}: naive implementation of checkSymm. It Iterates over the upper half of the matrix and testing if every value is equal to the symmetric value.
+\item \textit{checkSymmMPI}: similar to \textit{matTransposeMPIBlock},
+but each process receives both a sub-matrix and the transposed sub-matrix,
+that is, if we treated each sub-matrix as a single element of a matrix,
+the element in the tranposed position will be received. Each process compares the two
+sub-matrices to check if they are symmetric. The result is computed
+via \textit{MPI\_Reduce}.
+\end{itemize}
 
 \section{Experiments and System Description}
 
@@ -172,7 +224,26 @@ methodologies used in the project. \\
 or achieve the objectives \\
 \fi
 
-TODO
+Experiments were conducted on a cluster with 96 Intel(R) Xeon(R) Gold
+6252N CPUs (2.30GHz) featuring 32K L1d and L1i caches, 1022K L2 cache,
+36608K L3 cache (64-bit cache lines), 1 thread per core, and 4GB RAM,
+running Linux 3.10. The algorithms were benchmarked using \textit{valFuzz},
+with benchmarks compiled using gcc-9.1.0. Four benchmark sets were
+compiled with different optimization levels: none, -O1, -O2 and "-O3
+-Ofast -march=native".
+
+To ensure statistical significance, each benchmark was executed 100
+times, recording wall-clock execution time statistics: minimum, maximum,
+median, mean, standard deviation, Q1, and Q3. Cache interference was
+minimized by clearing it before each run by writing to an array twice
+the L3 cache size. Input matrices, consistent across algorithms, were
+initialized with uniformly random floats (-1 to 1) generated via a
+Linear Congruential Generator (LCG) \cite{b8} with parameters a=1664525,
+c=1013904223, m=232 \cite{b9}, and seed 1337.
+
+To expedite random number generation, values were precomputed at
+compile time using \textit{tenno-tl}. Additional \textit{tenno-tl}
+features, such as ranges and arrays, were also employed.
 
 \section{Results and Discussion}
 
@@ -210,6 +281,9 @@ cw.infinibandta.org/document/dl/7268
 \bibitem{b5} John C. Bowman and Malcolm Roberts. Adaptive Matrix Transpose Algorithms for Distributed Multicore Processors
 \bibitem{b6} Eckstein, J., Matyasfalvi, G. (2018). Efficient Distributed-Memory Parallel Matrix-Vector Multiplication with Wide or Tall Unstructured Sparse Matrices. https://arxiv.org/abs/1812.00904 
 \bibitem{b7} J. Gómez-Luna, I. -J. Sung, L. -W. Chang, J. M. González-Linares, N. Guil and W. -M. W. Hwu, "In-Place Matrix Transposition on GPUs," in IEEE Transactions on Parallel and Distributed Systems, vol. 27, no. 3, pp. 776-788, 1 March 2016, doi: 10.1109/TPDS.2015.2412549.
+\bibitem{b8} Rotenberg, A. (1960). "A New Pseudo-Random Number Generator". Journal of the ACM. 7 (1): 75–77
+\bibitem{b9} Numerical Recipes ranqd1, Chapter 7.1, An Even Quicker Generator, Eq. 7.1.6
+parameters from Knuth and H. W. Lewis
 \end{thebibliography}
 \vspace{12pt}
 
