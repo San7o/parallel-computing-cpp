@@ -67,7 +67,7 @@ To submit the script for execution, run the following on the cluster:
 ```bash
 git clone https://github.com/San7o/parallel-computing-cpp.git &&
 git checkout second-assignment &&
-export PC_PBS_FILE=$HOME/parallel-computing-cpp/cluster/parallel-computing-cpp/second-assignment/second-assignment.pbs &&
+export PC_PBS_FILE=$HOME/parallel-computing-cpp/cluster/second-assignment/second-assignment.pbs &&
 chmod +x $PC_PBS_FILE &&
 qsub $PC_PBS_FILE
 ```
@@ -149,7 +149,7 @@ unset NUM_WORKERS NUM_ITERATIONS BUILD_DIR
 
 You could also run the full benchmarks by running the `.pbs` script:
 
-```cpp
+```bash
 chmod +x cluster/second-assignment/second-assignment.pbs &&
 ./cluster/second-assignment/second-assigmnet.pbs
 ```
