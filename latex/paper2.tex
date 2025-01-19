@@ -56,12 +56,13 @@ S. Chatterjee and S. Sen, "Cache-efficient matrix transposition," Proceedings Si
 \usepackage{algpseudocode}
 \usepackage{graphicx}
 \usepackage{hyperref}
+\usepackage{booktabs} % table
 
 \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
     T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 \begin{document}
 
-\title{Comparing shared and distributed memory performance: A case study on Matrix Transposition and Symmetry Check\\
+\title{Comparing shared and distributed memory algorithms: A case study on Matrix Transposition and Symmetry Check\\
 %{\footnotesize \textsuperscript{*}Note: Sub-titles are not captured in Xplore and
 %should not be used}
 %\thanks{Identify applicable funding agency here. If none, delete this.}
@@ -78,7 +79,17 @@ MAT. 235441 \\
 \maketitle
 
 \begin{abstract}
-TODO for later \end{abstract}
+This study evaluates matrix transposition on shared- and distributed-memory
+architectures, focusing on scalability. The shared-memory implementation
+achieves optimal linear strong scaling for matrixes of size $N<2^{10}$,
+while distributed-memory implementations are hindered by communication overhead, with
+\textit{matTransposeMPIBlock} performing better then the seqencial
+implementation only on big matrixes, but scaling well on big matrices.
+Weak scaling is poor for all implementations, though the shared-memory
+approach is slightly more efficient. Shared-memory systems are ideal
+for moderate problem sizes, while distributed-memory systems trade
+efficiency for scalability with larger matrices.
+\end{abstract}
 
 \begin{IEEEkeywords}
 parallel computing, matrix transpose, symmetric matrix, benchmark
@@ -107,12 +118,11 @@ technologies \cite{b1} \cite{b2}, enabling improved performance in
 distributed-memory environments. The two memory models each
 have distinct strengths and limitations,
 making a comparison between the two essential for evaluating optimal
-system performance. In this report, we present an implementation of
-matTranspose and checkSymm on distributed-memory systems using MPI.
+system performance. In this report, an implementation of \textit{matTranspose}
+and \textit{checkSymm} is presented on distributed-memory systems using MPI.
 This implementation is then compared with a shared-memory counterpart
-developed using OpenMP. Additionally, we discuss various compiler
-optimization strategies and explore implicit parallelism techniques,
-such as SIMD optimizations.
+developed using OpenMP. Additionally, various compiler
+optimization strategies are discussed.
 
 The rest of the report is organized as follows.
 In section 2, we discuss the state of the art of the two algorithms.
@@ -156,25 +166,41 @@ several GPU applications and an heuristic to detect the optimal approach.
 
 \section{Contribution and Methodology}
 
+Since both \textit{matTranspose} and \textit{checkSymm} are memory bounded
+\cite{b10}, most of the time is expected to be spent on memory movement rather then
+math operation. Implementations with MPI distribute the matrix over the network,
+potentially creating a bottleneck by adding additional latency due to
+synchronyzation, the overhead of the operative system's network stack and
+network congestion. Practically the number of computing nodes
+in a cluster could greately surpass the number of CPU cores of a
+shared-memory computer therefore overcoming the disadvantages and
+possibly increasing the performance by dividing the work in a greater
+number of workers, however the advantages could be shadowed by the
+memory movement memory bounded algorithms. On the other hand, shared-memory
+algorithms do not need to send memory since they share the same address
+space and are limited by the bus bandwidth and scheduling policies.
 In this section, implementations of both \textit{matTranspose}
 and \textit{checkSymm} using MPI are presented, starting with
 \textit{matTranspose}. We benchmark the bandwidth and speedup
-of different MPI implementations compared to a serial and to a OpenMPI one.
-Different compiler optimizations will also be compared. All benchmarks
-will be tested against every matrix size from $2^2$ to $2^{12}$,
-we will assume the number of processes is divisible by the matrix size
-and the square root is an integer number for ease of implementation,
-however the algorithms can be generalised with few modifications.
-The algorithms for \textit{matTranspose} will now be explained.
+of different MPI implementations compared to a serial and to a OpenMPI one,
+discussing weak and strong scaling. Different compiler optimizations
+will also be compared. All benchmarks will be tested against every
+matrix size from $2^2$ to $2^{12}$, we will assume the number of processes
+is divisible by the matrix size and the square root is an integer
+number for ease of implementation, however the algorithms can be
+generalised with few modifications. The algorithms for \textit{matTranspose}
+will now be explained.
 
 \textit{matTranspose} takes a $N \times N$ input square matrix
 \textit{input}, a matrix of the same shape \textit{ouput}, and the
 size of the two matrices \textit{size}. The analyzed algorithms are the following:
 \begin{itemize}
-\item \textit{matTranspose}: naive implementation of matTranspose, iterating over values of the input matrix and storing them in the output matrix with indexes of rows and columns swapped.
+\item \textit{matTranspose}: naive implementation of matTranspose,
+iterating over values of the input matrix and storing them in the
+output matrix with indexes of rows and columns swapped.
 \item \textit{matTransposeMPI}: this implementation takes full advantage
-  of MPI datatypes to test bandwidth. MPI has the possibility to define a
-  custom datatype to access memory, we used \textit{MPI\_Type\_contiguous}
+  of MPI datatypes to test bandwidth. Leveraging 
+  custom datatypes in MPI, \textit{MPI\_Type\_contiguous} was used
   to define a row type and \textit{MPI\_Type\_vector} + \textit{MPI\_Type\_create\_resized}
   for a column type. The root process scatters rows with \textit{MPI\_Scatter} and
   retrieves columns with \textit{MPI\_Gather}, therefore
@@ -197,20 +223,47 @@ size of the two matrices \textit{size}. The analyzed algorithms are the followin
   for example process[0][1] will sand to root[1][0].
   Each process tranposes its sub-matrix and sends It back to the root.
   This approach tests a different communication method.
+\item \textit{matTransposeOMPX}: this set of algorithms are all derived
+  from \textit{matTranspose} with the outer for loops parallelized using
+  omp with the number of threads \textit{X} being a power of 2 from $2^1$ to $2^6$.
 \end{itemize}
 The algorithm for \textit{checkSymm} will now be explained. The algorithm
 takes an $N \times N$ square matrix \textit{input}, a size \textit{size}
 and returns true if the matrix is symmetrix, false otherwise.
 The algorithm the following:
 \begin{itemize}
-\item \textit{checkSymm}: naive implementation of checkSymm. It Iterates over the upper half of the matrix and testing if every value is equal to the symmetric value.
+\item \textit{checkSymm}: naive implementation of checkSymm. It
+Iterates over the upper half of the matrix and testing if every value
+is equal to the symmetric value.
 \item \textit{checkSymmMPI}: similar to \textit{matTransposeMPIBlock},
 but each process receives both a sub-matrix and the transposed sub-matrix,
 that is, if we treated each sub-matrix as a single element of a matrix,
-the element in the tranposed position will be received. Each process compares the two
-sub-matrices to check if they are symmetric. The result is computed
+the element in the tranposed position will be received. Each process
+compares the two sub-matrices to check if they are symmetric. The
+result is computed
 via \textit{MPI\_Reduce}.
+\item \textit{checkSymOMPX}: similar to \textit{matTransposeOMPX} but
+based on \textit{checkSymm}. After each parallel section, a barrier
+is needed to synchronize the shared boolean output variable.
 \end{itemize}
+
+\textit{Strong Scaling} or \textit{Speedup} is defined as the reatio
+between the time for running the algorithm using one processor $t(1)$ over
+the time for running the same algorithm on $N$ processors $t(N)$ \ref{eq:1}.
+\begin{equation} \label{eq:1}
+Speedup = \frac{t(1)}{t(N)}
+\end{equation}
+In an ideal scenario, software would achieve a linear increase in
+speed proportional to the number of processors used (speedup = N),
+signifying that each processor is fully utilizing its computational
+capacity.
+In case of \textit{Weak Scaling}, both the number of processors $p$
+and the problem size $N$ are increased \ref{eq:2}. It evaluates wheter a program
+can handle larger problems efficiently when more resources are available.
+\begin{equation} \label{eq:2}
+S_w = \frac{t(N)}{T_p(N*p)}
+\end{equation}
+
 
 \section{Experiments and System Description}
 
@@ -231,42 +284,172 @@ running Linux 3.10. The algorithms were benchmarked using \textit{valFuzz},
 with benchmarks compiled using gcc-9.1.0. Four benchmark sets were
 compiled with different optimization levels: none, -O1, -O2 and "-O3
 -Ofast -march=native".
-
-To ensure statistical significance, each benchmark was executed 100
-times, recording wall-clock execution time statistics: minimum, maximum,
-median, mean, standard deviation, Q1, and Q3. Cache interference was
+MPI algorithms were benchmarked with number of processes equal to 4, 16, 64.
+MPI benchmarks are composed of a master (root) process and a fleet
+of worker processes. Before each benchmark, the master sends
+a synchronization message to the workers telling them which algorithm
+to execute and how many times, It will then start executing the agreed
+algorithm and partecipate in the work. Only the master process will be
+timed, recording wall-clock execution time statistics: minimum, maximum,
+median, mean, standard deviation, Q1, and Q3. To ensure statistical
+significance, each benchmark was executed 10 times. Cache interference was
 minimized by clearing it before each run by writing to an array twice
 the L3 cache size. Input matrices, consistent across algorithms, were
 initialized with uniformly random floats (-1 to 1) generated via a
 Linear Congruential Generator (LCG) \cite{b8} with parameters a=1664525,
 c=1013904223, m=232 \cite{b9}, and seed 1337.
-
 To expedite random number generation, values were precomputed at
 compile time using \textit{tenno-tl}. Additional \textit{tenno-tl}
 features, such as ranges and arrays, were also employed.
 
 \section{Results and Discussion}
 
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/matTransposeMPI_base.pdf"}
+	\caption{matTransposeMPI average time over matrix size}
+	\label{fig:transpose_mpi_base}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/matTransposeMPI_block_base.pdf"}
+	\caption{matTransposeMPIBlock average time over matrix size}
+	\label{fig:transpose_mpi_block}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/matTransposeMPI_speedup.pdf"}
+	\caption{matTransposeMPI speedup measurements}
+	\label{fig:transpose_mpi_speedup}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/matTransposeMPI_block_speedup.pdf"}
+	\caption{matTransposeMPIBlock speedup measurements}
+	\label{fig:transpose_mpi_block_speedup}
+\end{figure}
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/transpose_explicit_speedup.pdf"}
+	\caption{matTransposeOMP speedup}
+	\label{fig:transpose_mp_speedup}
+\end{figure}
+
+
 \iffalse
-- Presentation of results \\
-- Analysis and interpretation in context \\
-- Comparison with the state-of-the-art \\
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/matTransposeMPI_weak_scaling.pdf"}
+	\caption{matTransposeMPI weak scaling measurements}
+	\label{fig:transpose_mpi_weak_scaling}
+\end{figure}
 \fi
 
-TODO
+\iffalse
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/matTransposeMPI_block_bandwidth.pdf"}
+	\caption{matTransposeMPIBlock bandwidth measurements}
+	\label{fig:transpose_mpi_block_bandwidth}
+\end{figure}
+\fi
+
+\iffalse
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/matTransposeMPI_block_weak_scaling.pdf"}
+	\caption{matTransposeMPIBlock weak scaling measurements}
+	\label{fig:transpose_mpi_block_weak_scaling}
+\end{figure}
+\fi
+
+\begin{figure}[htb]
+	\centering
+	\includegraphics[width=0.44\textwidth]{"../benchmarks/plotting/images/matTransposeMPI_block_weak_scaling_final.pdf"}
+	\caption{Comparison of weak scaling between all the matTranspose implementations, averaging all the compiler optimization flags}
+	\label{fig:transpose_mpi_block_weak_scaling_final}
+\end{figure}
+
+
+\begin{table}[h!]
+\centering
+\caption{Average time \% spent on each part of \\
+\textit{matTransposeMPIBlock}}
+\label{tab:normalized_averages}
+\begin{tabular}{lc}
+\toprule
+\textbf{Column} & \textbf{Average Time \%} \\
+\midrule
+Displacement    & 0.000088 \\
+Setup           & 0.000246 \\
+Scatter         & 0.372926 \\
+Transpose       & 0.149277 \\
+Gather          & 0.477462 \\
+\midrule
+\end{tabular}
+\end{table}
+
+The results of the study are presented here. Shared-memory performance
+data referenced in this analysis are derived from previous work \cite{b10}.
+
+As discussed earlier, the memory-bound nature of both \textit{matTranspose}
+and \textit{checkSymm} inherently disadvantages the distributed-memory
+implementation when compared to the shared-memory approach due to its
+higher memory movement requirements. Experimental results confirm this
+observation. In the case of \textit{matTransposeMPIBlock}, a significant
+portion of the execution time is consumed by data transmission
+(approximately 37\%) and data reception (approximately 47\%), as shown
+in Table~\ref{tab:normalized_averages}. This behavior accounts for the
+slightly slower performance of \textit{matTransposeMPI} relative to the
+sequential implementation (Figure~\ref{fig:transpose_mpi_base}) and the
+considerably slower performance compared to the shared-memory OpenMP
+implementation for $N > 2^7$. However, as the matrix size increases,
+the performance of \textit{matTransposeMPI} approaches that of the
+sequential version. Optimization of data transmission patterns further
+improves performance. Notably, \textit{matTransposeMPIBlock} outperforms
+\textit{matTransposeMPI} and even surpasses the sequential implementation
+(Figure~\ref{fig:transpose_mpi_block}), although it remains inferior
+to the shared-memory approach. The superiority of shared-memory
+implementations is further underscored by the use of a loopback interface
+for MPI communication within the same node: if data packets were
+transmitted over slower mediums, such as Ethernet, the performance gap
+between shared-memory and distributed-memory implementations would
+likely widen, leading to even slower execution for the latter.
+\textit{MatTransposeMPIBlock} exhibits better strong scaling than
+\textit{matTransposeMPI} (Figure~\ref{fig:transpose_mpi_block_speedup}
+and Figure~\ref{fig:transpose_mpi_block_speedup}) due to its optimized data
+transfer patterns. In contrast, \textit{matTransposeOMP}
+demonstrates linear scaling (Figure~\ref{fig:transpose_mp_speedup}), achieving
+optimal strong scaling performance until the scaling becomes sublinear
+for large matrix sizes ($N>2^{9}$), while \textit{matTransposeMPIBlock}
+appears to not slow down scaling. This result underscores the
+advantage of shared-memory systems for matrix transposition on small matrixes,
+where the high memory bandwidth and low-latency data movement within
+a single node allow efficient scaling with additional processors. The
+overall weak scaling results indicate that all implementations
+struggle to effectively manage the increased workload as system size
+expands (Figure~\ref{fig:transpose_mpi_block_weak_scaling_final}).
+
+Equivalent results are found in implementations of \textit{checkSymm}.
 
 \section{Conclusions}
 
 \iffalse
 - Summary of the key findings and contributions
 \fi 
-
-TODO
-
-\section{GIT and Instructions for Reproducibility}
-
-Github link: \href{https://github.com/San7o/parallel-computing-cpp}{https://github.com/San7o/parallel-computing-cpp} \\
-Please read the instructions in the \textit{README.md} for building.
+This study compared the performance of matrix transposition on
+shared- and distributed-memory systems. The shared-memory implementation
+achieved optimal linear strong scaling up to matrix of size $N<2^{10}$, while distributed-memory
+implementations were hindered by communication overhead, with
+\textit{matTransposeMPIBlock} showing some improvement. Weak scaling
+was poor for all implementations, though shared-memory performed
+slightly better. Overall, shared-memory systems are more efficient
+for moderate problem sizes, while distributed-memory systems are
+necessary for larger matrices despite reduced efficiency.
 
 \begin{thebibliography}{00}
 \bibitem{b0} P. Grun, Introduction to InfiniBand for End Users, InfiniBand
@@ -284,6 +467,7 @@ cw.infinibandta.org/document/dl/7268
 \bibitem{b8} Rotenberg, A. (1960). "A New Pseudo-Random Number Generator". Journal of the ACM. 7 (1): 75–77
 \bibitem{b9} Numerical Recipes ranqd1, Chapter 7.1, An Even Quicker Generator, Eq. 7.1.6
 parameters from Knuth and H. W. Lewis
+\bibitem{b10} G. Santini. Matrix Transposition and checkSymm: A case study on superscalar architectures.
 \end{thebibliography}
 \vspace{12pt}
 

@@ -1,4 +1,4 @@
-# pc-first-assignment
+# pc-second-assignment
 
 > name: Giovanni Santini
 
@@ -56,15 +56,6 @@ Both dependencies are automatically downloaded by the build
 system of your choice, thou cmake is primarly supported and Its
 use is advised.
 
-### On NixOS
-
-On NixOS, you can enter the developement
-environment using [flake.nix](./flake.nix):
-
-```bash
-nix develop
-```
-
 <a name="cluster"></a>
 ## Build and run on the cluster
 
@@ -75,8 +66,8 @@ To submit the script for execution, run the following on the cluster:
 
 ```bash
 git clone https://github.com/San7o/parallel-computing-cpp.git &&
-git checkout first-assignment &&
-export PC_PBS_FILE=$HOME/parallel-computing-cpp/cluster/parallel-computing-cpp/first-assignment/first-assignment.pbs &&
+git checkout second-assignment &&
+export PC_PBS_FILE=$HOME/parallel-computing-cpp/cluster/parallel-computing-cpp/second-assignment/second-assignment.pbs &&
 chmod +x $PC_PBS_FILE &&
 qsub $PC_PBS_FILE
 ```
@@ -93,7 +84,7 @@ If you are on the cluster, please load the necessary modules first:
 ```bash
 module load gcc91 &&
 module load cmake-3.15.4 &&
-module load mpich-3.2
+module load mpich-3.2.1--gcc-9.1.0
 ```
 
 To build the full benchmark suite, run the following command:
@@ -134,24 +125,37 @@ The project depends on [valFuzz](https://github.com/San7o/valFuzz) which
 provides testing, fuzzing and benchmarking functionalities.
 To run the benchmarks, use the `--benchmark` flag. To get
 more informations about possible flags, please consult
-the help message with `--help`:
+the help message with `--help`.
+The benchmarks are composed of a master process and worker processes,
+which will be build by default. You can run a benchmark like this:
 
 ```c++
 module load gcc91 &&
 module load cmake-3.15.4 &&
-module load mpich-3.2 &&
-./build/tests --benchmark          \
-              --num-iterations 100 \
-              --report report.txt
+module load mpich-3.21--gcc-9.1.0 &&
+export NUM_WORKERS=3 &&
+export NUM_ITERATIONS=10 &&
+export BUILD_DIR=build &&
+mpirun -np 1 \
+      ./$BUILD_DIR/tests \
+      --benchmark \
+      --num-iterations $NUM_ITERATIONS \
+      --no-multithread \
+      --report $OUTPUT_DIR/base_np4.txt \
+		--reporter csv \
+      : -np $NUM_WORKERS ./$BUILD_DIR/worker &&
+unset NUM_WORKERS NUM_ITERATIONS BUILD_DIR
 ```
 
-If you built optimized targets (on cmake using `PC_BUILD_OPTIMIZED_O{1,2,3}`)
-you can easily run all the compiled targets with the [run-benchmarks.sh](./run-benchmarks.sh)
-script:
+You could also run the full benchmarks by running the `.pbs` script:
 
-```bash
-./run-benchmarks.sh
+```cpp
+chmod +x cluster/second-assignment/second-assignment.pbs &&
+./cluster/second-assignment/second-assigmnet.pbs
 ```
+
+There is a test `.bps` in the same directory to test the correctness
+of the alogrithms.
 
 To collect information about the system machine, you can use
 the [get-info.sh](./get-info.sh) script:
