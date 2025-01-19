@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# BEGIN first-assignment.pbs
+# BEGIN second-assignment.pbs
 
 # =========================================== #
 #                   PBS SETUP                 #
@@ -252,4 +252,4 @@ else
     echo "Please run the build script first"
 fi
 
-# END first-assignment.pbs
+# END second-assignment.pbs
