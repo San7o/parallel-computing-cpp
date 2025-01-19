@@ -1,0 +1,1 @@
+for FILE in $(ls -1 | grep svg); do PDF=$(echo $FILE | sed 's/svg/pdf/g'); /home/santo/apps/Inkscape-e7c3feb-x86_64.AppImage $FILE --export-pdf=$PDF; done
